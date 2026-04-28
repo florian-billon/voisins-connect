@@ -329,16 +329,22 @@ Connexion : `WS /ws` avec JWT en paramètre. Une fois connecté, le client rejoi
 
 ```mermaid
 flowchart LR
-    U([Utilisateur]) --> App[Interface Chat]
-    App -- op: SEND_MESSAGE --> S[Backend Rust]
-    
-    subgraph Backend [Logique Serveur]
-        S --> Auth[Auth & Permissions]
-        Auth --> DB[(PostgreSQL / MongoDB)]
-        Auth --> Hub{WS Hub}
+    subgraph Frontend [Client]
+    U([Utilisateur]) --> UI[Interface Chat]
+    UI --> WS_C[Client WS]
     end
-    
-    Hub -- op: MESSAGE_CREATE --> Others([Autres Membres])
+
+    WS_C -- "op: SEND_MESSAGE" --> WS_H[WS Handler]
+
+    subgraph Backend [Logique Serveur Rust]
+    WS_H --> Auth[Verify JWT]
+    Auth --> Perms[Check Member]
+    Perms --> PG[(PostgreSQL)]
+    Perms --> MG[(MongoDB)]
+    PG & MG --> Hub{Broadcast Hub}
+    end
+
+    Hub -- "op: MESSAGE_CREATE" --> Peers([Autres Clients])
 ```
 
 #### Exemple de code (Temps réel)
