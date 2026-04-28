@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import {
   listChannels,
   createChannel as apiCreateChannel,
@@ -18,6 +18,8 @@ export function useChannels(serverId: string | null) {
   const [selectedChannel, setSelectedChannel] = useState<Channel | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [creatingChannel, setCreatingChannel] = useState(false);
+  const createChannelInFlightRef = useRef(false);
 
   const toUiError = useCallback((err: unknown, fallbackKey: string): string => {
     const message = getErrorMessage(err, t(fallbackKey));
@@ -33,11 +35,20 @@ export function useChannels(serverId: string | null) {
       setError(null);
       const data = await listChannels(id);
       setChannels(data);
-      if (data.length > 0) {
-        setSelectedChannel(data[0]);
-      } else {
-        setSelectedChannel(null);
-      }
+      setSelectedChannel((prev) => {
+        if (!data.length) {
+          return null;
+        }
+
+        if (prev) {
+          const matchingChannel = data.find((channel) => channel.id === prev.id);
+          if (matchingChannel) {
+            return matchingChannel;
+          }
+        }
+
+        return data[0];
+      });
     } catch (err) {
       const errorMessage = toUiError(err, "error.hooks.channels.load");
       if (isAuthError(errorMessage)) {
@@ -68,8 +79,13 @@ export function useChannels(serverId: string | null) {
 
   const createChannel = useCallback(async (name: string): Promise<Channel | null> => {
     if (!serverId) return null;
-    
+    if (createChannelInFlightRef.current) {
+      return null;
+    }
+
     try {
+      createChannelInFlightRef.current = true;
+      setCreatingChannel(true);
       setError(null);
       const newChannel = await apiCreateChannel(serverId, name);
       await loadChannels(serverId);
@@ -83,6 +99,9 @@ export function useChannels(serverId: string | null) {
       }
       setError(errorMessage);
       return null;
+    } finally {
+      createChannelInFlightRef.current = false;
+      setCreatingChannel(false);
     }
   }, [serverId, loadChannels, toUiError]);
 
@@ -224,6 +243,7 @@ export function useChannels(serverId: string | null) {
     channels,
     selectedChannel,
     loading,
+    creatingChannel,
     error,
     selectChannel,
     createChannel,

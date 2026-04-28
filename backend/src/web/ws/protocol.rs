@@ -5,8 +5,8 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-use crate::models::UserStatus;
 use crate::models::MessageReactionPublic;
+use crate::models::UserStatus;
 
 /// Événements envoyés par le client
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -158,10 +158,7 @@ pub enum ServerEvent {
 
     /// Mise à jour de présence utilisateur
     #[serde(rename = "PRESENCE_UPDATE")]
-    PresenceUpdate {
-        user_id: Uuid,
-        status: UserStatus,
-    },
+    PresenceUpdate { user_id: Uuid, status: UserStatus },
 }
 
 impl ClientEvent {

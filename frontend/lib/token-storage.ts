@@ -83,6 +83,11 @@ export function syncStoredTokenFromPersistence() {
   emit(memoryToken);
 }
 
+export function reemitStoredToken() {
+  hydrateFromPersistence();
+  emit(memoryToken);
+}
+
 export function subscribeToTokenChanges(listener: (token: string | null) => void) {
   listeners.add(listener);
 

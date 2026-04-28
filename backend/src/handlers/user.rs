@@ -43,8 +43,7 @@ pub async fn update_me(
         .ok_or(Error::UserNotFound)?;
 
     if should_broadcast_presence {
-        crate::services::realtime::handle_presence_update(&state, ctx.user_id(), user.status)
-            .await;
+        crate::services::realtime::handle_presence_update(&state, ctx.user_id(), user.status).await;
     }
 
     Ok(Json(user.into()))

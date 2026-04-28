@@ -1,14 +1,13 @@
 import { API_URL } from "./config";
+import { fetchWithRetry } from "./fetchWithRetry";
 import { getStoredToken } from "./token-storage";
 
-const RETRY_DELAY_MS = 300;
+const IDEMPOTENT_REQUEST_RETRIES = 7;
+const IDEMPOTENT_REQUEST_INITIAL_DELAY_MS = 1000;
+const IDEMPOTENT_REQUEST_MAX_DELAY_MS = 5000;
 
 function isIdempotentRequest(method?: string): boolean {
   return !method || method.toUpperCase() === "GET";
-}
-
-async function delay(ms: number): Promise<void> {
-  await new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 async function fetchApi<T>(
@@ -28,25 +27,18 @@ async function fetchApi<T>(
     (headers as any)["Content-Type"] = "application/json";
   }
 
-  const request = () =>
-    fetch(`${API_URL}${endpoint}`, {
-      ...options,
-      headers,
-      cache: "no-store",
-    });
+  const requestInit: RequestInit = {
+    ...options,
+    headers,
+    cache: "no-store",
+  };
 
   try {
-    let res: Response;
-    try {
-      res = await request();
-    } catch (err) {
-      if (isIdempotentRequest(options.method)) {
-        await delay(RETRY_DELAY_MS);
-        res = await request();
-      } else {
-        throw err;
-      }
-    }
+    const res = await fetchWithRetry(`${API_URL}${endpoint}`, requestInit, {
+      retries: isIdempotentRequest(options.method) ? IDEMPOTENT_REQUEST_RETRIES : 0,
+      initialDelayMs: IDEMPOTENT_REQUEST_INITIAL_DELAY_MS,
+      maxDelayMs: IDEMPOTENT_REQUEST_MAX_DELAY_MS,
+    });
 
     if (!res.ok) {
       const errorText = await res.text();

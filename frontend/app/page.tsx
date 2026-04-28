@@ -32,7 +32,7 @@ export default function Home() {
     servers, selectedServer, selectServer, createServer, creatingServer,
     leaveServer, deleteServer, transferOwnership,
     serversLoading, serversError,
-    channels, selectedChannel, selectChannel, createChannel, deleteChannel,
+    channels, selectedChannel, selectChannel, createChannel, creatingChannel, deleteChannel,
     channelsLoading, channelsError,
     messages, sendMessage, updateMessage, deleteMessage, toggleReaction,
     messagesLoading, messagesError, typingUsers, typingStart, typingStop,
@@ -110,9 +110,11 @@ export default function Home() {
   const handleCreateChannel = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newChannelName.trim()) return;
-    await createChannel(newChannelName.trim());
-    setNewChannelName("");
-    setShowCreateChannel(false);
+    const channel = await createChannel(newChannelName.trim());
+    if (channel) {
+      setNewChannelName("");
+      setShowCreateChannel(false);
+    }
   };
 
   const handleSendMessage = async (e: React.FormEvent) => {
@@ -280,6 +282,7 @@ export default function Home() {
         show={showCreateChannel}
         channelName={newChannelName}
         serverName={selectedServer?.name || ""}
+        submitting={creatingChannel}
         onClose={() => setShowCreateChannel(false)}
         onChange={setNewChannelName}
         onSubmit={handleCreateChannel}

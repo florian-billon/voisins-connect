@@ -7,15 +7,8 @@ use crate::models::UserStatus;
 use crate::web::ws::protocol::ServerEvent;
 use crate::AppState;
 
-async fn broadcast_presence_to_shared_servers(
-    state: &AppState,
-    user_id: Uuid,
-    status: UserStatus,
-) {
-    let event = ServerEvent::PresenceUpdate {
-        user_id,
-        status,
-    };
+async fn broadcast_presence_to_shared_servers(state: &AppState, user_id: Uuid, status: UserStatus) {
+    let event = ServerEvent::PresenceUpdate { user_id, status };
 
     let servers = match state.server_repo.list_by_user(user_id).await {
         Ok(servers) => servers,

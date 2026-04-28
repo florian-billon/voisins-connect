@@ -344,74 +344,112 @@ flowchart LR
 
 ### WebSocket
 
-Connexion : `GET /ws`, puis handshake applicatif via événements JSON. Le token JWT n'est pas passé en query string : le serveur envoie d'abord `HELLO`, puis le client répond avec `IDENTIFY { token }`. Une fois authentifié, le client s'abonne aux channels voulus avec `SUBSCRIBE`.
+Point d'entrée : `GET /ws`
+
+Format commun : `{ "op": "EVENT_NAME", "d": { ...payload } }`
+
+Handshake réel :
+1. le client ouvre `GET /ws`
+2. le serveur envoie `HELLO`
+3. le client répond avec `IDENTIFY { token }`
+4. le serveur répond `READY` ou `ERROR`
+5. le client s'abonne aux channels avec `SUBSCRIBE`
 
 ```mermaid
-sequenceDiagram
-    participant Client
-    participant WS as Axum WS Handler
-    participant Auth as JWT/Auth
-    participant PG as PostgreSQL
-    participant MG as MongoDB
-    participant Hub as WS Hub
+flowchart TD
+    subgraph Phase1["1. Session bootstrap"]
+        A[Client opens GET /ws] --> B[Server sends HELLO]
+        B --> C[Client sends IDENTIFY token]
+        C --> D[JWT/Auth verifies token]
+        D --> E[Server replies READY]
+    end
 
-    Client->>WS: Upgrade GET /ws
-    WS-->>Client: HELLO { heartbeat_interval }
-    Client->>WS: IDENTIFY { token }
-    WS->>Auth: verify_token(token)
-    Auth-->>WS: user claims
-    WS-->>Client: READY { user_id, username }
-    Client->>WS: SUBSCRIBE { channel_id }
-    WS->>PG: check channel membership
-    WS-->>Client: SUBSCRIBED { channel_id }
-    Client->>WS: SEND_MESSAGE { channel_id, content }
-    WS->>PG: load channel + membership
-    WS->>MG: persist channel_messages
-    WS->>Hub: broadcast MESSAGE_CREATE to channel subscribers
-    Hub-->>Client: MESSAGE_CREATE
-    Hub-->>Client: TYPING_START / TYPING_STOP / PRESENCE_UPDATE
+    subgraph Phase2["2. Channel subscription"]
+        F[Client sends SUBSCRIBE channel_id] --> G[PostgreSQL checks channel membership]
+        G --> H[Server replies SUBSCRIBED]
+    end
+
+    subgraph Phase3["3. Message fan-out"]
+        I[Client sends SEND_MESSAGE content] --> J[Axum loads channel and membership]
+        J --> K[MongoDB persists channel_messages]
+        K --> L[WS Hub broadcasts MESSAGE_CREATE]
+        L --> M[Channel subscribers receive MESSAGE_CREATE]
+        L --> N[Other live events<br/>TYPING_START / TYPING_STOP / PRESENCE_UPDATE]
+    end
+
+    PG[(PostgreSQL)]
+    MG[(MongoDB)]
+
+    E --> F
+    G -. RBAC / membership .-> PG
+    J -. permission check .-> PG
+    K --> MG
+
+    classDef client fill:#dbeafe,stroke:#2563eb,color:#0f172a;
+    classDef server fill:#dcfce7,stroke:#16a34a,color:#14532d;
+    classDef data fill:#fef3c7,stroke:#d97706,color:#78350f;
+    classDef live fill:#ede9fe,stroke:#7c3aed,color:#4c1d95;
+
+    class A,C,F,I client;
+    class B,D,E,G,H,J,K,L server;
+    class PG,MG data;
+    class M,N live;
 ```
 
 > [!TIP]
 > **Maintenance de session** : heartbeat applicatif (`HEARTBEAT` / `HEARTBEAT_ACK`) toutes les 30s côté client, ping WebSocket côté serveur, reconnexion automatique côté frontend.
 
-#### Contrat d'événements
+#### Client -> serveur
 
-Format commun : `{ "op": "EVENT_NAME", "d": { ...payload } }`
-
-**Client -> serveur**
-
-| `op` | Payload | Rôle |
-|------|---------|------|
+| `op` | Payload | Usage |
+|------|---------|-------|
 | `IDENTIFY` | `{ token }` | Authentifie la socket après `HELLO` |
-| `SUBSCRIBE` | `{ channel_id }` | Abonne la connexion à un channel si l'utilisateur y a accès |
+| `SUBSCRIBE` | `{ channel_id }` | Abonne la connexion à un channel autorisé |
 | `UNSUBSCRIBE` | `{ channel_id }` | Retire l'abonnement à un channel |
-| `SEND_MESSAGE` | `{ channel_id, content }` | Crée un message de channel puis broadcast |
+| `SEND_MESSAGE` | `{ channel_id, content }` | Crée un message de channel puis le broadcast |
 | `TYPING_START` | `{ channel_id }` | Signale le début de frappe |
 | `TYPING_STOP` | `{ channel_id }` | Signale la fin de frappe |
-| `PRESENCE_UPDATE` | `{ status }` | Met à jour le statut utilisateur (`online`, `offline`, `dnd`, `invisible`) |
+| `PRESENCE_UPDATE` | `{ status }` | Met à jour le statut utilisateur |
 | `HEARTBEAT` | `{ seq? }` | Keep-alive applicatif |
 
-**Serveur -> client**
+#### Serveur -> client
 
-| `op` | Payload | Émis quand |
-|------|---------|------------|
-| `HELLO` | `{ heartbeat_interval }` | Immédiatement après l'upgrade |
-| `READY` | `{ user_id, username }` | Après authentification réussie |
-| `ERROR` | `{ code, message }` | Auth, validation ou permissions invalides |
-| `SUBSCRIBED` / `UNSUBSCRIBED` | `{ channel_id }` | Confirmation d'abonnement |
-| `HEARTBEAT_ACK` | `{ seq? }` | Réponse au heartbeat |
-| `MESSAGE_CREATE` | `Message` | Nouveau message de channel |
-| `MESSAGE_UPDATE` | `{ id, channel_id, content, edited_at }` | Édition d'un message de channel |
-| `MESSAGE_DELETE` | `{ id, channel_id }` | Suppression d'un message de channel |
-| `MESSAGE_REACTION_UPDATE` | `{ id, channel_id, reactions }` | Réactions d'un message de channel |
-| `DIRECT_MESSAGE_CREATE` | `DirectMessage` | Nouveau message privé |
-| `DIRECT_MESSAGE_UPDATE` | `{ id, dm_id, content, edited_at }` | Édition d'un message privé |
-| `DIRECT_MESSAGE_DELETE` | `{ id, dm_id }` | Suppression d'un message privé |
-| `DIRECT_MESSAGE_REACTION_UPDATE` | `{ id, dm_id, reactions }` | Réactions d'un message privé |
-| `TYPING_START` | `{ channel_id, user_id, username }` | Un membre commence à écrire |
-| `TYPING_STOP` | `{ channel_id, user_id }` | Un membre arrête d'écrire |
-| `PRESENCE_UPDATE` | `{ user_id, status }` | Statut d'un utilisateur partagé |
+**Session**
+
+| `op` | Payload |
+|------|---------|
+| `HELLO` | `{ heartbeat_interval }` |
+| `READY` | `{ user_id, username }` |
+| `ERROR` | `{ code, message }` |
+| `SUBSCRIBED` | `{ channel_id }` |
+| `UNSUBSCRIBED` | `{ channel_id }` |
+| `HEARTBEAT_ACK` | `{ seq? }` |
+
+**Channels**
+
+| `op` | Payload |
+|------|---------|
+| `MESSAGE_CREATE` | `Message` |
+| `MESSAGE_UPDATE` | `{ id, channel_id, content, edited_at }` |
+| `MESSAGE_DELETE` | `{ id, channel_id }` |
+| `MESSAGE_REACTION_UPDATE` | `{ id, channel_id, reactions }` |
+| `TYPING_START` | `{ channel_id, user_id, username }` |
+| `TYPING_STOP` | `{ channel_id, user_id }` |
+
+**Messages privés**
+
+| `op` | Payload |
+|------|---------|
+| `DIRECT_MESSAGE_CREATE` | `DirectMessage` |
+| `DIRECT_MESSAGE_UPDATE` | `{ id, dm_id, content, edited_at }` |
+| `DIRECT_MESSAGE_DELETE` | `{ id, dm_id }` |
+| `DIRECT_MESSAGE_REACTION_UPDATE` | `{ id, dm_id, reactions }` |
+
+**Présence**
+
+| `op` | Payload |
+|------|---------|
+| `PRESENCE_UPDATE` | `{ user_id, status }` |
 
 #### Réalité de persistance
 
