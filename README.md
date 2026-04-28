@@ -334,20 +334,26 @@ flowchart LR
 Connexion : `WS /ws` avec JWT en paramètre. Une fois connecté, le client rejoint des canaux et reçoit les événements en temps réel.
 
 ```mermaid
-sequenceDiagram
-    participant Client as Frontend (Next.js)
-    participant Server as Backend (Rust/Axum)
-    participant Hub as Hub / Broadcast
-    participant DB as Databases (PG/Mongo)
+graph LR
+    subgraph Client [Frontend / Desktop]
+        A[Utilisateur] -->|"Écrit un message"| UI[Chat UI]
+        UI -->|"JSON Payload"| WS_C[Client WebSocket]
+    end
 
-    Client->>Server: Handshake (WS /ws?token=...)
-    Server-->>Client: Connection Established
+    subgraph Server [Backend Rust Axum]
+        WS_C -->|"op: SEND_MESSAGE"| WS_S[WS Handler]
+        WS_S -->|"1. Vérifie JWT"| Auth[Security/Auth]
+        WS_S -->|"2. Stockage"| DB[(PostgreSQL / MongoDB)]
+        WS_S -->|"3. Dispatch"| Hub{WS Hub / Broadcast}
+    end
 
-    Client->>Server: { op: "SEND_MESSAGE", d: { ... } }
-    Server->>Server: Verify JWT & Permissions
-    Server->>DB: Persist Message
-    Server->>Hub: Dispatch Message
-    Hub->>Client: { op: "MESSAGE_CREATE", d: { ... } }
+    subgraph Peers [Autres Membres]
+        Hub -->|"op: MESSAGE_CREATE"| WS_O[Clients WebSocket]
+        WS_O -->|"Notification locale"| UI_O[Chat UI]
+    end
+
+    style Hub fill:#f96,stroke:#333,stroke-width:4px
+    style DB fill:#4FDFFF,stroke:#333,stroke-width:2px
 ```
 
 #### Exemple de code (Temps réel)
