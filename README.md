@@ -233,24 +233,26 @@ Toutes les routes sauf auth nécessitent un header `Authorization: Bearer <JWT>`
 ```mermaid
 flowchart LR
     User[Utilisateur]
-    Web[Frontend Next.js / Vercel]
-    Desktop[Desktop Tauri]
-    API[Backend Rust / Render]
-    WS[WebSocket /ws]
-    PG[(PostgreSQL / Neon)]
-    MG[(MongoDB Atlas)]
-    GIF[GIPHY API]
+    Web[Frontend]
+    Desktop[Desktop]
+    API[Backend API]
+    WS[WebSocket]
+    PG[(PostgreSQL)]
+    MG[(MongoDB)]
 
     User --> Web
     User --> Desktop
-    Web --> API
-    Desktop --> API
-    Web --> WS
-    Desktop --> WS
-    API --> PG
-    API --> MG
-    Web --> GIF
-    Desktop --> GIF
+    Web & Desktop --> API
+    Web & Desktop --> WS
+    API --> PG & MG
+
+    style User fill:#eee,stroke:#333
+    style Web fill:#eee,stroke:#333
+    style Desktop fill:#eee,stroke:#333
+    style API fill:#ddd,stroke:#333
+    style WS fill:#ddd,stroke:#333
+    style PG fill:#ccc,stroke:#333
+    style MG fill:#ccc,stroke:#333
 ```
 
 ### Auth
@@ -335,25 +337,24 @@ Connexion : `WS /ws` avec JWT en paramètre. Une fois connecté, le client rejoi
 
 ```mermaid
 graph LR
-    subgraph Client [Frontend / Desktop]
-        A[Utilisateur] -->|"Écrit un message"| UI[Chat UI]
-        UI -->|"JSON Payload"| WS_C[Client WebSocket]
+    subgraph Client
+        UI[Chat UI] --> WS_C[Client WS]
     end
 
-    subgraph Server [Backend Rust Axum]
-        WS_C -->|"op: SEND_MESSAGE"| WS_S[WS Handler]
-        WS_S -->|"1. Vérifie JWT"| Auth[Security/Auth]
-        WS_S -->|"2. Stockage"| DB[(PostgreSQL / MongoDB)]
-        WS_S -->|"3. Dispatch"| Hub{WS Hub / Broadcast}
+    subgraph Server [Backend]
+        WS_C --> WS_S[Handler]
+        WS_S --> DB[(Databases)]
+        WS_S --> Hub{Hub}
     end
 
-    subgraph Peers [Autres Membres]
-        Hub -->|"op: MESSAGE_CREATE"| WS_O[Clients WebSocket]
-        WS_O -->|"Notification locale"| UI_O[Chat UI]
-    end
+    Hub --> WS_O[Autres Membres]
 
-    style Hub fill:#f96,stroke:#333,stroke-width:4px
-    style DB fill:#4FDFFF,stroke:#333,stroke-width:2px
+    style UI fill:#eee,stroke:#333
+    style WS_C fill:#eee,stroke:#333
+    style WS_S fill:#ddd,stroke:#333
+    style DB fill:#ddd,stroke:#333
+    style Hub fill:#ccc,stroke:#333,stroke-width:2px
+    style WS_O fill:#bbb,stroke:#333
 ```
 
 #### Exemple de code (Temps réel)
@@ -535,24 +536,14 @@ cd frontend && npm run build
 
 ```mermaid
 graph TD
-    Trigger[Push / PR on main] --> Lint[Linting & Formatting]
-    Lint --> RustLint[cargo clippy / cargo fmt]
-    Lint --> JS_Lint[ESLint / TypeScript]
-    
-    RustLint --> Test[Tests & Build]
-    JS_Lint --> Test
-    
-    Test --> RustTest[cargo test]
-    Test --> JSBuild[Build frontend]
-    
-    JSBuild --> Release[Release auto sur Tag]
-    
-    subgraph Artifacts[Production Artifacts]
-        Release --> Windows[.exe / .msi]
-        Release --> macOS[.dmg / .app]
-        Release --> Linux1[.AppImage]
-        Release --> Linux2[.deb]
-    end
+    Trigger([Push / Tag / PR]) --> Audit[Lint & Test]
+    Audit --> Build[Build & Package]
+    Build --> Release{{Binaires .exe, .dmg, .deb, .AppImage}}
+
+    style Trigger fill:#eee,stroke:#333
+    style Audit fill:#ddd,stroke:#333
+    style Build fill:#ccc,stroke:#333
+    style Release fill:#bbb,stroke:#333,stroke-width:2px
 ```
 
 ### Milestones
