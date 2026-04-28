@@ -328,24 +328,29 @@ flowchart LR
 Connexion : `WS /ws` avec JWT en paramètre. Une fois connecté, le client rejoint des canaux et reçoit les événements en temps réel.
 
 ```mermaid
-graph TD
-    subgraph Client [Frontend / Desktop]
-        U((Utilisateur)) -->|"Écrit"| UI[Chat UI]
-        UI -->|"JSON Payload"| WS_C[Client WebSocket]
-    end
+flowchart TD
+    %% Nodes
+    User([Utilisateur])
+    App[Interface Chat]
+    Server[API Rust Axum]
+    DB[(PostgreSQL / MongoDB)]
+    Hub[WS Hub / Broadcast]
+    Peers([Autres Membres])
 
-    subgraph Server [Backend Rust Axum]
-        WS_C -->|"op: SEND_MESSAGE"| WS_S[WS Handler]
-        WS_S -->|"1. Middleware Auth"| Auth[Vérification JWT]
-        WS_S -->|"2. Permissions"| Perm[Check Member]
-        WS_S -->|"3. Persistence"| DB[(PostgreSQL / MongoDB)]
-        WS_S -->|"4. Dispatch"| Hub{WS Hub / Broadcast}
+    %% Flow
+    User -- Message --> App
+    App -- op: SEND_MESSAGE --> Server
+    
+    subgraph Logic [Traitement Backend]
+        Server -- 1. Auth & Perms --> DB
+        Server -- 2. Persistence --> DB
     end
+    
+    DB -- OK --> Hub
+    Hub -- op: MESSAGE_CREATE --> Peers
 
-    subgraph Outreach [Distribution]
-        Hub -->|"op: MESSAGE_CREATE"| WS_O[Autres Clients]
-        WS_O -->|"Réception Temps Réel"| UI_O[Chat UI Distant]
-    end
+    %% Styling
+    style Logic fill:transparent,stroke-dasharray: 5 5
 ```
 
 #### Exemple de code (Temps réel)
@@ -526,31 +531,23 @@ cd frontend && npm run build
 **CI/CD** (GitHub Actions sur push vers `main`) :
 
 ```mermaid
-graph TD
-    subgraph Trigger [Événement]
-        T([Push / PR sur main])
+flowchart LR
+    Git([Git Push]) --> CI{Workflows CI}
+    
+    subgraph CI [Vérifications Automatiques]
+        direction TB
+        B[Backend: fmt, clippy, test]
+        F[Frontend: lint, build]
     end
 
-    subgraph Audit [Contrôles Qualité]
-        T --> Rust[Backend Rust]
-        T --> JS[Frontend Next.js]
-        
-        Rust --> Fmt[cargo fmt]
-        Rust --> Clip[cargo clippy]
-        JS --> Lnt[npm run lint]
-    end
+    CI --> Tag([Tag v.*])
+    Tag --> Release{Workflow Release}
 
-    subgraph Testing [Tests & Sûreté]
-        Fmt & Clip --> RTest[cargo test]
-        Lnt --> JBuild[npm run build]
-    end
-
-    subgraph Release [Déploiement & Artifacts]
-        RTest & JBuild --> Tag([Auto-release sur Tag])
-        
-        Tag --> Win[[Windows: .exe / .msi]]
-        Tag --> Mac[[macOS: .dmg / .app]]
-        Tag --> Lin[[Linux: .AppImage / .deb]]
+    subgraph Release [Compilation Cross-Platform]
+        direction LR
+        Win[Windows]
+        Mac[macOS]
+        Lin[Linux]
     end
 ```
 
