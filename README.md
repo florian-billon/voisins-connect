@@ -415,10 +415,25 @@ erDiagram
 
     direct_messages {
         uuid id PK
-        uuid user_one_id FK
-        uuid user_two_id FK
+        uuid user1_id FK
+        uuid user2_id FK
         timestamp created_at
-        timestamp updated_at
+    }
+
+    friendships {
+        uuid user1_id PK
+        uuid user2_id PK
+        timestamp created_at
+    }
+
+    attachments {
+        uuid id PK
+        uuid sender_id FK
+        string filename
+        string file_path
+        string content_type
+        bigint file_size
+        timestamp created_at
     }
 ```
 
@@ -431,6 +446,8 @@ erDiagram
 - **invites** — id (UUID), server_id (FK servers), code (unique), created_by (FK users), expires_at, max_uses, uses, revoked, created_at
 - **server_bans** — server_id + user_id (PK composite), banned_by (FK users), reason, expires_at, banned_at
 - **direct_messages** — conversations privées entre deux utilisateurs
+- **friendships** — relations d'amitié entre utilisateurs
+- **attachments** — catalogue des fichiers uploadés
 
 **MongoDB** (base `helloworld`) :
 
