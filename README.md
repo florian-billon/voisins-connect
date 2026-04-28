@@ -328,29 +328,17 @@ flowchart LR
 Connexion : `WS /ws` avec JWT en paramètre. Une fois connecté, le client rejoint des canaux et reçoit les événements en temps réel.
 
 ```mermaid
-flowchart TD
-    %% Nodes
-    User([Utilisateur])
-    App[Interface Chat]
-    Server[API Rust Axum]
-    DB[(PostgreSQL / MongoDB)]
-    Hub[WS Hub / Broadcast]
-    Peers([Autres Membres])
-
-    %% Flow
-    User -- Message --> App
-    App -- op: SEND_MESSAGE --> Server
+flowchart LR
+    U([Utilisateur]) --> App[Interface Chat]
+    App -- op: SEND_MESSAGE --> S[Backend Rust]
     
-    subgraph Logic [Traitement Backend]
-        Server -- 1. Auth & Perms --> DB
-        Server -- 2. Persistence --> DB
+    subgraph Backend [Logique Serveur]
+        S --> Auth[Auth & Permissions]
+        Auth --> DB[(PostgreSQL / MongoDB)]
+        Auth --> Hub{WS Hub}
     end
     
-    DB -- OK --> Hub
-    Hub -- op: MESSAGE_CREATE --> Peers
-
-    %% Styling
-    style Logic fill:transparent,stroke-dasharray: 5 5
+    Hub -- op: MESSAGE_CREATE --> Others([Autres Membres])
 ```
 
 #### Exemple de code (Temps réel)
@@ -528,26 +516,25 @@ cd frontend && npm run lint
 cd frontend && npm run build
 ```
 
-**CI/CD** (GitHub Actions sur push vers `main`) :
+**CI/CD** (GitHub Actions) :
 
 ```mermaid
 flowchart LR
-    Git([Git Push]) --> CI{Workflows CI}
-    
-    subgraph CI [Vérifications Automatiques]
-        direction TB
-        B[Backend: fmt, clippy, test]
-        F[Frontend: lint, build]
+    subgraph Backend_CI [backend-ci.yml]
+        direction LR
+        B1[Quality & Security Checks] --> B2[Build & Test Rust]
     end
 
-    CI --> Tag([Tag v.*])
-    Tag --> Release{Workflow Release}
-
-    subgraph Release [Compilation Cross-Platform]
+    subgraph Frontend_CI [frontend-ci.yml]
         direction LR
-        Win[Windows]
-        Mac[macOS]
-        Lin[Linux]
+        F1[Quality & Security Checks] --> F2[Build Next.js]
+    end
+
+    subgraph Release_Matrix [release.yml]
+        direction LR
+        Matrix{Matrix} --> M_Mac[macos-latest]
+        Matrix --> M_Win[windows-latest]
+        Matrix --> M_Lin[ubuntu-22.04]
     end
 ```
 
