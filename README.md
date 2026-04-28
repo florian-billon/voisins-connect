@@ -328,18 +328,24 @@ flowchart LR
 Connexion : `WS /ws` avec JWT en paramètre. Une fois connecté, le client rejoint des canaux et reçoit les événements en temps réel.
 
 ```mermaid
-graph LR
-    subgraph Client
-        UI[Chat UI] --> WS_C[Client WS]
+graph TD
+    subgraph Client [Frontend / Desktop]
+        U((Utilisateur)) -->|"Écrit"| UI[Chat UI]
+        UI -->|"JSON Payload"| WS_C[Client WebSocket]
     end
 
-    subgraph Server [Backend]
-        WS_C --> WS_S[Handler]
-        WS_S --> DB[(Databases)]
-        WS_S --> Hub{Hub}
+    subgraph Server [Backend Rust Axum]
+        WS_C -->|"op: SEND_MESSAGE"| WS_S[WS Handler]
+        WS_S -->|"1. Middleware Auth"| Auth[Vérification JWT]
+        WS_S -->|"2. Permissions"| Perm[Check Member]
+        WS_S -->|"3. Persistence"| DB[(PostgreSQL / MongoDB)]
+        WS_S -->|"4. Dispatch"| Hub{WS Hub / Broadcast}
     end
 
-    Hub --> WS_O[Autres Membres]
+    subgraph Outreach [Distribution]
+        Hub -->|"op: MESSAGE_CREATE"| WS_O[Autres Clients]
+        WS_O -->|"Réception Temps Réel"| UI_O[Chat UI Distant]
+    end
 ```
 
 #### Exemple de code (Temps réel)
@@ -521,9 +527,31 @@ cd frontend && npm run build
 
 ```mermaid
 graph TD
-    Trigger([Push / Tag / PR]) --> Audit[Lint & Test]
-    Audit --> Build[Build & Package]
-    Build --> Release{{Binaires .exe, .dmg, .deb, .AppImage}}
+    subgraph Trigger [Événement]
+        T([Push / PR sur main])
+    end
+
+    subgraph Audit [Contrôles Qualité]
+        T --> Rust[Backend Rust]
+        T --> JS[Frontend Next.js]
+        
+        Rust --> Fmt[cargo fmt]
+        Rust --> Clip[cargo clippy]
+        JS --> Lnt[npm run lint]
+    end
+
+    subgraph Testing [Tests & Sûreté]
+        Fmt & Clip --> RTest[cargo test]
+        Lnt --> JBuild[npm run build]
+    end
+
+    subgraph Release [Déploiement & Artifacts]
+        RTest & JBuild --> Tag([Auto-release sur Tag])
+        
+        Tag --> Win[[Windows: .exe / .msi]]
+        Tag --> Mac[[macOS: .dmg / .app]]
+        Tag --> Lin[[Linux: .AppImage / .deb]]
+    end
 ```
 
 ### Milestones
