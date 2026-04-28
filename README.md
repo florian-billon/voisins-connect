@@ -384,16 +384,6 @@ flowchart TD
     G -. RBAC / membership .-> PG
     J -. permission check .-> PG
     K --> MG
-
-    classDef client fill:#dbeafe,stroke:#2563eb,color:#0f172a;
-    classDef server fill:#dcfce7,stroke:#16a34a,color:#14532d;
-    classDef data fill:#fef3c7,stroke:#d97706,color:#78350f;
-    classDef live fill:#ede9fe,stroke:#7c3aed,color:#4c1d95;
-
-    class A,C,F,I client;
-    class B,D,E,G,H,J,K,L server;
-    class PG,MG data;
-    class M,N live;
 ```
 
 > [!TIP]
