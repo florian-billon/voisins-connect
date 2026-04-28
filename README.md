@@ -333,6 +333,63 @@ flowchart LR
 
 Connexion : `WS /ws` avec JWT en paramètre. Une fois connecté, le client rejoint des canaux et reçoit les événements en temps réel.
 
+```mermaid
+sequenceDiagram
+    participant Client as Frontend (Next.js)
+    participant Server as Backend (Rust/Axum)
+    participant Hub as Hub / Broadcast
+    participant DB as Databases (PG/Mongo)
+
+    Client->>Server: Handshake (WS /ws?token=...)
+    Server-->>Client: Connection Established
+
+    Client->>Server: { op: "SEND_MESSAGE", d: { ... } }
+    Server->>Server: Verify JWT & Permissions
+    Server->>DB: Persist Message
+    Server->>Hub: Dispatch Message
+    Hub->>Client: { op: "MESSAGE_CREATE", d: { ... } }
+```
+
+#### Exemple de code (Temps réel)
+
+**Frontend (`gateway.ts`) :**
+```typescript
+// Connexion WebSocket
+const ws = new WebSocket(WS_URL);
+
+// Envoi d'un message
+ws.send(JSON.stringify({
+  op: 'SEND_MESSAGE',
+  d: { channel_id, content }
+}));
+
+// Réception
+ws.onmessage = (e) => {
+  const { op, d } = JSON.parse(e.data);
+  dispatch(op, d);  // → store React
+}
+```
+
+**Backend (`ws_handler.rs`) :**
+```rust
+// Réception du message
+async fn handle_msg(msg, hub) {
+  let payload = parse(msg)?;
+
+  // Auth + permissions
+  let user = verify_jwt(&payload.token)?;
+  check_member(&user, channel_id)?;
+
+  // Stockage PostgreSQL
+  db.insert_message(&payload).await?;
+
+  // Broadcast temps réel
+  hub.broadcast(channel_id, {
+    op: 'MESSAGE_CREATE', d: msg
+  }).await;
+}
+```
+
 Événements principaux :
 - `MESSAGE_CREATE`, `MESSAGE_UPDATE`, `MESSAGE_DELETE`, `MESSAGE_REACTION_UPDATE`
 - `DIRECT_MESSAGE_CREATE`, `DIRECT_MESSAGE_UPDATE`, `DIRECT_MESSAGE_DELETE`, `DIRECT_MESSAGE_REACTION_UPDATE`
@@ -469,7 +526,28 @@ cd frontend && npm run build
 ```
 
 **CI/CD** (GitHub Actions sur push vers `main`) :
-- Backend : build Rust, tests, clippy, fmt
+
+```mermaid
+graph TD
+    Trigger[Push / PR on main] --> Lint[Linting & Formatting]
+    Lint --> RustLint[cargo clippy / cargo fmt]
+    Lint --> JS_Lint[ESLint / TypeScript]
+    
+    RustLint --> Test[Tests & Build]
+    JS_Lint --> Test
+    
+    Test --> RustTest[cargo test]
+    Test --> JSBuild[Build frontend]
+    
+    JSBuild --> Release[Release auto sur Tag]
+    
+    subgraph Artifacts[Production Artifacts]
+        Release --> Windows[.exe / .msi]
+        Release --> macOS[.dmg / .app]
+        Release --> Linux1[.AppImage]
+        Release --> Linux2[.deb]
+    end
+```
 
 ### Milestones
 
