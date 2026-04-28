@@ -2,6 +2,7 @@
 //! Gère la connexion, reconnexion, heartbeat, et dispatch des événements
 
 import { DirectMessage, Message } from "./api-client";
+import type { UserStatus } from "./presence";
 
 const HEARTBEAT_INTERVAL = 30000; // 30s
 const RECONNECT_DELAY_INITIAL = 1000; // 1s
@@ -16,7 +17,7 @@ export type ClientEvent =
   | { op: "HEARTBEAT"; d: { seq?: number } }
   | { op: "SUBSCRIBE"; d: { channel_id: string } }
   | { op: "UNSUBSCRIBE"; d: { channel_id: string } }
-  | { op: "PRESENCE_UPDATE"; d: { status: string } };
+  | { op: "PRESENCE_UPDATE"; d: { status: UserStatus } };
 
 export type ServerEvent =
   | { op: "HELLO"; d: { heartbeat_interval: number } }
@@ -35,7 +36,7 @@ export type ServerEvent =
   | { op: "HEARTBEAT_ACK"; d: { seq?: number } }
   | { op: "SUBSCRIBED"; d: { channel_id: string } }
   | { op: "UNSUBSCRIBED"; d: { channel_id: string } }
-  | { op: "PRESENCE_UPDATE"; d: { user_id: string; status: string } };
+  | { op: "PRESENCE_UPDATE"; d: { user_id: string; status: UserStatus } };
 
 type EventHandler = (event: ServerEvent) => void;
 
@@ -238,7 +239,7 @@ export class Gateway {
     this.send({ op: "TYPING_STOP", d: { channel_id: channelId } });
   }
 
-  updatePresence(status: "online" | "offline" | "dnd" | "invisible") {
+  updatePresence(status: UserStatus) {
     this.send({ op: "PRESENCE_UPDATE", d: { status } });
   }
 

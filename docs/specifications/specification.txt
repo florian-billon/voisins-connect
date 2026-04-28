@@ -36,16 +36,27 @@ Tech Stack: Rust (Axum) + Next.js (React) + PostgreSQL + MongoDB
 4. WEBSOCKET PROTOCOL
 --------------------------------------------------------------------------------
 - Structure: { "op": "EVENT_NAME", "d": { "payload_data" } }
+- Handshake:
+    - Server -> HELLO { heartbeat_interval } immediately after upgrade on /ws.
+    - Client -> IDENTIFY { token } as first logical auth step.
+    - Server -> READY { user_id, username } on success, or ERROR on failure.
+- Subscription model:
+    - Client -> SUBSCRIBE / UNSUBSCRIBE by channel_id.
+    - Channel broadcasts are sent only to subscribed channel sockets.
+    - Direct-message events are pushed to all active sockets of both DM participants.
 - Key Server Events:
-    - READY: Post-IDENTIFY success.
-    - MESSAGE_CREATE: Real-time broadcast.
-    - MESSAGE_UPDATE / MESSAGE_DELETE: Sync message state.
-    - PRESENCE_UPDATE: User status changes.
-    - TYPING_START / TYPING_STOP: Transient user signals.
+    - MESSAGE_CREATE / MESSAGE_UPDATE / MESSAGE_DELETE / MESSAGE_REACTION_UPDATE.
+    - DIRECT_MESSAGE_CREATE / DIRECT_MESSAGE_UPDATE / DIRECT_MESSAGE_DELETE / DIRECT_MESSAGE_REACTION_UPDATE.
+    - PRESENCE_UPDATE with status enum: online | offline | dnd | invisible.
+    - TYPING_START / TYPING_STOP for transient per-channel typing state.
+    - HEARTBEAT_ACK, SUBSCRIBED, UNSUBSCRIBED, ERROR.
 - Key Client Operations:
-    - IDENTIFY: Handshake with JWT.
-    - SUBSCRIBE: Join a channel room.
-    - HEARTBEAT: Connection stability.
+    - IDENTIFY: Handshake with JWT sent in payload, not query string.
+    - SEND_MESSAGE: Persist and broadcast a channel message.
+    - SUBSCRIBE: Join a channel room after auth + membership check.
+    - TYPING_START / TYPING_STOP: Transient channel signals.
+    - PRESENCE_UPDATE: Manual status update.
+    - HEARTBEAT: Application-level heartbeat acknowledged by HEARTBEAT_ACK.
 
 --------------------------------------------------------------------------------
 5. BUSINESS LOGIC RULES
