@@ -329,23 +329,24 @@ Connexion : `WS /ws` avec JWT en paramètre. Une fois connecté, le client rejoi
 
 ```mermaid
 flowchart LR
-    subgraph Frontend [Client]
+    subgraph Frontend [Côté Client]
     U([Utilisateur]) --> UI[Interface Chat]
-    UI --> WS_C[Client WS]
+    UI -- "1. Client envoie SEND_MESSAGE" --> WS_C[Session WS]
     end
 
-    WS_C -- "op: SEND_MESSAGE" --> WS_H[WS Handler]
+    WS_C -- "Auth token" --> WS_H[Backend WS]
 
-    subgraph Backend [Logique Serveur Rust]
-    WS_H --> Auth[Verify JWT]
-    Auth --> Perms[Check Member]
-    Perms --> PG[(PostgreSQL)]
-    Perms --> MG[(MongoDB)]
-    PG & MG --> Hub{Broadcast Hub}
+    subgraph Backend [Processus Serveur]
+    WS_H --> Auth[2. Auth token validé]
+    Auth --> DB[(3. Stockage PostgreSQL)]
+    DB --> Hub{4. Broadcast tous clients}
     end
 
-    Hub -- "op: MESSAGE_CREATE" --> Peers([Autres Clients])
+    Hub -- "5. Réception instantanée" --> Peers([Autres Clients])
 ```
+
+> [!TIP]
+> **Maintenance de session** : Heartbeat 30s + reconnexion automatique côté client &middot; Cleanup WebSocket inactif côté serveur.
 
 #### Exemple de code (Temps réel)
 
