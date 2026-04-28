@@ -356,15 +356,44 @@ Handshake réel :
 5. le client s'abonne aux channels avec `SUBSCRIBE`
 
 ```mermaid
-flowchart LR
-    A[GET /ws] --> B[HELLO]
-    B --> C[IDENTIFY token]
-    C --> D[READY]
-    D --> E[SUBSCRIBE channel]
-    E --> F[Events temps reel]
-    F --> G[MESSAGE_CREATE]
-    F --> H[TYPING_START / TYPING_STOP]
-    F --> I[PRESENCE_UPDATE]
+flowchart TD
+    subgraph Phase1["1. Session bootstrap"]
+        A[Client opens GET /ws] --> B[Server sends HELLO]
+        B --> C[Client sends IDENTIFY token]
+        C --> D[JWT/Auth verifies token]
+        D --> E[Server replies READY]
+    end
+
+    subgraph Phase2["2. Channel subscription"]
+        F[Client sends SUBSCRIBE channel_id] --> G[PostgreSQL checks channel membership]
+        G --> H[Server replies SUBSCRIBED]
+    end
+
+    subgraph Phase3["3. Message fan-out"]
+        I[Client sends SEND_MESSAGE content] --> J[Axum loads channel and membership]
+        J --> K[MongoDB persists channel_messages]
+        K --> L[WS Hub broadcasts MESSAGE_CREATE]
+        L --> M[Channel subscribers receive MESSAGE_CREATE]
+        L --> N[Other live events<br/>TYPING_START / TYPING_STOP / PRESENCE_UPDATE]
+    end
+
+    PG[(PostgreSQL)]
+    MG[(MongoDB)]
+
+    E --> F
+    G -. RBAC / membership .-> PG
+    J -. permission check .-> PG
+    K --> MG
+
+    classDef client fill:#dbeafe,stroke:#2563eb,color:#0f172a;
+    classDef server fill:#dcfce7,stroke:#16a34a,color:#14532d;
+    classDef data fill:#fef3c7,stroke:#d97706,color:#78350f;
+    classDef live fill:#ede9fe,stroke:#7c3aed,color:#4c1d95;
+
+    class A,C,F,I client;
+    class B,D,E,G,H,J,K,L server;
+    class PG,MG data;
+    class M,N live;
 ```
 
 > [!TIP]

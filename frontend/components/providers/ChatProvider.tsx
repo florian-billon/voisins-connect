@@ -30,6 +30,7 @@ interface ChatContextType {
   selectedChannel: Channel | null;
   selectChannel: (channel: Channel | null) => void;
   createChannel: (name: string) => Promise<any>;
+  creatingChannel: boolean;
   updateChannel: (id: string, name: string) => Promise<any>;
   deleteChannel: (id: string) => Promise<boolean>;
   channelsLoading: boolean;
@@ -94,7 +95,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   } = useServers(user?.id);
 
   const {
-    channels, selectedChannel, selectChannel, createChannel, updateChannel, deleteChannel,
+    channels, selectedChannel, selectChannel, createChannel, creatingChannel, updateChannel, deleteChannel,
     loading: channelsLoading, error: channelsError,
   } = useChannels(selectedServer?.id ?? null);
 
@@ -138,6 +139,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     selectedChannel,
     selectChannel,
     createChannel,
+    creatingChannel,
     updateChannel,
     deleteChannel,
     channelsLoading,
