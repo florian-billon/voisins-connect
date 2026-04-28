@@ -245,14 +245,6 @@ flowchart LR
     Web & Desktop --> API
     Web & Desktop --> WS
     API --> PG & MG
-
-    style User fill:#eee,stroke:#333
-    style Web fill:#eee,stroke:#333
-    style Desktop fill:#eee,stroke:#333
-    style API fill:#ddd,stroke:#333
-    style WS fill:#ddd,stroke:#333
-    style PG fill:#ccc,stroke:#333
-    style MG fill:#ccc,stroke:#333
 ```
 
 ### Auth
@@ -348,13 +340,6 @@ graph LR
     end
 
     Hub --> WS_O[Autres Membres]
-
-    style UI fill:#eee,stroke:#333
-    style WS_C fill:#eee,stroke:#333
-    style WS_S fill:#ddd,stroke:#333
-    style DB fill:#ddd,stroke:#333
-    style Hub fill:#ccc,stroke:#333,stroke-width:2px
-    style WS_O fill:#bbb,stroke:#333
 ```
 
 #### Exemple de code (Temps réel)
@@ -539,11 +524,6 @@ graph TD
     Trigger([Push / Tag / PR]) --> Audit[Lint & Test]
     Audit --> Build[Build & Package]
     Build --> Release{{Binaires .exe, .dmg, .deb, .AppImage}}
-
-    style Trigger fill:#eee,stroke:#333
-    style Audit fill:#ddd,stroke:#333
-    style Build fill:#ccc,stroke:#333
-    style Release fill:#bbb,stroke:#333,stroke-width:2px
 ```
 
 ### Milestones
