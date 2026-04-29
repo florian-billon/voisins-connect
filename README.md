@@ -667,7 +667,7 @@ flowchart LR
     end
 
     Ready --> Matrix
-```
+````
 
 Le sens ci-dessus représente l'ordre logique du pipeline : CI backend + frontend d'abord, puis release desktop à la fin. En pratique, `release.yml` est déclenché séparément sur tag (`v*` / `HelloWorld*`) et n'a pas de dépendance GitHub Actions explicite vers les deux autres workflows.
 
