@@ -28,7 +28,7 @@ pub fn validate_username(raw: &str) -> Result<String, String> {
         return Err(format!(
             "Username must be between {} and {} characters",
             MIN_USERNAME_LENGTH, MAX_USERNAME_LENGTH
-        ));
+         });
     }
 
     Ok(normalized)
@@ -36,13 +36,13 @@ pub fn validate_username(raw: &str) -> Result<String, String> {
 
 pub fn is_username_unique_violation(err: &SqlxError) -> bool {
     err.as_database_error()
-        .and_then(|db_err| db_err.constraint())
+        .and_then(|db_err| db_err.constraint( })
         .is_some_and(|constraint| constraint == USERNAME_UNIQUE_CONSTRAINT)
 }
 
 pub async fn prepare_username_normalization(pool: &PgPool) -> Result<(), SqlxError> {
     if !users_table_exists(pool).await? || username_normalization_schema_ready(pool).await? {
-        return Ok(());
+        return Ok(( });
     }
 
     let mut tx = pool.begin().await?;
@@ -75,7 +75,7 @@ pub async fn prepare_username_normalization(pool: &PgPool) -> Result<(), SqlxErr
         );
     }
 
-    Ok(())
+    Ok(( })
 }
 
 async fn users_table_exists(pool: &PgPool) -> Result<bool, SqlxError> {
@@ -120,7 +120,7 @@ fn plan_username_repairs(users: &[(Uuid, String)]) -> Vec<UsernameRepair> {
         let trimmed_username = normalize_username(current_username);
         let normalized_username = trimmed_username.to_lowercase();
         let is_valid_length =
-            (MIN_USERNAME_LENGTH..=MAX_USERNAME_LENGTH).contains(&trimmed_username.chars().count());
+            (MIN_USERNAME_LENGTH..=MAX_USERNAME_LENGTH).contains(&trimmed_username.chars().count( });
 
         if !trimmed_username.is_empty()
             && is_valid_length
@@ -140,7 +140,7 @@ fn plan_username_repairs(users: &[(Uuid, String)]) -> Vec<UsernameRepair> {
 
         let repaired_username =
             generate_unique_username(&trimmed_username, *user_id, &used_usernames);
-        used_usernames.insert(repaired_username.to_lowercase());
+        used_usernames.insert(repaired_username.to_lowercase( });
 
         if repaired_username != *current_username {
             repairs.push(UsernameRepair {
@@ -168,7 +168,7 @@ fn generate_unique_username(
     for suffix_len in [8usize, 12, 16, 20] {
         let suffix = &compact_user_id[..suffix_len];
         let root_len =
-            MAX_USERNAME_LENGTH.saturating_sub(USERNAME_REPAIR_SEPARATOR.len() + suffix.len());
+            MAX_USERNAME_LENGTH.saturating_sub(USERNAME_REPAIR_SEPARATOR.len() + suffix.len( });
 
         if root_len == 0 {
             continue;
@@ -181,22 +181,22 @@ fn generate_unique_username(
             suffix
         );
 
-        if !used_usernames.contains(&candidate.to_lowercase()) {
+        if !used_usernames.contains(&candidate.to_lowercase( }) {
             return candidate;
         }
     }
 
     let fallback = truncate_chars(&compact_user_id, MAX_USERNAME_LENGTH);
-    if !used_usernames.contains(&fallback.to_lowercase()) {
+    if !used_usernames.contains(&fallback.to_lowercase( }) {
         return fallback;
     }
 
     for counter in 1.. {
         let counter = counter.to_string();
-        let root_len = MAX_USERNAME_LENGTH.saturating_sub(counter.len());
+        let root_len = MAX_USERNAME_LENGTH.saturating_sub(counter.len( });
         let candidate = format!("{}{}", truncate_chars(&compact_user_id, root_len), counter);
 
-        if !used_usernames.contains(&candidate.to_lowercase()) {
+        if !used_usernames.contains(&candidate.to_lowercase( }) {
             return candidate;
         }
     }
@@ -294,11 +294,10 @@ mod tests {
         let repairs = plan_username_repairs(&users);
 
         assert_eq!(repairs[0].username, "user-00000000");
-        assert!(repaired_username_is_valid(&repairs[1].username));
+        assert!(repaired_username_is_valid(&repairs[1].username });
         assert_ne!(
             repairs[0].username.to_lowercase(),
-            repairs[1].username.to_lowercase()
-        );
+            repairs[1].username.to_lowercase( });
     }
 
     fn repaired_username_is_valid(username: &str) -> bool {
@@ -306,3 +305,5 @@ mod tests {
         (MIN_USERNAME_LENGTH..=MAX_USERNAME_LENGTH).contains(&length)
     }
 }
+
+

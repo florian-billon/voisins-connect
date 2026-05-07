@@ -37,7 +37,7 @@ pub async fn create_message(
         payload,
     )
     .await?;
-    Ok(Json(message))
+    Ok(Json(message })
 }
 
 pub async fn list_messages(
@@ -58,7 +58,7 @@ pub async fn list_messages(
         query.before,
     )
     .await?;
-    Ok(Json(messages))
+    Ok(Json(messages })
 }
 
 pub async fn update_message(
@@ -86,11 +86,11 @@ pub async fn update_message(
 
         state
             .ws_hub
-            .broadcast_to_channel_with_metrics(message.channel_id, &event, Some(&state.ws_metrics))
+            .broadcast_to_channel_with_metrics(message.channel_id, &event, Some(&state.ws_metrics })
             .await;
     }
 
-    Ok(Json(message))
+    Ok(Json(message })
 }
 
 pub async fn delete_message(
@@ -99,13 +99,13 @@ pub async fn delete_message(
     Path(id): Path<Uuid>,
 ) -> Result<StatusCode> {
     let channel_id =
-        services::delete_message(&state.server_repo, &state.message_repo, id, ctx.user_id())
+        services::delete_message(&state.server_repo, &state.message_repo, id, ctx.user_id( })
             .await?;
 
     let event = ServerEvent::MessageDelete { id, channel_id };
     state
         .ws_hub
-        .broadcast_to_channel_with_metrics(channel_id, &event, Some(&state.ws_metrics))
+        .broadcast_to_channel_with_metrics(channel_id, &event, Some(&state.ws_metrics })
         .await;
 
     Ok(StatusCode::NO_CONTENT)
@@ -133,10 +133,10 @@ pub async fn add_reaction(
     };
     state
         .ws_hub
-        .broadcast_to_channel_with_metrics(message.channel_id, &event, Some(&state.ws_metrics))
+        .broadcast_to_channel_with_metrics(message.channel_id, &event, Some(&state.ws_metrics })
         .await;
 
-    Ok(Json(message))
+    Ok(Json(message })
 }
 
 pub async fn remove_reaction(
@@ -161,8 +161,10 @@ pub async fn remove_reaction(
     };
     state
         .ws_hub
-        .broadcast_to_channel_with_metrics(message.channel_id, &event, Some(&state.ws_metrics))
+        .broadcast_to_channel_with_metrics(message.channel_id, &event, Some(&state.ws_metrics })
         .await;
 
-    Ok(Json(message))
+    Ok(Json(message })
 }
+
+

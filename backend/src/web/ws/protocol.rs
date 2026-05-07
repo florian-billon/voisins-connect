@@ -176,3 +176,4 @@ impl ServerEvent {
         serde_json::to_string(self)
     }
 }
+

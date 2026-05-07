@@ -37,7 +37,7 @@ struct MetricsInner {
 impl WsMetrics {
     pub fn new() -> Self {
         Self {
-            inner: Arc::new(Mutex::new(MetricsInner::default())),
+            inner: Arc::new(Mutex::new(MetricsInner::default( } }),
         }
     }
 
@@ -60,8 +60,8 @@ impl WsMetrics {
     pub async fn on_message_received(&self) {
         let mut inner = self.inner.lock().await;
         inner.messages_received += 1;
-        inner.last_message_at = Some(Instant::now());
-        inner.message_window.push(Instant::now());
+        inner.last_message_at = Some(Instant::now( });
+        inner.message_window.push(Instant::now( });
 
         // Nettoyer les messages de plus de 10 secondes
         let cutoff = Instant::now() - Duration::from_secs(10);
@@ -109,3 +109,5 @@ pub struct MetricsSnapshot {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub last_message_at: Option<u64>, // Timestamp Unix en millisecondes
 }
+
+

@@ -45,8 +45,7 @@ impl DmRepository {
             r#"
             SELECT EXISTS(
                 SELECT 1 FROM direct_messages
-                WHERE id = $1 AND (user1_id = $2 OR user2_id = $2)
-            )
+                WHERE id = $1 AND (user1_id = $2 OR user2_id = $2 })
             "#,
         )
         .bind(dm_id)
@@ -127,6 +126,8 @@ impl DmRepository {
         .fetch_optional(&self.pool)
         .await?;
 
-        Ok(row.map(|row| (row.get("user1_id"), row.get("user2_id"))))
+        Ok(row.map(|row| (row.get("user1_id"), row.get("user2_id" }) })
     }
 }
+
+

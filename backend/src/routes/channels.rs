@@ -19,3 +19,4 @@ pub fn routes() -> Router<AppState> {
                 .delete(channels::delete_channel),
         )
 }
+

@@ -39,12 +39,12 @@ pub async fn upload_file(
         })?
     {
         let original_name = field.file_name().unwrap_or("fichier").to_string();
-        let content_type = field.content_type().map(|s| s.to_string());
+        let content_type = field.content_type().map(|s| s.to_string( });
 
         let extension = original_name
             .rsplit('.')
             .next()
-            .filter(|ext| !ext.is_empty())
+            .filter(|ext| !ext.is_empty( })
             .unwrap_or("bin");
         let unique_name = format!("{}.{}", Uuid::new_v4(), extension);
 
@@ -76,10 +76,12 @@ pub async fn upload_file(
         Ok(Json(UploadResponse {
             url: format!("/files/{}", unique_name),
             filename: original_name,
-        }))
+        } })
     } else {
         Err(Error::BadRequest {
             message: "Aucun fichier reçu".to_string(),
         })
     }
 }
+
+

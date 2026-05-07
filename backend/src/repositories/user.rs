@@ -32,7 +32,7 @@ impl UserRepository {
 
     pub async fn find_by_ids(&self, user_ids: &[Uuid]) -> sqlx::Result<Vec<User>> {
         if user_ids.is_empty() {
-            return Ok(Vec::new());
+            return Ok(Vec::new( });
         }
 
         sqlx::query_as::<_, User>(
@@ -48,7 +48,7 @@ impl UserRepository {
         user_ids: &[Uuid],
     ) -> sqlx::Result<std::collections::HashMap<Uuid, String>> {
         if user_ids.is_empty() {
-            return Ok(std::collections::HashMap::new());
+            return Ok(std::collections::HashMap::new( });
         }
 
         let rows: Vec<(Uuid, String)> =
@@ -57,7 +57,7 @@ impl UserRepository {
                 .fetch_all(&self.pool)
                 .await?;
 
-        Ok(rows.into_iter().collect())
+        Ok(rows.into_iter().collect( })
     }
 
     pub async fn get_username(&self, user_id: Uuid) -> sqlx::Result<Option<String>> {
@@ -75,12 +75,23 @@ impl UserRepository {
         let user = sqlx::query_as::<_, User>(
             "SELECT id, email, password_hash, username, avatar_url, status, created_at
              FROM users
-             WHERE lower(btrim(username)) = lower($1)",
+             WHERE lower(btrim(username }) = lower($1)",
         )
         .bind(normalized)
         .fetch_optional(&self.pool)
         .await?;
         Ok(user)
+    }
+
+    pub async fn get_by_email(&self, email: &str) -> sqlx::Result<Option<User>> {
+        sqlx::query_as::<_, User>(
+            "SELECT id, email, password_hash, username, avatar_url, status, created_at
+             FROM users
+             WHERE lower(btrim(email }) = lower($1)",
+        )
+        .bind(email)
+        .fetch_optional(&self.pool)
+        .await
     }
 
     pub async fn search_users(
@@ -91,7 +102,7 @@ impl UserRepository {
     ) -> sqlx::Result<Vec<UserSearchResponse>> {
         let normalized = normalize_username(query);
         if normalized.is_empty() {
-            return Ok(Vec::new());
+            return Ok(Vec::new( });
         }
 
         let escaped = escape_like_pattern(&normalized);
@@ -103,14 +114,14 @@ impl UserRepository {
             SELECT id, username, avatar_url, status
             FROM users
             WHERE id <> $1
-              AND lower(btrim(username)) LIKE lower($2) ESCAPE '\'
+              AND lower(btrim(username }) LIKE lower($2) ESCAPE '\'
             ORDER BY
               CASE
-                WHEN lower(btrim(username)) = lower($3) THEN 0
-                WHEN lower(btrim(username)) LIKE lower($4) ESCAPE '\' THEN 1
+                WHEN lower(btrim(username }) = lower($3) THEN 0
+                WHEN lower(btrim(username }) LIKE lower($4) ESCAPE '\' THEN 1
                 ELSE 2
               END,
-              lower(btrim(username)) ASC
+              lower(btrim(username }) ASC
             LIMIT $5
             "#,
         )
@@ -141,8 +152,7 @@ impl UserRepository {
                     SELECT 1
                     FROM friendships f
                     WHERE (f.user1_id = $2 AND f.user2_id = u.id)
-                       OR (f.user1_id = u.id AND f.user2_id = $2)
-                ) AS is_friend
+                       OR (f.user1_id = u.id AND f.user2_id = $2 }) AS is_friend
             FROM users u
             WHERE u.id = $1
             "#,
@@ -174,3 +184,5 @@ impl UserRepository {
         .await
     }
 }
+
+

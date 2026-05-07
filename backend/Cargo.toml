@@ -27,6 +27,16 @@ futures = "0.3"
 jsonwebtoken = "9"
 bcrypt = "0.16"
 
+# Payment - Stripe (mock implementation for now)
+# stripe = { version = "0.15", features = ["async", "events"] }
+
+# Cloud Storage - AWS S3
+aws-config = "1"
+aws-sdk-s3 = "1"
+
+# WebRTC Signaling
+tokio-tungstenite = "0.24"
+
 # Utils
 uuid = { version = "1", features = ["v4", "serde"] }
 chrono = { version = "0.4", features = ["serde"] }
@@ -37,3 +47,4 @@ lazy_static = "1.5"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 futures-util = "0.3"
+http = "1"

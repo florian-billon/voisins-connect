@@ -27,9 +27,9 @@ pub struct WsHub {
 impl WsHub {
     pub fn new() -> Self {
         Self {
-            connections: Arc::new(Mutex::new(HashMap::new())),
-            subscriptions: Arc::new(Mutex::new(HashMap::new())),
-            user_connections: Arc::new(Mutex::new(HashMap::new())),
+            connections: Arc::new(Mutex::new(HashMap::new( } }),
+            subscriptions: Arc::new(Mutex::new(HashMap::new( } }),
+            user_connections: Arc::new(Mutex::new(HashMap::new( } }),
         }
     }
 
@@ -50,7 +50,7 @@ impl WsHub {
         for (_, conn_set) in subscriptions.iter_mut() {
             conn_set.remove(&conn_id);
         }
-        subscriptions.retain(|_, conn_set| !conn_set.is_empty());
+        subscriptions.retain(|_, conn_set| !conn_set.is_empty( });
 
         // Retirer de user_connections si user_id fourni
         if let Some(uid) = user_id {
@@ -120,7 +120,7 @@ impl WsHub {
 
         for conn_id in conn_ids {
             if let Some(tx) = connections.get(&conn_id) {
-                match tx.send(event_json.clone()) {
+                match tx.send(event_json.clone( }) {
                     Ok(_) => sent += 1,
                     Err(_) => {
                         // Receiver fermé, connexion morte (sera nettoyée au prochain heartbeat)
@@ -196,7 +196,7 @@ impl WsHub {
         let connections = self.connections.lock().await;
         for conn_id in conn_ids {
             if let Some(tx) = connections.get(&conn_id) {
-                let _ = tx.send(event_json.clone());
+                let _ = tx.send(event_json.clone( });
             }
         }
     }
@@ -213,7 +213,7 @@ impl WsHub {
 
         let connections = self.connections.lock().await;
         for tx in connections.values() {
-            let _ = tx.send(event_json.clone());
+            let _ = tx.send(event_json.clone( });
         }
     }
 
@@ -228,7 +228,7 @@ impl WsHub {
             .lock()
             .await
             .get(&channel_id)
-            .map(|s| s.len())
+            .map(|s| s.len( })
             .unwrap_or(0)
     }
 }
@@ -238,3 +238,5 @@ impl Default for WsHub {
         Self::new()
     }
 }
+
+

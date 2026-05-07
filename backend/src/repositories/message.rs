@@ -41,7 +41,7 @@ impl MessageRepository {
 
     pub async fn create(&self, message: &ChannelMessage) -> mongodb::error::Result<()> {
         self.collection().insert_one(message).await?;
-        Ok(())
+        Ok(( })
     }
 
     pub async fn find_by_id(
@@ -49,7 +49,7 @@ impl MessageRepository {
         message_id: Uuid,
     ) -> mongodb::error::Result<Option<ChannelMessage>> {
         self.collection()
-            .find_one(Self::uuid_filter("message_id", message_id))
+            .find_one(Self::uuid_filter("message_id", message_id })
             .await
     }
 
@@ -70,7 +70,7 @@ impl MessageRepository {
 
         if let Some(before_id) = before {
             if let Some(before_msg) = collection
-                .find_one(Self::uuid_filter("message_id", before_id))
+                .find_one(Self::uuid_filter("message_id", before_id })
                 .await?
             {
                 filter.insert("created_at", doc! { "$lt": before_msg.created_at });
@@ -102,7 +102,7 @@ impl MessageRepository {
                 },
             )
             .await?;
-        Ok(())
+        Ok(( })
     }
 
     pub async fn soft_delete(
@@ -121,7 +121,7 @@ impl MessageRepository {
                 },
             )
             .await?;
-        Ok(())
+        Ok(( })
     }
 
     pub async fn add_reaction(
@@ -165,7 +165,7 @@ impl MessageRepository {
             )
             .await?;
 
-        Ok(())
+        Ok(( })
     }
 
     pub async fn remove_reaction(
@@ -193,6 +193,8 @@ impl MessageRepository {
             )
             .await?;
 
-        Ok(())
+        Ok(( })
     }
 }
+
+

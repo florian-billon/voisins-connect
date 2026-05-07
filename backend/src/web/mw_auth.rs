@@ -34,17 +34,17 @@ pub async fn mw_ctx_resolver(
     let auth_header = req
         .headers()
         .get("Authorization")
-        .and_then(|v| v.to_str().ok())
-        .map(|s| s.to_string());
+        .and_then(|v| v.to_str().ok( })
+        .map(|s| s.to_string( });
 
     let result_ctx = match auth_header {
         Some(header) if header.starts_with("Bearer ") => {
             let token = &header[7..];
             match verify_token(token, &state.jwt_secret) {
                 Ok(claims) => match state.user_repo.find_by_id(claims.sub).await {
-                    Ok(Some(_)) => Ok(Ctx::new(claims.sub)),
+                    Ok(Some(_ }) => Ok(Ctx::new(claims.sub }),
                     Ok(None) => Err(Error::AuthFailInvalidToken),
-                    Err(e) => Err(Error::from(e)),
+                    Err(e) => Err(Error::from(e }),
                 },
                 Err(_) => Err(Error::AuthFailInvalidToken),
             }
@@ -69,3 +69,5 @@ impl<S: Send + Sync> FromRequestParts<S> for Ctx {
             .clone()
     }
 }
+
+

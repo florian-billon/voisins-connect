@@ -127,7 +127,7 @@ pub async fn delete_server(
     }
 
     server_repo.delete(server_id).await?;
-    Ok(())
+    Ok(( })
 }
 
 pub async fn join_server(
@@ -170,7 +170,7 @@ pub async fn leave_server(
     }
 
     server_repo.remove_member(server_id, user_id).await?;
-    Ok(())
+    Ok(( })
 }
 
 pub async fn kick_member(
@@ -215,7 +215,7 @@ pub async fn kick_member(
         .await?;
 
     server_repo.remove_member(server_id, target_user_id).await?;
-    Ok(())
+    Ok(( })
 }
 
 pub async fn ban_member(
@@ -282,7 +282,7 @@ pub async fn unban_member(
     }
 
     server_repo.remove_ban(server_id, target_user_id).await?;
-    Ok(())
+    Ok(( })
 }
 
 pub async fn list_bans(
@@ -375,3 +375,7 @@ pub async fn transfer_ownership(
 
     Ok(updated_server)
 }
+
+
+
+

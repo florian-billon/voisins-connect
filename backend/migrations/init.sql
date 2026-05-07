@@ -269,3 +269,114 @@ CREATE TABLE IF NOT EXISTS attachments (
 );
 
 CREATE INDEX IF NOT EXISTS idx_attachments_sender ON attachments(sender_id);
+
+-- ============================================================
+-- NEW FEATURES: Moderation, Voice Calls, Voice Channels, Premium
+-- ============================================================
+
+-- ENUM for subscription status
+DO $$ BEGIN
+CREATE TYPE subscription_status AS ENUM ('active', 'inactive', 'cancelled');
+EXCEPTION
+    WHEN duplicate_object THEN NULL;
+END $$;
+
+-- USER SUBSCRIPTIONS (for premium features)
+CREATE TABLE IF NOT EXISTS user_subscriptions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+    status subscription_status NOT NULL DEFAULT 'inactive',
+    plan_name VARCHAR(50) NOT NULL DEFAULT 'pro', -- 'pro' = 5€/month
+    started_at TIMESTAMPTZ,
+    expires_at TIMESTAMPTZ,
+    stripe_subscription_id VARCHAR(255),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_subscriptions_user ON user_subscriptions(user_id);
+CREATE INDEX IF NOT EXISTS idx_subscriptions_status ON user_subscriptions(status);
+CREATE INDEX IF NOT EXISTS idx_subscriptions_expires ON user_subscriptions(expires_at);
+
+-- MODERATION RULES
+CREATE TABLE IF NOT EXISTS moderation_rules (
+    id SERIAL PRIMARY KEY,
+    rule_type VARCHAR(50) NOT NULL, -- 'insult', 'harassment', 'spam'
+    keywords TEXT[] NOT NULL, -- Array of keywords to detect
+    action VARCHAR(50) NOT NULL DEFAULT 'flag', -- 'flag', 'hide', 'remove'
+    severity INT NOT NULL DEFAULT 1, -- 1-5 scale
+    enabled BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- MODERATED MESSAGES (for auto-moderation logging)
+CREATE TABLE IF NOT EXISTS moderated_messages (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    message_id UUID,
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    channel_id UUID,
+    dm_id UUID,
+    rule_type VARCHAR(50) NOT NULL, -- 'insult', 'harassment', 'spam'
+    severity INT NOT NULL,
+    action_taken VARCHAR(50) NOT NULL, -- 'flag', 'hide', 'remove'
+    original_content TEXT,
+    is_visible BOOLEAN NOT NULL DEFAULT FALSE,
+    reviewed_by UUID REFERENCES users(id) ON DELETE SET NULL,
+    reviewed_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_moderated_messages_user ON moderated_messages(user_id);
+CREATE INDEX IF NOT EXISTS idx_moderated_messages_channel ON moderated_messages(channel_id);
+CREATE INDEX IF NOT EXISTS idx_moderated_messages_dm ON moderated_messages(dm_id);
+CREATE INDEX IF NOT EXISTS idx_moderated_messages_created ON moderated_messages(created_at);
+
+-- VOICE CHANNELS (Premium feature)
+CREATE TABLE IF NOT EXISTS voice_channels (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    server_id UUID NOT NULL REFERENCES servers(id) ON DELETE CASCADE,
+    name VARCHAR(100) NOT NULL,
+    position INT NOT NULL DEFAULT 0,
+    max_users INT DEFAULT 0, -- 0 = unlimited
+    is_premium_only BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_voice_channels_server ON voice_channels(server_id);
+
+-- VOICE CALLS (Free feature)
+CREATE TABLE IF NOT EXISTS voice_calls (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    initiator_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    recipient_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    voice_channel_id UUID REFERENCES voice_channels(id) ON DELETE SET NULL,
+    status VARCHAR(50) NOT NULL DEFAULT 'pending', -- 'pending', 'active', 'ended', 'rejected'
+    started_at TIMESTAMPTZ,
+    ended_at TIMESTAMPTZ,
+    duration_seconds INT,
+    signal_data JSONB, -- Store WebRTC signaling data
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    CHECK (initiator_id <> recipient_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_voice_calls_initiator ON voice_calls(initiator_id);
+CREATE INDEX IF NOT EXISTS idx_voice_calls_recipient ON voice_calls(recipient_id);
+CREATE INDEX IF NOT EXISTS idx_voice_calls_status ON voice_calls(status);
+CREATE INDEX IF NOT EXISTS idx_voice_calls_channel ON voice_calls(voice_channel_id);
+
+-- PROFILE UPLOADS (Premium feature for custom avatar)
+CREATE TABLE IF NOT EXISTS profile_uploads (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    file_path VARCHAR(500) NOT NULL,
+    content_type VARCHAR(100),
+    file_size BIGINT,
+    is_current BOOLEAN NOT NULL DEFAULT FALSE, -- Currently active avatar
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_profile_uploads_user ON profile_uploads(user_id);
+CREATE INDEX IF NOT EXISTS idx_profile_uploads_current ON profile_uploads(user_id, is_current);

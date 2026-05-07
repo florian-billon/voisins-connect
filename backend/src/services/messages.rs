@@ -23,7 +23,7 @@ fn validate_reaction_emoji(emoji: &str) -> Result<()> {
         });
     }
 
-    Ok(())
+    Ok(( })
 }
 
 fn to_public_reactions(
@@ -134,7 +134,7 @@ pub async fn list_messages(
             username: usernames
                 .get(&m.author_id)
                 .cloned()
-                .unwrap_or_else(|| "Unknown".to_string()),
+                .unwrap_or_else(|| "Unknown".to_string( }),
             content: m.content,
             created_at: m.created_at,
             edited_at: m.edited_at,
@@ -224,7 +224,7 @@ pub async fn update_message(
         username: String::new(),
         content: payload.content,
         created_at: message.created_at,
-        edited_at: Some(Utc::now()),
+        edited_at: Some(Utc::now( }),
         reactions: to_public_reactions(message.reactions),
     })
 }
@@ -255,7 +255,7 @@ pub async fn add_reaction(
     }
 
     message_repo
-        .add_reaction(message_id, user_id, payload.emoji.trim())
+        .add_reaction(message_id, user_id, payload.emoji.trim( })
         .await
         .map_err(|e| Error::DatabaseError {
             message: format!("MongoDB update failed: {}", e),
@@ -308,7 +308,7 @@ pub async fn remove_reaction(
     }
 
     message_repo
-        .remove_reaction(message_id, user_id, payload.emoji.trim())
+        .remove_reaction(message_id, user_id, payload.emoji.trim( })
         .await
         .map_err(|e| Error::DatabaseError {
             message: format!("MongoDB update failed: {}", e),
@@ -334,3 +334,5 @@ pub async fn remove_reaction(
         reactions: to_public_reactions(updated.reactions),
     })
 }
+
+

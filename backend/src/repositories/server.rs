@@ -22,7 +22,7 @@ impl ServerRepository {
         sqlx::query_as::<_, Server>(
             r#"
             INSERT INTO servers (id, name, owner_id, created_at, updated_at)
-            VALUES ($1, $2, $3, NOW(), NOW())
+            VALUES ($1, $2, $3, NOW(), NOW( })
             RETURNING id, name, owner_id, created_at, updated_at
             "#,
         )
@@ -51,7 +51,7 @@ impl ServerRepository {
             r#"
             SELECT id, name, owner_id, created_at, updated_at
             FROM servers
-            WHERE owner_id = $1 AND lower(trim(name)) = lower(trim($2))
+            WHERE owner_id = $1 AND lower(trim(name }) = lower(trim($2 })
             LIMIT 1
             "#,
         )
@@ -119,7 +119,7 @@ impl ServerRepository {
             .bind(server_id)
             .execute(&self.pool)
             .await?;
-        Ok(())
+        Ok(( })
     }
 
     pub async fn find_member(
@@ -145,7 +145,7 @@ impl ServerRepository {
         sqlx::query_as::<_, ServerMember>(
             r#"
             INSERT INTO server_members (server_id, user_id, role, joined_at)
-            VALUES ($1, $2, $3::member_role, NOW())
+            VALUES ($1, $2, $3::member_role, NOW( })
             RETURNING server_id, user_id, role, joined_at
             "#,
         )
@@ -162,7 +162,7 @@ impl ServerRepository {
             .bind(user_id)
             .execute(&self.pool)
             .await?;
-        Ok(())
+        Ok(( })
     }
 
     pub async fn list_members(&self, server_id: Uuid) -> sqlx::Result<Vec<ServerMember>> {
@@ -206,7 +206,7 @@ impl ServerRepository {
         sqlx::query_as::<_, ServerBan>(
             r#"
             INSERT INTO server_bans (server_id, user_id, banned_by, reason, expires_at, banned_at)
-            VALUES ($1, $2, $3, $4, $5, NOW())
+            VALUES ($1, $2, $3, $4, $5, NOW( })
             ON CONFLICT (server_id, user_id)
             DO UPDATE SET banned_by = EXCLUDED.banned_by, reason = EXCLUDED.reason, expires_at = EXCLUDED.expires_at, banned_at = NOW()
             RETURNING server_id, user_id, banned_by, reason, expires_at, banned_at
@@ -227,7 +227,7 @@ impl ServerRepository {
             .bind(user_id)
             .execute(&self.pool)
             .await?;
-        Ok(())
+        Ok(( })
     }
 
     pub async fn list_bans(&self, server_id: Uuid) -> sqlx::Result<Vec<ServerBan>> {
@@ -251,13 +251,15 @@ impl ServerRepository {
             FROM server_bans
             WHERE server_id = $1
               AND user_id = $2
-              AND (expires_at IS NULL OR expires_at > NOW())
+              AND (expires_at IS NULL OR expires_at > NOW( })
             "#,
         )
         .bind(server_id)
         .bind(user_id)
         .fetch_optional(&self.pool)
         .await?;
-        Ok(banned.unwrap_or(false))
+        Ok(banned.unwrap_or(false })
     }
 }
+
+

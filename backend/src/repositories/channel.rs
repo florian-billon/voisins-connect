@@ -23,7 +23,7 @@ impl ChannelRepository {
         sqlx::query_as::<_, Channel>(
             r#"
             INSERT INTO channels (id, server_id, name, position, created_at, updated_at)
-            VALUES ($1, $2, $3, $4, NOW(), NOW())
+            VALUES ($1, $2, $3, $4, NOW(), NOW( })
             RETURNING id, server_id, name, position, created_at, updated_at
             "#,
         )
@@ -60,7 +60,7 @@ impl ChannelRepository {
         .bind(server_id)
         .fetch_optional(&self.pool)
         .await?;
-        Ok(result.flatten())
+        Ok(result.flatten( })
     }
 
     pub async fn update(
@@ -89,6 +89,8 @@ impl ChannelRepository {
             .bind(channel_id)
             .execute(&self.pool)
             .await?;
-        Ok(())
+        Ok(( })
     }
 }
+
+

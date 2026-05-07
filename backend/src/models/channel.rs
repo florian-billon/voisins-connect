@@ -24,3 +24,4 @@ pub struct UpdateChannelPayload {
     pub name: Option<String>,
     pub position: Option<i32>,
 }
+

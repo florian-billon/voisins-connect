@@ -21,3 +21,4 @@ pub fn routes() -> Router<AppState> {
             post(messages::add_reaction).delete(messages::remove_reaction),
         )
 }
+

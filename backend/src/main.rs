@@ -27,6 +27,7 @@ mod web;
 use repositories::{
     AttachmentRepository, ChannelRepository, DirectMessageRepository, DmRepository,
     FriendshipRepository, InviteRepository, MessageRepository, ServerRepository, UserRepository,
+    SubscriptionRepository, ModerationRepository, VoiceRepository, ProfileRepository,
 };
 use web::MetricsSnapshot;
 use web::{WsHub, WsMetrics};
@@ -52,6 +53,13 @@ pub struct AppState {
     pub friendship_repo: FriendshipRepository,
     pub invite_repo: InviteRepository,
     pub attachment_repo: AttachmentRepository,
+    pub subscription_repo: SubscriptionRepository,
+    pub moderation_repo: ModerationRepository,
+    pub voice_repo: VoiceRepository,
+    pub profile_repo: ProfileRepository,
+    pub stripe_service: services::stripe::StripeService,
+    pub s3_service: services::s3::S3Service,
+    pub webrtc_service: services::webrtc::WebRTCService,
     pub ws_hub: web::WsHub,
     pub ws_metrics: web::WsMetrics,
 }
@@ -178,8 +186,26 @@ async fn main() {
     let friendship_repo = FriendshipRepository::new(pool.clone());
     let invite_repo = InviteRepository::new(pool.clone());
     let attachment_repo = AttachmentRepository::new(pool.clone());
+    let subscription_repo = SubscriptionRepository::new(pool.clone());
+    let moderation_repo = ModerationRepository::new(pool.clone());
+    let voice_repo = VoiceRepository::new(pool.clone());
+    let profile_repo = ProfileRepository::new(pool.clone());
     let message_repo = MessageRepository::new(mongo_db.clone());
     let dm_message_repo = DirectMessageRepository::new(mongo_db.clone());
+
+    let stripe_api_key = read_env_var("STRIPE_API_KEY")
+        .expect("STRIPE_API_KEY environment variable must be set");
+    let stripe_price_id = read_env_var("STRIPE_PRICE_ID")
+        .expect("STRIPE_PRICE_ID environment variable must be set");
+    let stripe_service = services::stripe::StripeService::new(stripe_api_key, stripe_price_id);
+
+    let s3_bucket = read_env_var("S3_BUCKET")
+        .expect("S3_BUCKET environment variable must be set");
+    let s3_service = services::s3::S3Service::new(s3_bucket)
+        .await
+        .expect("Failed to initialize S3 service");
+
+    let webrtc_service = services::webrtc::WebRTCService::new();
 
     let ws_hub = WsHub::new();
     let ws_metrics = WsMetrics::new();
@@ -203,6 +229,13 @@ async fn main() {
         friendship_repo,
         invite_repo,
         attachment_repo,
+        subscription_repo,
+        moderation_repo,
+        voice_repo,
+        profile_repo,
+        stripe_service,
+        s3_service,
+        webrtc_service,
         ws_hub,
         ws_metrics,
     };
@@ -325,3 +358,5 @@ mod tests {
         assert_eq!(origins.len(), 3);
     }
 }
+
+

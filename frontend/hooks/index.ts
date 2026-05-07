@@ -40,3 +40,5 @@ export { useMembers } from "./useMembers";
 export { useAuth } from "./useAuth";
 export { useFriends } from "./useFriends";
 export { useWebSocket } from "./useWebSocket";
+export { useVoiceCalls } from "./useVoiceCalls";
+export { useProfileUploads } from "./useProfileUploads";

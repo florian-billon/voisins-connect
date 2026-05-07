@@ -40,7 +40,7 @@ impl DirectMessageRepository {
 
     pub async fn create(&self, message: &DirectMessageItem) -> mongodb::error::Result<()> {
         self.collection().insert_one(message).await?;
-        Ok(())
+        Ok(( })
     }
 
     pub async fn find_by_id(
@@ -48,7 +48,7 @@ impl DirectMessageRepository {
         message_id: Uuid,
     ) -> mongodb::error::Result<Option<DirectMessageItem>> {
         self.collection()
-            .find_one(Self::uuid_filter("message_id", message_id))
+            .find_one(Self::uuid_filter("message_id", message_id })
             .await
     }
 
@@ -116,7 +116,7 @@ impl DirectMessageRepository {
             )
             .await?;
 
-        Ok(())
+        Ok(( })
     }
 
     pub async fn remove_reaction(
@@ -144,7 +144,7 @@ impl DirectMessageRepository {
             )
             .await?;
 
-        Ok(())
+        Ok(( })
     }
 
     pub async fn update_content(
@@ -169,7 +169,7 @@ impl DirectMessageRepository {
             )
             .await?;
 
-        Ok(())
+        Ok(( })
     }
 
     pub async fn soft_delete(&self, message_id: Uuid) -> mongodb::error::Result<()> {
@@ -189,6 +189,8 @@ impl DirectMessageRepository {
             )
             .await?;
 
-        Ok(())
+        Ok(( })
     }
 }
+
+

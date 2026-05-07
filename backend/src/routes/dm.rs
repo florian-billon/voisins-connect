@@ -24,3 +24,4 @@ pub fn routes() -> Router<AppState> {
             axum::routing::post(handlers::dm::add_reaction).delete(handlers::dm::remove_reaction),
         )
 }
+

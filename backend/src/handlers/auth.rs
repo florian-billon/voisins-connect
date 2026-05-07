@@ -68,3 +68,5 @@ pub async fn logout(
     crate::services::realtime::handle_user_offline(&state, claims.sub).await;
     Ok(StatusCode::NO_CONTENT)
 }
+
+

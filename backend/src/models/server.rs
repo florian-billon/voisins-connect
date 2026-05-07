@@ -75,3 +75,4 @@ pub struct ServerBan {
     pub expires_at: Option<DateTime<Utc>>,
     pub banned_at: DateTime<Utc>,
 }
+

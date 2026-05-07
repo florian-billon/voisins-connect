@@ -8,6 +8,13 @@ pub mod password;
 pub mod realtime;
 pub mod servers;
 pub mod usernames;
+pub mod subscription;
+pub mod moderation;
+pub mod voice;
+pub mod profile;
+pub mod stripe;
+pub mod s3;
+pub mod webrtc;
 
 pub use auth::{login, logout, signup};
 pub use channels::{create_channel, delete_channel, get_channel, list_channels, update_channel};
@@ -21,3 +28,4 @@ pub use servers::{
     leave_server, list_bans, list_members, list_user_servers, transfer_ownership, unban_member,
     update_member_role, update_server,
 };
+

@@ -43,6 +43,14 @@ pub enum Error {
     MessageNotFound,
     #[error("Message access forbidden")]
     MessageForbidden,
+    #[error("Unauthorized")]
+    Unauthorized,
+    #[error("Validation error: {message}")]
+    Validation { message: String },
+    #[error("Not found: {message}")]
+    NotFound { message: String },
+    #[error("Database error: {message}")]
+    Database { message: String },
     #[error("Bad request: {message}")]
     BadRequest { message: String },
     #[error("Database error: {message}")]
@@ -89,6 +97,12 @@ impl IntoResponse for Error {
             Self::BadRequest { message } => {
                 body["details"] = serde_json::json!(message);
             }
+            Self::Validation { message } => {
+                body["details"] = serde_json::json!(message);
+            }
+            Self::Database { message } => {
+                body["details"] = serde_json::json!(message);
+            }
             Self::DatabaseError { message } => {
                 body["details"] = serde_json::json!(message);
             }
@@ -127,9 +141,17 @@ impl Error {
             Self::ChannelForbidden => (StatusCode::FORBIDDEN, "Channel access forbidden"),
             Self::MessageNotFound => (StatusCode::NOT_FOUND, "Message not found"),
             Self::MessageForbidden => (StatusCode::FORBIDDEN, "Message access forbidden"),
+            Self::Unauthorized => (StatusCode::UNAUTHORIZED, "Unauthorized"),
+            Self::Validation { .. } => (StatusCode::BAD_REQUEST, "Validation error"),
+            Self::NotFound { .. } => (StatusCode::NOT_FOUND, "Not found"),
+            Self::Database { .. } | Self::DatabaseError { .. } => (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "Database error",
+            ),
             Self::BadRequest { .. } => (StatusCode::BAD_REQUEST, "Bad request"),
-            Self::DatabaseError { .. } => (StatusCode::INTERNAL_SERVER_ERROR, "Database error"),
             Self::InternalError { .. } => (StatusCode::INTERNAL_SERVER_ERROR, "Internal error"),
         }
     }
 }
+
+

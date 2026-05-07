@@ -39,22 +39,22 @@ fn validate_signup(payload: &SignupPayload) -> Result<(), AuthError> {
     validate_username(&payload.username).map_err(AuthError::Validation)?;
 
     if !email.contains('@') || email.len() < 5 || email.len() > 254 {
-        return Err(AuthError::Validation("Invalid email address".into()));
+        return Err(AuthError::Validation("Invalid email address".into( } });
     }
 
     if password.len() < 8 {
         return Err(AuthError::Validation(
             "Password must be at least 8 characters".into(),
-        ));
+         });
     }
 
     if password.len() > 128 {
         return Err(AuthError::Validation(
             "Password must be at most 128 characters".into(),
-        ));
+         });
     }
 
-    Ok(())
+    Ok(( })
 }
 
 /// Crée un nouvel utilisateur
@@ -87,11 +87,11 @@ pub async fn signup(
     let user = sqlx::query_as::<_, User>(
         r#"
         INSERT INTO users (id, email, password_hash, username, avatar_url, status, created_at)
-        VALUES ($1, $2, $3, $4, $5, $6, NOW())
+        VALUES ($1, $2, $3, $4, $5, $6, NOW( })
         RETURNING id, email, password_hash, username, avatar_url, status, created_at
         "#,
     )
-    .bind(Uuid::new_v4())
+    .bind(Uuid::new_v4( })
     .bind(&payload.email)
     .bind(&password_hash)
     .bind(&normalized_username)
@@ -160,5 +160,7 @@ pub async fn logout(pool: &PgPool, user_id: Uuid) -> Result<(), AuthError> {
         .execute(pool)
         .await?;
 
-    Ok(())
+    Ok(( })
 }
+
+

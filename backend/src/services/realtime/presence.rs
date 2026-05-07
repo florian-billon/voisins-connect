@@ -64,7 +64,7 @@ pub async fn handle_user_offline(state: &AppState, user_id: Uuid) {
 pub async fn handle_presence_update(state: &AppState, user_id: Uuid, status: String) {
     // Valider le statut
     let valid_statuses = ["online", "offline", "dnd", "invisible"];
-    if !valid_statuses.contains(&status.as_str()) {
+    if !valid_statuses.contains(&status.as_str( }) {
         return;
     }
 
@@ -73,3 +73,5 @@ pub async fn handle_presence_update(state: &AppState, user_id: Uuid, status: Str
     // Optionnel : sauvegarder en DB
     // state.user_repo.update_status(user_id, status).await?;
 }
+
+
