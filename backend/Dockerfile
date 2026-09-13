@@ -33,7 +33,7 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /app
 
-# Copy the binary from builder
+# Copy the binary from builder (binary is in /app/target/release since we built in /app)
 COPY --from=builder /app/target/release/hello_world_backend /app/hello_world_backend
 
 # Copy migrations
