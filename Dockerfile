@@ -8,20 +8,11 @@ RUN apt-get update && apt-get install -y \
     libssl-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy Cargo files
-COPY backend/Cargo.toml backend/Cargo.lock ./
-
-# Create a dummy main.rs to cache dependencies
-RUN mkdir backend/src && \
-    echo "fn main() {}" > backend/src/main.rs && \
-    cargo build --release && \
-    rm -rf backend/src
-
-# Copy the actual source code
-COPY backend/src ./backend/src
-COPY backend/migrations ./backend/migrations
+# Copy the entire backend directory first
+COPY backend ./backend
 
 # Build the application
+WORKDIR /app/backend
 RUN cargo build --release
 
 # Runtime stage
@@ -34,7 +25,7 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /app
 
 # Copy the binary from builder
-COPY --from=builder /app/target/release/hello_world_backend /app/hello_world_backend
+COPY --from=builder /app/backend/target/release/hello_world_backend /app/hello_world_backend
 
 # Copy migrations
 COPY --from=builder /app/backend/migrations /app/migrations
