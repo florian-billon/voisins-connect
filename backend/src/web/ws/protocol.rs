@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 use crate::models::MessageReactionPublic;
+use crate::models::UserStatus;
 
 /// Événements envoyés par le client
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -41,7 +42,7 @@ pub enum ClientEvent {
 
     /// Mise à jour de présence
     #[serde(rename = "PRESENCE_UPDATE")]
-    PresenceUpdate { status: String },
+    PresenceUpdate { status: UserStatus },
 }
 
 /// Événements envoyés par le serveur
@@ -157,10 +158,7 @@ pub enum ServerEvent {
 
     /// Mise à jour de présence utilisateur
     #[serde(rename = "PRESENCE_UPDATE")]
-    PresenceUpdate {
-        user_id: Uuid,
-        status: String, // "online" | "offline" | "dnd" | "invisible"
-    },
+    PresenceUpdate { user_id: Uuid, status: UserStatus },
 }
 
 impl ClientEvent {

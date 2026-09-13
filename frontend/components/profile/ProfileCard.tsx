@@ -7,6 +7,7 @@ import { logout } from "@/lib/auth/client";
 import { normalizeAvatarUrl } from "@/lib/avatar";
 import { UserStatus, getStatusColor, getStatusKey, normalizeStatus } from "@/lib/presence";
 import { useTranslation } from "@/lib/i18n";
+import { reemitStoredToken } from "@/lib/token-storage";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import SmartImg from "@/components/ui/SmartImg";
@@ -47,6 +48,10 @@ export default function ProfileCard({ user, onClose, onUpdate }: ProfileCardProp
   };
 
   const currentStatus = normalizeStatus(user.status);
+  const displayStatus = isEditing ? editData.status : currentStatus;
+  const displayAvatarUrl = isEditing
+    ? editData.avatar_url || normalizeAvatarUrl(user.avatar_url) || ""
+    : normalizeAvatarUrl(user.avatar_url) || "";
   const memberSince = new Date(user.created_at).toLocaleDateString(locale === "fr" ? "fr-FR" : "en-US", {
     day: "numeric",
     month: "long",
@@ -67,6 +72,7 @@ export default function ProfileCard({ user, onClose, onUpdate }: ProfileCardProp
       if (Object.keys(payload).length > 0) {
         const updatedUser = await updateMe(payload);
         onUpdate?.(updatedUser);
+        reemitStoredToken();
       }
       setIsEditing(false);
     } catch (err) {
@@ -119,9 +125,9 @@ export default function ProfileCard({ user, onClose, onUpdate }: ProfileCardProp
           <div className="flex justify-center">
             <div className="relative">
               <div className="w-24 h-24 rounded-full bg-[rgba(5,10,15,0.98)] p-1 border-2 border-[#4fdfff]/50">
-                {user.avatar_url ? (
+                {displayAvatarUrl ? (
                   <SmartImg
-                    src={normalizeAvatarUrl(user.avatar_url) || ''}
+                    src={displayAvatarUrl}
                     alt={user.username}
                     className="w-full h-full rounded-full object-cover"
                   />
@@ -133,7 +139,7 @@ export default function ProfileCard({ user, onClose, onUpdate }: ProfileCardProp
                   </div>
                 )}
               </div>
-              <div className={`absolute bottom-0 right-0 w-6 h-6 rounded-full border-[3px] border-[rgba(5,10,15,0.98)] ${getStatusColor(currentStatus)}`} />
+              <div className={`absolute bottom-0 right-0 w-6 h-6 rounded-full border-[3px] border-[rgba(5,10,15,0.98)] ${getStatusColor(displayStatus)}`} />
             </div>
           </div>
         </div>

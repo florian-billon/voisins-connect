@@ -6,12 +6,21 @@ type Props = {
   show: boolean;
   channelName: string;
   serverName: string;
+  submitting?: boolean;
   onClose: () => void;
   onChange: (name: string) => void;
   onSubmit: (e: React.FormEvent) => void;
 };
 
-export default function CreateChannelModal({ show, channelName, serverName, onClose, onChange, onSubmit }: Props) {
+export default function CreateChannelModal({
+  show,
+  channelName,
+  serverName,
+  submitting = false,
+  onClose,
+  onChange,
+  onSubmit,
+}: Props) {
   const { t } = useTranslation();
   if (!show) return null;
 
@@ -42,7 +51,14 @@ export default function CreateChannelModal({ show, channelName, serverName, onCl
             <button type="button" onClick={onClose} className="flex-1 py-2.5 text-white/60 hover:text-white hover:underline transition-colors">
               {t("common.cancel")}
             </button>
-            <Button type="submit" variant="primary" size="md" disabled={!channelName.trim()} className="flex-1 uppercase">
+            <Button
+              type="submit"
+              variant="primary"
+              size="md"
+              isLoading={submitting}
+              disabled={!channelName.trim() || submitting}
+              className="flex-1 uppercase"
+            >
               {t("common.create")}
             </Button>
           </div>

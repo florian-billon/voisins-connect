@@ -1,8 +1,8 @@
 [package]
-name = "app"
-version = "0.1.0"
-description = "A Tauri App"
-authors = ["you"]
+name = "hello-world"
+version = "1.0.0"
+description = "Hello World real-time messaging desktop app"
+authors = ["Hello World Team"]
 license = ""
 repository = ""
 edition = "2021"

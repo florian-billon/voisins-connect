@@ -81,35 +81,54 @@ Depuis la refonte du frontend :
 
 **Arborescence du projet :**
 
-```
+```text
+.
 ├── backend/
-│   ├── src/
-│   │   ├── main.rs              # Point d'entrée, config CORS, routes
-│   │   ├── handlers/            # Auth, channels, invites, messages, direct messages, users
-│   │   ├── models/              # Modèles SQL / Mongo / WS
-│   │   ├── repositories/        # Couche d'accès aux données
-│   │   ├── services/            # Logique métier + bootstrap + realtime
-│   │   ├── routes/              # Définition des routes Axum
-│   │   └── web/                 # Middleware auth, WebSocket (hub, handler, protocol)
-│   ├── migrations/
-│   │   ├── init.sql             # Bootstrap PostgreSQL unique
-│   │   └── init.mongo.js        # Bootstrap MongoDB unique
-│   └── Dockerfile
 ├── frontend/
-│   ├── app/                     # Pages statiques : login, register, invite, home, messages
-│   ├── components/              # UI, profils, réactions, sidebar, chat
-│   ├── hooks/                   # useAuth, useChannels, useMessages, useWebSocket, etc.
-│   ├── lib/                     # api-client, auth client, token storage, runtime, gateway WS
-│   ├── messages/                # Traductions FR / EN
-│   └── public/                  # Assets frontend
-├── docs/                        # Consignes, spécifications, UML
-│   ├── pdf/                     # Consignes officielles PDF
-│   ├── specifications/          # Grading criteria et synthèse technique
-│   ├── uml/                     # Diagrammes de structure (PlantUML)
-│   └── cloc-report.md           # Statistiques de code
+├── docs/
 ├── docker-compose.yml           # Bases de données locales (dev)
 ├── render.yaml                  # Configuration Render (production)
 └── .github/workflows/           # CI backend + frontend
+```
+
+**Backend**
+
+```text
+backend/
+├── src/
+│   ├── main.rs                  # Point d'entrée, config CORS, routes
+│   ├── handlers/                # Auth, channels, invites, messages, direct messages, users
+│   ├── models/                  # Modèles SQL / Mongo / WS
+│   ├── repositories/            # Couche d'accès aux données
+│   ├── services/                # Logique métier + bootstrap + realtime
+│   ├── routes/                  # Définition des routes Axum
+│   └── web/                     # Middleware auth, WebSocket (hub, handler, protocol)
+├── migrations/
+│   ├── init.sql                 # Bootstrap PostgreSQL unique
+│   └── init.mongo.js            # Bootstrap MongoDB unique
+└── Dockerfile
+```
+
+**Frontend**
+
+```text
+frontend/
+├── app/                         # Pages statiques : login, register, invite, home, messages
+├── components/                  # UI, profils, réactions, sidebar, chat
+├── hooks/                       # useAuth, useChannels, useMessages, useWebSocket, etc.
+├── lib/                         # api-client, auth client, token storage, runtime, gateway WS
+├── messages/                    # Traductions FR / EN
+└── public/                      # Assets frontend
+```
+
+**Docs**
+
+```text
+docs/
+├── pdf/                         # Consignes officielles PDF
+├── specifications/              # Grading criteria et synthèse technique
+├── uml/                         # Diagrammes de structure (PlantUML)
+└── cloc-report.md               # Statistiques de code
 ```
 
 ---
@@ -233,24 +252,18 @@ Toutes les routes sauf auth nécessitent un header `Authorization: Bearer <JWT>`
 ```mermaid
 flowchart LR
     User[Utilisateur]
-    Web[Frontend Next.js / Vercel]
-    Desktop[Desktop Tauri]
-    API[Backend Rust / Render]
-    WS[WebSocket /ws]
-    PG[(PostgreSQL / Neon)]
-    MG[(MongoDB Atlas)]
-    GIF[GIPHY API]
+    Web[Frontend]
+    Desktop[Desktop]
+    API[Backend API]
+    WS[WebSocket]
+    PG[(PostgreSQL)]
+    MG[(MongoDB)]
 
     User --> Web
     User --> Desktop
-    Web --> API
-    Desktop --> API
-    Web --> WS
-    Desktop --> WS
-    API --> PG
-    API --> MG
-    Web --> GIF
-    Desktop --> GIF
+    Web & Desktop --> API
+    Web & Desktop --> WS
+    API --> PG & MG
 ```
 
 ### Auth
@@ -331,7 +344,164 @@ flowchart LR
 
 ### WebSocket
 
-Connexion : `WS /ws` avec JWT en paramètre. Une fois connecté, le client rejoint des canaux et reçoit les événements en temps réel.
+Point d'entrée : `GET /ws`
+
+Format commun : `{ "op": "EVENT_NAME", "d": { ...payload } }`
+
+Handshake réel :
+1. le client ouvre `GET /ws`
+2. le serveur envoie `HELLO`
+3. le client répond avec `IDENTIFY { token }`
+4. le serveur répond `READY` ou `ERROR`
+5. le client s'abonne aux channels avec `SUBSCRIBE`
+
+```mermaid
+flowchart TD
+    subgraph Phase1["1. Session bootstrap"]
+        A[Client opens GET /ws] --> B[Server sends HELLO]
+        B --> C[Client sends IDENTIFY token]
+        C --> D[JWT/Auth verifies token]
+        D --> E[Server replies READY]
+    end
+
+    subgraph Phase2["2. Channel subscription"]
+        F[Client sends SUBSCRIBE channel_id] --> G[PostgreSQL checks channel membership]
+        G --> H[Server replies SUBSCRIBED]
+    end
+
+    subgraph Phase3["3. Message fan-out"]
+        I[Client sends SEND_MESSAGE content] --> J[Axum loads channel and membership]
+        J --> K[MongoDB persists channel_messages]
+        K --> L[WS Hub broadcasts MESSAGE_CREATE]
+        L --> M[Channel subscribers receive MESSAGE_CREATE]
+        L --> N[Other live events<br/>TYPING_START / TYPING_STOP / PRESENCE_UPDATE]
+    end
+
+    PG[(PostgreSQL)]
+    MG[(MongoDB)]
+
+    E --> F
+    G -. RBAC / membership .-> PG
+    J -. permission check .-> PG
+    K --> MG
+```
+
+> [!TIP]
+> **Maintenance de session** : heartbeat applicatif (`HEARTBEAT` / `HEARTBEAT_ACK`) toutes les 30s côté client, ping WebSocket côté serveur, reconnexion automatique côté frontend.
+
+#### Client -> serveur
+
+| `op` | Payload | Usage |
+|------|---------|-------|
+| `IDENTIFY` | `{ token }` | Authentifie la socket après `HELLO` |
+| `SUBSCRIBE` | `{ channel_id }` | Abonne la connexion à un channel autorisé |
+| `UNSUBSCRIBE` | `{ channel_id }` | Retire l'abonnement à un channel |
+| `SEND_MESSAGE` | `{ channel_id, content }` | Crée un message de channel puis le broadcast |
+| `TYPING_START` | `{ channel_id }` | Signale le début de frappe |
+| `TYPING_STOP` | `{ channel_id }` | Signale la fin de frappe |
+| `PRESENCE_UPDATE` | `{ status }` | Met à jour le statut utilisateur |
+| `HEARTBEAT` | `{ seq? }` | Keep-alive applicatif |
+
+#### Serveur -> client
+
+**Session**
+
+| `op` | Payload |
+|------|---------|
+| `HELLO` | `{ heartbeat_interval }` |
+| `READY` | `{ user_id, username }` |
+| `ERROR` | `{ code, message }` |
+| `SUBSCRIBED` | `{ channel_id }` |
+| `UNSUBSCRIBED` | `{ channel_id }` |
+| `HEARTBEAT_ACK` | `{ seq? }` |
+
+**Channels**
+
+| `op` | Payload |
+|------|---------|
+| `MESSAGE_CREATE` | `Message` |
+| `MESSAGE_UPDATE` | `{ id, channel_id, content, edited_at }` |
+| `MESSAGE_DELETE` | `{ id, channel_id }` |
+| `MESSAGE_REACTION_UPDATE` | `{ id, channel_id, reactions }` |
+| `TYPING_START` | `{ channel_id, user_id, username }` |
+| `TYPING_STOP` | `{ channel_id, user_id }` |
+
+**Messages privés**
+
+| `op` | Payload |
+|------|---------|
+| `DIRECT_MESSAGE_CREATE` | `DirectMessage` |
+| `DIRECT_MESSAGE_UPDATE` | `{ id, dm_id, content, edited_at }` |
+| `DIRECT_MESSAGE_DELETE` | `{ id, dm_id }` |
+| `DIRECT_MESSAGE_REACTION_UPDATE` | `{ id, dm_id, reactions }` |
+
+**Présence**
+
+| `op` | Payload |
+|------|---------|
+| `PRESENCE_UPDATE` | `{ user_id, status }` |
+
+#### Réalité de persistance
+
+- Les messages de channels envoyés via WebSocket sont persistés dans MongoDB (`channel_messages`).
+- Les messages privés sont eux aussi persistés dans MongoDB, mais leur création passe aujourd'hui par REST côté client ; le WebSocket sert surtout à pousser les événements temps réel aux participants.
+- PostgreSQL reste la source de vérité pour l'authentification, les membres de serveur, les channels, les relations d'amitié et les métadonnées de DM.
+
+#### Exemple de code (Temps réel)
+
+**Frontend (`gateway.ts`) :**
+```typescript
+// Connexion WebSocket
+const ws = new WebSocket(WS_URL);
+
+ws.onmessage = (e) => {
+  const event = JSON.parse(e.data);
+
+  if (event.op === 'HELLO') {
+    ws.send(JSON.stringify({
+      op: 'IDENTIFY',
+      d: { token }
+    }));
+  }
+
+  if (event.op === 'READY') {
+    ws.send(JSON.stringify({
+      op: 'SUBSCRIBE',
+      d: { channel_id }
+    }));
+  }
+};
+
+// Envoi d'un message après auth + subscription
+ws.send(JSON.stringify({
+  op: 'SEND_MESSAGE',
+  d: { channel_id, content }
+}));
+```
+
+**Backend (`ws_handler.rs`) :**
+```rust
+async fn handle_send_message(state: &AppState, user_id: Uuid, channel_id: Uuid, content: String) {
+  // Permissions via PostgreSQL
+  let channel = load_channel_and_member(state, user_id, channel_id).await?;
+
+  // Stockage message dans MongoDB
+  let message = persist_channel_message(state, channel.server_id, channel_id, user_id, content).await?;
+
+  // Broadcast temps réel aux sockets abonnées
+  state.ws_hub.broadcast_to_channel(channel_id, &ServerEvent::MessageCreate {
+    id: message.id,
+    channel_id: message.channel_id,
+    server_id: message.server_id,
+    author_id: message.author_id,
+    username: message.username,
+    content: message.content,
+    created_at: message.created_at,
+    edited_at: message.edited_at,
+    reactions: message.reactions,
+  }).await;
+}
+```
 
 Événements principaux :
 - `MESSAGE_CREATE`, `MESSAGE_UPDATE`, `MESSAGE_DELETE`, `MESSAGE_REACTION_UPDATE`
@@ -415,10 +585,25 @@ erDiagram
 
     direct_messages {
         uuid id PK
-        uuid user_one_id FK
-        uuid user_two_id FK
+        uuid user1_id FK
+        uuid user2_id FK
         timestamp created_at
-        timestamp updated_at
+    }
+
+    friendships {
+        uuid user1_id PK
+        uuid user2_id PK
+        timestamp created_at
+    }
+
+    attachments {
+        uuid id PK
+        uuid sender_id FK
+        string filename
+        string file_path
+        string content_type
+        bigint file_size
+        timestamp created_at
     }
 ```
 
@@ -431,6 +616,8 @@ erDiagram
 - **invites** — id (UUID), server_id (FK servers), code (unique), created_by (FK users), expires_at, max_uses, uses, revoked, created_at
 - **server_bans** — server_id + user_id (PK composite), banned_by (FK users), reason, expires_at, banned_at
 - **direct_messages** — conversations privées entre deux utilisateurs
+- **friendships** — relations d'amitié entre utilisateurs
+- **attachments** — catalogue des fichiers uploadés
 
 **MongoDB** (base `helloworld`) :
 
@@ -451,8 +638,38 @@ cd frontend && npm run lint
 cd frontend && npm run build
 ```
 
-**CI/CD** (GitHub Actions sur push vers `main`) :
-- Backend : build Rust, tests, clippy, fmt
+**CI/CD** (GitHub Actions) :
+
+```mermaid
+flowchart LR
+    Trigger[Push main / PR / Tag v*]
+
+    subgraph Backend_CI [backend-ci.yml]
+        direction LR
+        B1[Quality & Security Checks] --> B2[Build & Test Rust]
+    end
+
+    subgraph Frontend_CI [frontend-ci.yml]
+        direction LR
+        F1[Quality & Security Checks] --> F2[Build Next.js]
+    end
+
+    Trigger --> B1
+    Trigger --> F1
+    B2 --> Ready[Codebase prête pour release]
+    F2 --> Ready
+
+    subgraph Release_Matrix [release.yml]
+        direction LR
+        Matrix{Tag release} --> M_Mac[macos-latest]
+        Matrix --> M_Win[windows-latest]
+        Matrix --> M_Lin[ubuntu-22.04]
+    end
+
+    Ready --> Matrix
+````
+
+Le sens ci-dessus représente l'ordre logique du pipeline : CI backend + frontend d'abord, puis release desktop à la fin. En pratique, `release.yml` est déclenché séparément sur tag (`v*` / `HelloWorld*`) et n'a pas de dépendance GitHub Actions explicite vers les deux autres workflows.
 
 ### Milestones
 

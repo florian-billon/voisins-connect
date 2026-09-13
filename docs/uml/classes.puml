@@ -94,28 +94,50 @@ package "PostgreSQL" {
     - user2_id: UUID
     - created_at: DateTime
   }
+
+  class Friendship {
+    - user1_id: UUID
+    - user2_id: UUID
+    - created_at: DateTime
+  }
+
+  class Attachment {
+    - id: UUID
+    - sender_id: UUID
+    - filename: String
+    - file_path: String
+    - content_type: String?
+    - file_size: Long?
+    - created_at: DateTime
+  }
 }
 
 package "MongoDB" {
+  class MessageReaction {
+    - user_id: UUID
+    - emoji: String
+    - created_at: DateTime
+  }
+
   class ChannelMessage {
     - message_id: UUID
     - server_id: UUID
     - channel_id: UUID
     - author_id: UUID
     - content: String
-    - reactions: List<Emoji>
+    - reactions: List<MessageReaction>
     - created_at: DateTime
     - edited_at: DateTime?
     - deleted_at: DateTime?
     - deleted_by: UUID?
   }
 
-  class DMMessage {
+  class DirectMessageItem {
     - message_id: UUID
     - dm_id: UUID
     - author_id: UUID
     - content: String
-    - reactions: List<Emoji>
+    - reactions: List<MessageReaction>
     - created_at: DateTime
     - edited_at: DateTime?
     - deleted_at: DateTime?
@@ -137,7 +159,8 @@ User "1" <-- "0..*" ChannelMessage : author_id
 
 User "1" <-- "0..*" DirectMessage : user1
 User "1" <-- "0..*" DirectMessage : user2
-DirectMessage "1" <-- "0..*" DMMessage
-User "1" <-- "0..*" DMMessage : author
-
+DirectMessage "1" <-- "0..*" DirectMessageItem
+User "1" <-- "0..*" DirectMessageItem : author
+User "1" <-- "2" Friendship : participant
+User "1" <-- "0..*" Attachment : sender
 @enduml

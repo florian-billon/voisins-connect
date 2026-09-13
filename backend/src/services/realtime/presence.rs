@@ -3,14 +3,12 @@
 use std::collections::HashSet;
 use uuid::Uuid;
 
+use crate::models::UserStatus;
 use crate::web::ws::protocol::ServerEvent;
 use crate::AppState;
 
-async fn broadcast_presence_to_shared_servers(state: &AppState, user_id: Uuid, status: &str) {
-    let event = ServerEvent::PresenceUpdate {
-        user_id,
-        status: status.to_string(),
-    };
+async fn broadcast_presence_to_shared_servers(state: &AppState, user_id: Uuid, status: UserStatus) {
+    let event = ServerEvent::PresenceUpdate { user_id, status };
 
     let servers = match state.server_repo.list_by_user(user_id).await {
         Ok(servers) => servers,
@@ -52,15 +50,16 @@ async fn broadcast_presence_to_shared_servers(state: &AppState, user_id: Uuid, s
 
 /// Marque un utilisateur comme en ligne lors de la connexion WebSocket
 pub async fn handle_user_online(state: &AppState, user_id: Uuid) {
-    broadcast_presence_to_shared_servers(state, user_id, "online").await;
+    broadcast_presence_to_shared_servers(state, user_id, UserStatus::Online).await;
 }
 
 /// Marque un utilisateur comme hors ligne lors de la déconnexion WebSocket
 pub async fn handle_user_offline(state: &AppState, user_id: Uuid) {
-    broadcast_presence_to_shared_servers(state, user_id, "offline").await;
+    broadcast_presence_to_shared_servers(state, user_id, UserStatus::Offline).await;
 }
 
 /// Traite une mise à jour de présence manuelle (dnd, invisible, etc.)
+<<<<<<< HEAD
 pub async fn handle_presence_update(state: &AppState, user_id: Uuid, status: String) {
     // Valider le statut
     let valid_statuses = ["online", "offline", "dnd", "invisible"];
@@ -69,6 +68,10 @@ pub async fn handle_presence_update(state: &AppState, user_id: Uuid, status: Str
     }
 
     broadcast_presence_to_shared_servers(state, user_id, &status).await;
+=======
+pub async fn handle_presence_update(state: &AppState, user_id: Uuid, status: UserStatus) {
+    broadcast_presence_to_shared_servers(state, user_id, status).await;
+>>>>>>> 6a5b2b5a7b997195505aac8ff5300ad81643365c
 
     // Optionnel : sauvegarder en DB
     // state.user_repo.update_status(user_id, status).await?;

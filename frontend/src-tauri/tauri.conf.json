@@ -1,7 +1,7 @@
 {
-  "productName": "hello-world",
+  "productName": "Hello World",
   "version": "1.0.0",
-  "identifier": "com.hello-world.app",
+  "identifier": "com.helloworld.desktop",
   "build": {
     "beforeDevCommand": "npm run dev -- -p 3002",
     "beforeBuildCommand": "npm run build",
@@ -24,6 +24,8 @@
   },
   "bundle": {
     "active": true,
+    "category": "SocialNetworking",
+    "shortDescription": "Real-time messaging desktop app",
     "targets": "all",
     "icon": [
       "icons/32x32.png",

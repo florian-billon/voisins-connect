@@ -90,16 +90,36 @@ package "PostgreSQL (Sourde de Vérité)" {
     created_at : TIMESTAMP
   }
 
+  entity "friendships" as friends {
+    + user1_id : UUID <<PK, FK>>
+    + user2_id : UUID <<PK, FK>>
+    --
+    created_at : TIMESTAMP
+  }
+
+  entity "attachments" as attachments {
+    + id : UUID <<PK>>
+    --
+    # sender_id : UUID <<FK>>
+    filename : VARCHAR
+    file_path : VARCHAR
+    content_type : VARCHAR?
+    file_size : BIGINT?
+    created_at : TIMESTAMP
+  }
+
   ' ---- PostgreSQL Relations ----
-  users   ||--o{ servers  : owns
-  servers ||--o{ members  : has
-  users   ||--o{ members  : joins
-  servers ||--o{ channels : contains
-  servers ||--o{ invites  : has
-  users   ||--o{ invites  : creates
-  servers ||--o{ bans     : blacklists
-  users   ||--o{ bans     : is banned
-  users   ||--o{ dms      : participates
+  users   ||--o{ servers     : owns
+  servers ||--o{ members     : has
+  users   ||--o{ members     : joins
+  servers ||--o{ channels    : contains
+  servers ||--o{ invites     : has
+  users   ||--o{ invites     : creates
+  servers ||--o{ bans        : blacklists
+  users   ||--o{ bans        : is banned
+  users   ||--o{ dms         : participates
+  users   ||--o{ friends     : is friend
+  users   ||--o{ attachments : uploads
 }
 
 ' ================== MONGODB ==================
@@ -113,30 +133,33 @@ package "MongoDB (Historique & Messages)" #553333 {
     server_id : UUID
     author_id : UUID
     content : TEXT
-    reactions : ARRAY
+    reactions : ARRAY(user_id, emoji, created_at)
     created_at : TIMESTAMP
     edited_at : TIMESTAMP?
     deleted_at : TIMESTAMP?
     deleted_by : UUID?
   }
 
-  entity "dm_messages" as dm_msg {
+  entity "direct_message_items" as dm_msg {
     + _id : ObjectId
     --
     message_id : UUID <<UNIQUE>>
     dm_id : UUID
     author_id : UUID
     content : TEXT
-    reactions : ARRAY
+    reactions : ARRAY(user_id, emoji, created_at)
     created_at : TIMESTAMP
+    edited_at : TIMESTAMP?
     deleted_at : TIMESTAMP?
   }
 }
 
 ' ================== CROSS-DB LINKS ==================
-channels ..> ch_msg : channel_id (logical)
-servers  ..> ch_msg : server_id (logical)
-users    ..> ch_msg : author_id (logical)
-dms      ..> dm_msg : dm_id (logical)
+channels    ..> ch_msg : channel_id (logical)
+servers     ..> ch_msg : server_id (logical)
+users       ..> ch_msg : author_id (logical)
+dms         ..> dm_msg : dm_id (logical)
+attachments ..> ch_msg : usage (logical)
+attachments ..> dm_msg : usage (logical)
 
 @enduml

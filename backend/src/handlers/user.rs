@@ -1,7 +1,7 @@
 use axum::{extract::State, Json};
 
 use crate::ctx::Ctx;
-use crate::models::{UpdateMePayload, UserResponse, UserStatus};
+use crate::models::{UpdateMePayload, UserResponse};
 use crate::services::usernames::{is_username_unique_violation, validate_username};
 use crate::Error;
 use crate::{AppState, Result};
@@ -43,19 +43,7 @@ pub async fn update_me(
         .ok_or(Error::UserNotFound)?;
 
     if should_broadcast_presence {
-        let status = match user.status {
-            UserStatus::Online => "online",
-            UserStatus::Offline => "offline",
-            UserStatus::Dnd => "dnd",
-            UserStatus::Invisible => "invisible",
-        };
-
-        crate::services::realtime::handle_presence_update(
-            &state,
-            ctx.user_id(),
-            status.to_string(),
-        )
-        .await;
+        crate::services::realtime::handle_presence_update(&state, ctx.user_id(), user.status).await;
     }
 
     Ok(Json(user.into( } })

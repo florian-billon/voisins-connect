@@ -68,6 +68,21 @@
 | `user1_id` | UUID | FK → User 1 |
 | `user2_id` | UUID | FK → User 2 |
 
+### `Friendship` (Amis)
+| Attribut | Type | Description |
+|----------|------|-------------|
+| `user1_id` | UUID | FK → User 1 |
+| `user2_id` | UUID | FK → User 2 |
+| `created_at` | DateTime | Date d'ajout |
+
+### `Attachment` (Fichier)
+| Attribut | Type | Description |
+|----------|------|-------------|
+| `id` | UUID | Identifiant unique |
+| `sender_id` | UUID | FK → User (Auteur) |
+| `filename` | String | Nom original du fichier |
+| `file_path` | String | Chemin interne (UUID) |
+
 ### `Invite`
 | Attribut | Type | Description |
 |----------|------|-------------|
@@ -88,15 +103,18 @@
 | `author_id` | UUID | Auteur du message |
 | `content` | String | Texte du message |
 | `reactions` | List | Tableau des réactions (emoji + user_id) |
+| `edited_at` | DateTime? | Date de modification |
 | `deleted_at` | DateTime? | Date de suppression logique |
 
-### `DMMessage`
+### `DirectMessageItem`
 | Attribut | Type | Description |
 |----------|------|-------------|
 | `message_id` | UUID | Référence unique |
 | `dm_id` | UUID | Conversation cible |
 | `author_id` | UUID | Auteur du message |
 | `content` | String | Texte du message |
+| `reactions` | List | Tableau des réactions |
+| `edited_at` | DateTime? | Date de modification |
 
 ---
 
@@ -112,6 +130,8 @@ graph TD
     C -- contient --> CM[ChannelMessage]
     U -- écrit --> CM
     U -- discute --> DM[DirectMessage]
-    DM -- contient --> DM_MSG[DMMessage]
-    U -- écrit --> DM_MSG
+    DM -- contient --> DMI[DirectMessageItem]
+    U -- écrit --> DMI
+    U -- ami --> F[Friendship]
+    U -- upload --> A[Attachment]
 ```
