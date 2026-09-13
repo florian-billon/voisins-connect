@@ -6,7 +6,7 @@ use axum::{
     Json, Router,
 };
 use mongodb::bson::doc;
-use tower_http::cors::CorsLayer;
+use tower_http::cors::{Any, CorsLayer};
 use tower_http::services::ServeDir;
 
 pub use self::error::{Error, Result};
@@ -245,23 +245,8 @@ async fn main() {
         }
     });
 
-    let allowed_origins = env_var_or_default("ALLOWED_ORIGINS", DEFAULT_ALLOWED_ORIGINS);
-    let origins = {
-        let parsed_origins = parse_allowed_origins(&allowed_origins);
-
-        if parsed_origins.is_empty() {
-            tracing::warn!(
-                raw_allowed_origins = allowed_origins,
-                "No valid ALLOWED_ORIGINS values found, falling back to defaults",
-            );
-            parse_allowed_origins(DEFAULT_ALLOWED_ORIGINS)
-        } else {
-            parsed_origins
-        }
-    };
-
     let cors = CorsLayer::new()
-        .allow_origin(origins)
+        .allow_origin(Any)
         .allow_methods([
             Method::GET,
             Method::POST,
