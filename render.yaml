@@ -1,20 +1,17 @@
 services:
-  # Backend (Rust/Axum)
   - type: web
-    name: hello-world-backend
+    name: voisins-connect-backend
     env: rust
+    plan: free
     buildCommand: cd backend && cargo build --release
-    startCommand: cd backend && ./target/release/hello-world-backend
+    startCommand: cd backend && ./target/release/hello_world_backend
     envVars:
       - key: DATABASE_URL
-        sync: false # Set manually (NeonDB PostgreSQL)
+        sync: false
       - key: MONGODB_URL
-        sync: false # Set manually (MongoDB Atlas)
+        sync: false
       - key: JWT_SECRET
+        sync: false
         generateValue: true
-      - key: ALLOWED_ORIGINS
-        sync: false # Set manually (Vercel frontend URLs, comma-separated)
       - key: PORT
-        value: 3001
-      - key: RUST_LOG
-        value: info
+        value: "3001"
