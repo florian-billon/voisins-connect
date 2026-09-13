@@ -248,7 +248,7 @@ async fn main() {
     let cors = CorsLayer::new()
         .allow_origin(
             [
-                "https://frontendvoisinconnect-gq8w1vned-florian-billons-projects.vercel.app".parse::<HeaderValue>().unwrap(),
+                "https://frontendvoisinconnect-q0r2irxp7-florian-billons-projects.vercel.app".parse::<HeaderValue>().unwrap(),
                 "https://*.vercel.app".parse::<HeaderValue>().unwrap(),
                 "http://localhost:3000".parse::<HeaderValue>().unwrap(),
                 "http://localhost:3002".parse::<HeaderValue>().unwrap(),
