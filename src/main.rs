@@ -6,7 +6,7 @@ use axum::{
     Json, Router,
 };
 use mongodb::bson::doc;
-use tower_http::cors::CorsLayer;
+use tower_http::cors::{Any, CorsLayer};
 use tower_http::services::ServeDir;
 
 pub use self::error::{Error, Result};
@@ -246,15 +246,7 @@ async fn main() {
     });
 
     let cors = CorsLayer::new()
-        .allow_origin(
-            [
-                "https://frontendvoisinconnect-q0r2irxp7-florian-billons-projects.vercel.app".parse::<HeaderValue>().unwrap(),
-                "https://*.vercel.app".parse::<HeaderValue>().unwrap(),
-                "http://localhost:3000".parse::<HeaderValue>().unwrap(),
-                "http://localhost:3002".parse::<HeaderValue>().unwrap(),
-            ]
-            .to_vec()
-        )
+        .allow_origin(Any)
         .allow_methods([
             Method::GET,
             Method::POST,
@@ -269,7 +261,7 @@ async fn main() {
             header::UPGRADE,
             header::CONNECTION,
         ])
-        .allow_credentials(true);
+        .allow_credentials(false);
 
     let routes_protected = routes::create_router()
         .route(
