@@ -32,9 +32,9 @@ PORT=3001
    - **Name** : `voisins-connect-backend`
    - **Runtime** : Rust
    - **Branch** : `main`
-   - **Root Directory** : `backend`
+   - **Root Directory** : Laissez vide (root du dépôt)
 6. **Configurez les variables d'environnement** :
-   - `DATABASE_URL` : `postgresql://neondb_owner:npg_iVuGFgOAzM64@ep-jolly-water-ahsgdocs-pooler.c-3.us-east-1.aws.neon.tech/neondb?sslmode=require`
+   - `DATABASE_URL` : `postgresql://neondb_owner:npg_osO3xDfwiIm2@ep-dry-union-aym1o38g-pooler.c-5.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require`
    - `MONGODB_URL` : `mongodb+srv://helloworld:helloworld@cluster0.o2z1nqe.mongodb.net/?appName=Cluster0`
    - `JWT_SECRET` : `super_secret_jwt_key_change_in_production_12345`
    - `PORT` : `3001`

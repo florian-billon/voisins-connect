@@ -7,11 +7,12 @@ services:
     startCommand: ./target/release/hello_world_backend
     envVars:
       - key: DATABASE_URL
-        sync: false
+        value: postgresql://neondb_owner:npg_osO3xDfwiIm2@ep-dry-union-aym1o38g-pooler.c-5.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require
       - key: MONGODB_URL
-        sync: false
+        value: mongodb+srv://helloworld:helloworld@cluster0.o2z1nqe.mongodb.net/?appName=Cluster0
       - key: JWT_SECRET
-        sync: false
-        generateValue: true
+        value: super_secret_jwt_key_change_in_production_12345
       - key: PORT
         value: "3001"
+      - key: S3_BUCKET
+        value: dummy
