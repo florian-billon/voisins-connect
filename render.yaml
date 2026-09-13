@@ -1,10 +1,10 @@
 services:
   - type: web
     name: voisins-connect-backend
-    env: docker
+    env: rust
     plan: free
-    dockerContext: backend
-    dockerfilePath: ./backend/Dockerfile
+    buildCommand: cd backend && cargo build --release
+    startCommand: cd backend && ./target/release/hello_world_backend
     envVars:
       - key: DATABASE_URL
         sync: false
