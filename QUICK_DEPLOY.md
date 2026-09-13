@@ -30,7 +30,7 @@ PORT=3001
 4. **Connectez votre dépôt GitHub** : `florian-billon/voisins-connect`
 5. **Configurez le service** :
    - **Name** : `voisins-connect-backend`
-   - **Runtime** : Rust
+   - **Runtime** : Docker
    - **Branch** : `main`
    - **Root Directory** : Laissez vide (root du dépôt)
 6. **Configurez les variables d'environnement** :
