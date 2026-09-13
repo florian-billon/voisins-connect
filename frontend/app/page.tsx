@@ -14,6 +14,10 @@ import ServerSidebar from "@/components/layout/ServerSidebar";
 import ChannelSidebar from "@/components/layout/ChannelSidebar";
 import ChatCenter from "@/components/layout/ChatCenter";
 import MemberSidebar from "@/components/layout/MemberSidebar";
+import MobileNavigation from "@/components/layout/MobileNavigation";
+import MobileHeader from "@/components/layout/MobileHeader";
+import MobileChannelSidebar from "@/components/layout/MobileChannelSidebar";
+// import PremiumFloatingButton from "@/components/premium/PremiumFloatingButton";
 import CreateServerModal from "@/components/modals/CreateServerModal";
 import CreateChannelModal from "@/components/modals/CreateChannelModal";
 import DeleteServerModal from "@/components/modals/DeleteServerModal";
@@ -21,6 +25,9 @@ import LeaveServerModal from "@/components/modals/LeaveServerModal";
 import DeleteChannelModal from "@/components/modals/DeleteChannelModal";
 import DeleteMessageModal from "@/components/modals/DeleteMessageModal";
 import RenameModal from "@/components/modals/RenameModal";
+import AdminDeleteMessageModal from "@/components/modals/AdminDeleteMessageModal";
+import AdminBanModal from "@/components/modals/AdminBanModal";
+import AdminMuteModal from "@/components/modals/AdminMuteModal";
 
 export default function Home() {
   const router = useRouter();
@@ -36,7 +43,7 @@ export default function Home() {
     channelsLoading, channelsError,
     messages, sendMessage, updateMessage, deleteMessage, toggleReaction,
     messagesLoading, messagesError, typingUsers, typingStart, typingStop,
-    members, kickMember, banMember,
+    members, kickMember, banMember, muteMember,
     showProfile, setShowProfile,
     selectedPublicUserId, setSelectedPublicUserId,
     showCreateServer, setShowCreateServer,
@@ -63,6 +70,19 @@ export default function Home() {
   const [channelToRename, setChannelToRename] = useState<{ id: string; name: string } | null>(null);
   const [newOwnerIdForLeave, setNewOwnerIdForLeave] = useState("");
   const [leaveModalError, setLeaveModalError] = useState<string | null>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mobileChannelsOpen, setMobileChannelsOpen] = useState(false);
+  
+  // Admin modals state
+  const [showAdminDeleteMessage, setShowAdminDeleteMessage] = useState(false);
+  const [adminDeleteMessageId, setAdminDeleteMessageId] = useState<string | null>(null);
+  const [adminDeleteMessageContent, setAdminDeleteMessageContent] = useState("");
+  const [showAdminBan, setShowAdminBan] = useState(false);
+  const [adminBanUserId, setAdminBanUserId] = useState<string | null>(null);
+  const [adminBanUsername, setAdminBanUsername] = useState("");
+  const [showAdminMute, setShowAdminMute] = useState(false);
+  const [adminMuteUserId, setAdminMuteUserId] = useState<string | null>(null);
+  const [adminMuteUsername, setAdminMuteUsername] = useState("");
   
   const typingStopTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const TYPING_STOP_DELAY_MS = 2000;
@@ -72,6 +92,7 @@ export default function Home() {
   const transferCandidates = members.filter((m) => m.user_id !== viewerId);
   const viewerRole = members.find((m) => m.user_id === viewerId)?.role;
   const canManageChannels = viewerRole === "Owner" || viewerRole === "Admin";
+  const isServerAdmin = viewerRole === "Owner" || viewerRole === "Admin";
   const channelSearch = selectedServer?.id && channelSearchState.serverId === selectedServer.id ? channelSearchState.value : "";
   const visibleChannels = channelSearch.trim()
     ? channels.filter((c) => c.name.toLowerCase().includes(channelSearch.trim().toLowerCase()))
@@ -177,6 +198,51 @@ export default function Home() {
     setLeaveModalError(null);
   };
 
+  // Admin functions
+  const handleAdminDeleteMessage = (messageId: string, content: string) => {
+    setAdminDeleteMessageId(messageId);
+    setAdminDeleteMessageContent(content);
+    setShowAdminDeleteMessage(true);
+  };
+
+  const confirmAdminDeleteMessage = async () => {
+    if (!adminDeleteMessageId) return;
+    await deleteMessage(adminDeleteMessageId);
+    setShowAdminDeleteMessage(false);
+    setAdminDeleteMessageId(null);
+    setAdminDeleteMessageContent("");
+  };
+
+  const handleAdminBan = (userId: string, username: string) => {
+    setAdminBanUserId(userId);
+    setAdminBanUsername(username);
+    setShowAdminBan(true);
+  };
+
+  const confirmAdminBan = async () => {
+    if (!adminBanUserId) return;
+    await banMember(adminBanUserId);
+    setShowAdminBan(false);
+    setAdminBanUserId(null);
+    setAdminBanUsername("");
+  };
+
+  const handleAdminMute = (userId: string, username: string) => {
+    setAdminMuteUserId(userId);
+    setAdminMuteUsername(username);
+    setShowAdminMute(true);
+  };
+
+  const confirmAdminMute = async () => {
+    if (!adminMuteUserId) return;
+    const success = await muteMember(adminMuteUserId);
+    if (success) {
+      setShowAdminMute(false);
+      setAdminMuteUserId(null);
+      setAdminMuteUsername("");
+    }
+  };
+
   if (!guardReady || serversLoading) {
     return (
       <main className="flex w-full h-screen gap-2 p-2 items-center justify-center">
@@ -190,6 +256,16 @@ export default function Home() {
 
   return (
     <main className="flex w-full h-screen">
+      {/* Mobile Header */}
+      <MobileHeader
+        selectedServer={selectedServer}
+        selectedChannel={selectedChannel}
+        onMenuToggle={() => setMobileMenuOpen(true)}
+        onChannelsToggle={() => setMobileChannelsOpen(true)}
+        showChannelsButton={!!selectedServer}
+      />
+
+      {/* Desktop Sidebars */}
       <ServerSidebar
         servers={servers}
         selectedServer={selectedServer}
@@ -212,6 +288,7 @@ export default function Home() {
         canManageChannels={canManageChannels}
         isServerOwner={isServerOwner}
         transferCandidates={transferCandidates}
+        user={user}
         onSelectChannel={selectChannel}
         onChannelSearch={(serverId, value) => setChannelSearchState({ serverId, value })}
         onCreateChannel={() => setShowCreateChannel(true)}
@@ -221,6 +298,37 @@ export default function Home() {
         onEditServer={() => setShowRenameServer(true)}
         onDeleteServer={() => setShowDeleteConfirm(true)}
         onShowLeave={handleShowLeave}
+      />
+
+      {/* Mobile Navigation */}
+      <MobileNavigation
+        servers={servers}
+        friends={friends}
+        user={user}
+        selectedServer={selectedServer}
+        onSelectServer={selectServer}
+        onShowProfile={() => setShowProfile(true)}
+        onNavigateDMs={() => router.push("/messages")}
+        onOpenFriendDM={(username) => router.push(`/messages?username=${encodeURIComponent(username)}`)}
+        onClose={() => setMobileMenuOpen(false)}
+        isOpen={mobileMenuOpen}
+      />
+
+      {/* Mobile Channel Sidebar */}
+      <MobileChannelSidebar
+        selectedServer={selectedServer}
+        channels={channels}
+        visibleChannels={visibleChannels}
+        selectedChannel={selectedChannel}
+        channelSearch={channelSearch}
+        channelsLoading={channelsLoading}
+        channelsError={channelsError}
+        canManageChannels={canManageChannels}
+        onSelectChannel={selectChannel}
+        onChannelSearch={(serverId, value) => setChannelSearchState({ serverId, value })}
+        onCreateChannel={() => setShowCreateChannel(true)}
+        onClose={() => setMobileChannelsOpen(false)}
+        isOpen={mobileChannelsOpen}
       />
 
       <ChatCenter
@@ -236,6 +344,7 @@ export default function Home() {
         typingUsers={typingUsers}
         user={user}
         viewerId={viewerId}
+        isServerAdmin={isServerAdmin}
         onCreateServer={() => setShowCreateServer(true)}
         onCreateChannel={() => setShowCreateChannel(true)}
         onSendMessage={handleSendMessage}
@@ -249,6 +358,10 @@ export default function Home() {
         onCancelEdit={() => setEditingMessageId(null)}
         onEditContentChange={setEditContent}
         onDeleteMessage={handleDeleteMessage}
+        onAdminDeleteMessage={(id) => {
+          const msg = messages.find(m => m.id === id);
+          if (msg) handleAdminDeleteMessage(id, msg.content);
+        }}
         onOpenUserProfile={openUserProfile}
         onToggleReaction={toggleReaction}
       />
@@ -261,9 +374,17 @@ export default function Home() {
           user={user}
           typingUsers={typingUsers}
           viewerId={viewerId}
+          isServerAdmin={isServerAdmin}
           onInvite={() => setShowInviteModal(true)}
           onKick={kickMember}
-          onBan={banMember}
+          onBan={(userId) => {
+            const member = members.find(m => m.user_id === userId);
+            if (member) handleAdminBan(userId, member.username);
+          }}
+          onMute={(userId) => {
+            const member = members.find(m => m.user_id === userId);
+            if (member) handleAdminMute(userId, member.username);
+          }}
           onOpenProfile={openUserProfile}
         />
       )}
@@ -353,6 +474,7 @@ export default function Home() {
           userId={selectedPublicUserId}
           onClose={() => setSelectedPublicUserId(null)}
           onFriendAdded={refreshFriends}
+          onFriendRemoved={refreshFriends}
         />
       )}
 
@@ -363,6 +485,43 @@ export default function Home() {
           onClose={() => setShowInviteModal(false)}
         />
       )}
+      
+      {/* Admin Modals */}
+      <AdminDeleteMessageModal
+        show={showAdminDeleteMessage}
+        messageContent={adminDeleteMessageContent}
+        onClose={() => {
+          setShowAdminDeleteMessage(false);
+          setAdminDeleteMessageId(null);
+          setAdminDeleteMessageContent("");
+        }}
+        onConfirm={confirmAdminDeleteMessage}
+      />
+      
+      <AdminBanModal
+        show={showAdminBan}
+        username={adminBanUsername}
+        onClose={() => {
+          setShowAdminBan(false);
+          setAdminBanUserId(null);
+          setAdminBanUsername("");
+        }}
+        onConfirm={confirmAdminBan}
+      />
+      
+      <AdminMuteModal
+        show={showAdminMute}
+        username={adminMuteUsername}
+        onClose={() => {
+          setShowAdminMute(false);
+          setAdminMuteUserId(null);
+          setAdminMuteUsername("");
+        }}
+        onConfirm={confirmAdminMute}
+      />
+      
+      {/* Premium Floating Button - Disabled since everything is free */}
+      {/* <PremiumFloatingButton /> */}
     </main>
   );
 }

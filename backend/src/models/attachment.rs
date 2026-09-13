@@ -22,4 +22,3 @@ pub struct AttachmentCreate {
     pub content_type: Option<String>,
     pub file_size: Option<i64>,
 }
-

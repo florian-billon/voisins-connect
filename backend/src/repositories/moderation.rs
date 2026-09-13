@@ -17,7 +17,7 @@ impl ModerationRepository {
     pub async fn get_all_rules(&self) -> sqlx::Result<Vec<ModerationRule>> {
         sqlx::query_as::<_, ModerationRule>(
             "SELECT id, rule_type, keywords, action, severity, enabled, created_at, updated_at 
-             FROM moderation_rules WHERE enabled = true"
+             FROM moderation_rules WHERE enabled = true",
         )
         .fetch_all(&self.pool)
         .await
@@ -26,7 +26,7 @@ impl ModerationRepository {
     pub async fn get_rules_by_type(&self, rule_type: &str) -> sqlx::Result<Vec<ModerationRule>> {
         sqlx::query_as::<_, ModerationRule>(
             "SELECT id, rule_type, keywords, action, severity, enabled, created_at, updated_at 
-             FROM moderation_rules WHERE rule_type = $1 AND enabled = true"
+             FROM moderation_rules WHERE rule_type = $1 AND enabled = true",
         )
         .bind(rule_type)
         .fetch_all(&self.pool)
@@ -43,7 +43,7 @@ impl ModerationRepository {
         sqlx::query_as::<_, ModerationRule>(
             "INSERT INTO moderation_rules (rule_type, keywords, action, severity) 
              VALUES ($1, $2, $3, $4)
-             RETURNING id, rule_type, keywords, action, severity, enabled, created_at, updated_at"
+             RETURNING id, rule_type, keywords, action, severity, enabled, created_at, updated_at",
         )
         .bind(rule_type)
         .bind(keywords)
@@ -89,7 +89,7 @@ impl ModerationRepository {
         sqlx::query_as::<_, ModeratedMessage>(
             "SELECT id, message_id, user_id, channel_id, dm_id, rule_type, severity, action_taken, 
                     original_content, is_visible, reviewed_by, reviewed_at, created_at
-             FROM moderated_messages WHERE user_id = $1 ORDER BY created_at DESC LIMIT $2"
+             FROM moderated_messages WHERE user_id = $1 ORDER BY created_at DESC LIMIT $2",
         )
         .bind(user_id)
         .bind(limit)
@@ -116,4 +116,3 @@ impl ModerationRepository {
         .await
     }
 }
-

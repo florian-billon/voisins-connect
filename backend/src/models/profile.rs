@@ -46,4 +46,3 @@ impl From<ProfileUpload> for ProfileUploadResponse {
 pub struct SetCurrentAvatarPayload {
     pub profile_upload_id: Uuid,
 }
-

@@ -11,8 +11,8 @@ pub async fn list_friends(
     State(state): State<AppState>,
     ctx: Ctx,
 ) -> Result<Json<Vec<FriendSummary>>> {
-    let friends = state.friendship_repo.list_friends(ctx.user_id( }).await?;
-    Ok(Json(friends })
+    let friends = state.friendship_repo.list_friends(ctx.user_id()).await?;
+    Ok(Json(friends))
 }
 
 pub async fn add_friend(
@@ -40,4 +40,15 @@ pub async fn add_friend(
     Ok(StatusCode::NO_CONTENT)
 }
 
+pub async fn remove_friend(
+    State(state): State<AppState>,
+    ctx: Ctx,
+    Path(friend_id): Path<Uuid>,
+) -> Result<StatusCode> {
+    state
+        .friendship_repo
+        .delete(ctx.user_id(), friend_id)
+        .await?;
 
+    Ok(StatusCode::NO_CONTENT)
+}

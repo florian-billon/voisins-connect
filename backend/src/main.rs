@@ -26,8 +26,8 @@ mod web;
 
 use repositories::{
     AttachmentRepository, ChannelRepository, DirectMessageRepository, DmRepository,
-    FriendshipRepository, InviteRepository, MessageRepository, ServerRepository, UserRepository,
-    SubscriptionRepository, ModerationRepository, VoiceRepository, ProfileRepository,
+    FriendshipRepository, InviteRepository, MessageRepository, ModerationRepository,
+    ProfileRepository, ServerRepository, SubscriptionRepository, UserRepository, VoiceRepository,
 };
 use web::MetricsSnapshot;
 use web::{WsHub, WsMetrics};
@@ -57,7 +57,6 @@ pub struct AppState {
     pub moderation_repo: ModerationRepository,
     pub voice_repo: VoiceRepository,
     pub profile_repo: ProfileRepository,
-    pub stripe_service: services::stripe::StripeService,
     pub s3_service: services::s3::S3Service,
     pub webrtc_service: services::webrtc::WebRTCService,
     pub ws_hub: web::WsHub,
@@ -193,14 +192,7 @@ async fn main() {
     let message_repo = MessageRepository::new(mongo_db.clone());
     let dm_message_repo = DirectMessageRepository::new(mongo_db.clone());
 
-    let stripe_api_key = read_env_var("STRIPE_API_KEY")
-        .expect("STRIPE_API_KEY environment variable must be set");
-    let stripe_price_id = read_env_var("STRIPE_PRICE_ID")
-        .expect("STRIPE_PRICE_ID environment variable must be set");
-    let stripe_service = services::stripe::StripeService::new(stripe_api_key, stripe_price_id);
-
-    let s3_bucket = read_env_var("S3_BUCKET")
-        .expect("S3_BUCKET environment variable must be set");
+    let s3_bucket = read_env_var("S3_BUCKET").expect("S3_BUCKET environment variable must be set");
     let s3_service = services::s3::S3Service::new(s3_bucket)
         .await
         .expect("Failed to initialize S3 service");
@@ -215,6 +207,12 @@ async fn main() {
         .await
         .expect("Failed to apply PostgreSQL bootstrap schema");
     tracing::info!("PostgreSQL bootstrap schema applied");
+
+    tracing::info!("Initializing default moderation rules");
+    services::moderation::initialize_rules(&moderation_repo)
+        .await
+        .expect("Failed to initialize moderation rules");
+    tracing::info!("Default moderation rules initialized");
 
     let state = AppState {
         db: pool,
@@ -233,7 +231,6 @@ async fn main() {
         moderation_repo,
         voice_repo,
         profile_repo,
-        stripe_service,
         s3_service,
         webrtc_service,
         ws_hub,
@@ -358,5 +355,3 @@ mod tests {
         assert_eq!(origins.len(), 3);
     }
 }
-
-

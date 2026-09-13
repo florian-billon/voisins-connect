@@ -1,7 +1,7 @@
 use sqlx::PgPool;
 use uuid::Uuid;
 
-use crate::models::{MemberRole, Server, ServerBan, ServerMember};
+use crate::models::{MemberRole, Server, ServerBan, ServerMember, ServerMute};
 
 #[derive(Clone)]
 pub struct ServerRepository {
@@ -119,7 +119,7 @@ impl ServerRepository {
             .bind(server_id)
             .execute(&self.pool)
             .await?;
-        Ok(( })
+        Ok(())
     }
 
     pub async fn find_member(
@@ -162,7 +162,7 @@ impl ServerRepository {
             .bind(user_id)
             .execute(&self.pool)
             .await?;
-        Ok(( })
+        Ok(())
     }
 
     pub async fn list_members(&self, server_id: Uuid) -> sqlx::Result<Vec<ServerMember>> {
@@ -227,7 +227,7 @@ impl ServerRepository {
             .bind(user_id)
             .execute(&self.pool)
             .await?;
-        Ok(( })
+        Ok(())
     }
 
     pub async fn list_bans(&self, server_id: Uuid) -> sqlx::Result<Vec<ServerBan>> {
@@ -258,8 +258,59 @@ impl ServerRepository {
         .bind(user_id)
         .fetch_optional(&self.pool)
         .await?;
-        Ok(banned.unwrap_or(false })
+        Ok(banned.unwrap_or(false))
+    }
+
+    // Mute operations
+    pub async fn upsert_mute(
+        &self,
+        server_id: Uuid,
+        user_id: Uuid,
+        muted_by: Uuid,
+        reason: Option<String>,
+        expires_at: chrono::DateTime<chrono::Utc>,
+    ) -> sqlx::Result<ServerMute> {
+        sqlx::query_as::<_, ServerMute>(
+            r#"
+            INSERT INTO server_mutes (server_id, user_id, muted_by, reason, muted_at, expires_at)
+            VALUES ($1, $2, $3, $4, NOW(), $5)
+            ON CONFLICT (server_id, user_id)
+            DO UPDATE SET muted_by = EXCLUDED.muted_by, reason = EXCLUDED.reason, muted_at = NOW(), expires_at = EXCLUDED.expires_at
+            RETURNING server_id, user_id, muted_by, reason, muted_at, expires_at
+            "#,
+        )
+        .bind(server_id)
+        .bind(user_id)
+        .bind(muted_by)
+        .bind(reason)
+        .bind(expires_at)
+        .fetch_one(&self.pool)
+        .await
+    }
+
+    pub async fn remove_mute(&self, server_id: Uuid, user_id: Uuid) -> sqlx::Result<()> {
+        sqlx::query("DELETE FROM server_mutes WHERE server_id = $1 AND user_id = $2")
+            .bind(server_id)
+            .bind(user_id)
+            .execute(&self.pool)
+            .await?;
+        Ok(())
+    }
+
+    pub async fn is_user_muted(&self, server_id: Uuid, user_id: Uuid) -> sqlx::Result<bool> {
+        let muted: Option<bool> = sqlx::query_scalar(
+            r#"
+            SELECT TRUE
+            FROM server_mutes
+            WHERE server_id = $1
+              AND user_id = $2
+              AND expires_at > NOW( })
+            "#,
+        )
+        .bind(server_id)
+        .bind(user_id)
+        .fetch_optional(&self.pool)
+        .await?;
+        Ok(muted.unwrap_or(false))
     }
 }
-
-

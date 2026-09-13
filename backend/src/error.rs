@@ -144,14 +144,11 @@ impl Error {
             Self::Unauthorized => (StatusCode::UNAUTHORIZED, "Unauthorized"),
             Self::Validation { .. } => (StatusCode::BAD_REQUEST, "Validation error"),
             Self::NotFound { .. } => (StatusCode::NOT_FOUND, "Not found"),
-            Self::Database { .. } | Self::DatabaseError { .. } => (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                "Database error",
-            ),
+            Self::Database { .. } | Self::DatabaseError { .. } => {
+                (StatusCode::INTERNAL_SERVER_ERROR, "Database error")
+            }
             Self::BadRequest { .. } => (StatusCode::BAD_REQUEST, "Bad request"),
             Self::InternalError { .. } => (StatusCode::INTERNAL_SERVER_ERROR, "Internal error"),
         }
     }
 }
-
-

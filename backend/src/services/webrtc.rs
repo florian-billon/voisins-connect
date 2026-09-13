@@ -34,20 +34,13 @@ pub enum SignalingMessage {
     },
 
     #[serde(rename = "call-ended")]
-    CallEnded {
-        call_id: Uuid,
-    },
+    CallEnded { call_id: Uuid },
 
     #[serde(rename = "call-rejected")]
-    CallRejected {
-        call_id: Uuid,
-        reason: String,
-    },
+    CallRejected { call_id: Uuid, reason: String },
 
     #[serde(rename = "error")]
-    Error {
-        message: String,
-    },
+    Error { message: String },
 }
 
 #[derive(Clone)]
@@ -63,14 +56,12 @@ impl WebRTCService {
 
     /// Validate SDP offer
     pub fn validate_offer(offer: &serde_json::Value) -> bool {
-        offer.get("type").and_then(|t| t.as_str( }) == Some("offer")
-            && offer.get("sdp").is_some()
+        offer.get("type").and_then(|t| t.as_str()) == Some("offer") && offer.get("sdp").is_some()
     }
 
     /// Validate SDP answer
     pub fn validate_answer(answer: &serde_json::Value) -> bool {
-        answer.get("type").and_then(|t| t.as_str( }) == Some("answer")
-            && answer.get("sdp").is_some()
+        answer.get("type").and_then(|t| t.as_str()) == Some("answer") && answer.get("sdp").is_some()
     }
 
     /// Validate ICE candidate
@@ -108,5 +99,3 @@ impl Default for WebRTCService {
         Self::new()
     }
 }
-
-

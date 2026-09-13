@@ -139,4 +139,3 @@ pub struct UpdateVoiceChannelPayload {
     pub position: Option<i32>,
     pub max_users: Option<i32>,
 }
-

@@ -24,7 +24,7 @@ pub async fn create_invite(
         ctx.user_id(),
     )
     .await?;
-    Ok(Json(invite })
+    Ok(Json(invite))
 }
 
 pub async fn list_invites(
@@ -39,7 +39,7 @@ pub async fn list_invites(
         ctx.user_id(),
     )
     .await?;
-    Ok(Json(invites })
+    Ok(Json(invites))
 }
 
 pub async fn get_invite(
@@ -47,7 +47,7 @@ pub async fn get_invite(
     Path(code): Path<String>,
 ) -> Result<Json<Invite>> {
     let invite = services::get_invite_by_code(&state.invite_repo, &code).await?;
-    Ok(Json(invite })
+    Ok(Json(invite))
 }
 
 pub async fn accept_invite(
@@ -63,7 +63,7 @@ pub async fn accept_invite(
         ctx.user_id(),
     )
     .await?;
-    Ok(Json(serde_json::json!({ "server_id": server_id } } })
+    Ok(Json(serde_json::json!({ "server_id": server_id })))
 }
 
 pub async fn join_server_with_code(
@@ -78,7 +78,5 @@ pub async fn join_server_with_code(
         ctx.user_id(),
     )
     .await?;
-    Ok(Json(serde_json::json!({ "server_id": server_id } } })
+    Ok(Json(serde_json::json!({ "server_id": server_id })))
 }
-
-

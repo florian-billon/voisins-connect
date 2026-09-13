@@ -27,8 +27,11 @@ futures = "0.3"
 jsonwebtoken = "9"
 bcrypt = "0.16"
 
-# Payment - Stripe (mock implementation for now)
-# stripe = { version = "0.15", features = ["async", "events"] }
+# Payment - Stripe
+reqwest = { version = "0.11", features = ["json", "rustls-tls"] }
+
+# Payment - PayPal
+paypal-rs = "0.2"
 
 # Cloud Storage - AWS S3
 aws-config = "1"

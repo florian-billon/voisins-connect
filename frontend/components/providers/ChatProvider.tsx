@@ -52,6 +52,7 @@ interface ChatContextType {
   members: ServerMember[];
   kickMember: (userId: string) => Promise<boolean>;
   banMember: (userId: string) => Promise<boolean>;
+  muteMember: (userId: string) => Promise<boolean>;
 
   // UI State
   showProfile: boolean;
@@ -104,7 +105,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     loading: messagesLoading, error: messagesError, typingUsers, typingStart, typingStop,
   } = useMessages(selectedChannel?.id ?? null, user?.id ?? null);
 
-  const { members, kickMember, banMember } = useMembers(selectedServer?.id ?? null);
+  const { members, kickMember, banMember, muteMember } = useMembers(selectedServer?.id ?? null);
 
   // UI States
   const [showProfile, setShowProfile] = useState(false);
@@ -157,6 +158,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     members,
     kickMember,
     banMember,
+    muteMember,
     showProfile,
     setShowProfile,
     selectedPublicUserId,

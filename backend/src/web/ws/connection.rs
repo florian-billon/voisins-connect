@@ -65,12 +65,12 @@ impl WsConnection {
                     result = hub_rx.recv() => {
                         match result {
                             Ok(msg) => {
-                                if sender.send(Message::Text(msg.into( } }).await.is_err() {
+                                if sender.send(Message::Text(msg.into())).await.is_err() {
                                     break; // Connexion fermée
                                 }
                             }
                             Err(broadcast::error::RecvError::Closed) => break,
-                            Err(broadcast::error::RecvError::Lagged(skipped }) => {
+                            Err(broadcast::error::RecvError::Lagged(skipped)) => {
                                 tracing::warn!("[WS] Connection {} lagged, skipped {} messages", conn_id, skipped);
                             }
                         }
@@ -79,7 +79,7 @@ impl WsConnection {
                     error_msg = error_rx.recv() => {
                         match error_msg {
                             Some(msg) => {
-                                if sender.send(Message::Text(msg.into( } }).await.is_err() {
+                                if sender.send(Message::Text(msg.into())).await.is_err() {
                                     break;
                                 }
                             }
@@ -88,7 +88,7 @@ impl WsConnection {
                     }
                     // Heartbeat ping
                     _ = interval.tick() => {
-                        if sender.send(Message::Ping(axum::body::Bytes::new( } }).await.is_err() {
+                        if sender.send(Message::Ping(axum::body::Bytes::new())).await.is_err() {
                             break;
                         }
                     }
@@ -102,7 +102,7 @@ impl WsConnection {
         let mut read_task = tokio::spawn(async move {
             while let Some(msg) = receiver.next().await {
                 match msg {
-                    Ok(Message::Text(text }) => {
+                    Ok(Message::Text(text)) => {
                         tracing::debug!(
                             "[WS] Received text message from {}: {}",
                             conn_id_clone,
@@ -122,7 +122,7 @@ impl WsConnection {
                                     event
                                 );
                                 // Envoyer au handler principal via channel
-                                if tx.send((conn_id_clone, event }).await.is_err() {
+                                if tx.send((conn_id_clone, event)).await.is_err() {
                                     break; // Handler fermé
                                 }
                             }
@@ -138,17 +138,17 @@ impl WsConnection {
                             }
                         }
                     }
-                    Ok(Message::Binary(_ }) => {
+                    Ok(Message::Binary(_)) => {
                         tracing::warn!("[WS] Binary messages not supported");
                     }
-                    Ok(Message::Ping(_ }) => {
+                    Ok(Message::Ping(_)) => {
                         // Ping géré automatiquement par axum
                         // Pas besoin de répondre manuellement
                     }
-                    Ok(Message::Pong(_ }) => {
+                    Ok(Message::Pong(_)) => {
                         // Pong reçu (géré automatiquement par axum)
                     }
-                    Ok(Message::Close(_ }) => {
+                    Ok(Message::Close(_)) => {
                         break;
                     }
                     Err(e) => {
@@ -203,5 +203,3 @@ impl WsConnection {
         self.user_id
     }
 }
-
-

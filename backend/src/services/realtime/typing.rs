@@ -15,7 +15,7 @@ use crate::AppState;
 type TypingCache = Arc<Mutex<HashMap<(Uuid, Uuid), Instant>>>;
 
 lazy_static::lazy_static! {
-    static ref TYPING_CACHE: TypingCache = Arc::new(Mutex::new(HashMap::new( } });
+    static ref TYPING_CACHE: TypingCache = Arc::new(Mutex::new(HashMap::new()));
 }
 
 const TYPING_TIMEOUT: Duration = Duration::from_secs(3);
@@ -36,8 +36,8 @@ pub async fn handle_typing_start(state: &AppState, user_id: Uuid, channel_id: Uu
 
     // Récupérer le username
     let username = match state.user_repo.get_username(user_id).await {
-        Ok(Some(name }) => name,
-        _ => return Ok(( }), // User not found, ignore
+        Ok(Some(name)) => name,
+        _ => return Ok(()), // User not found, ignore
     };
 
     // Mettre à jour le cache
@@ -60,7 +60,7 @@ pub async fn handle_typing_start(state: &AppState, user_id: Uuid, channel_id: Uu
         state.ws_hub.broadcast_to_channel(channel_id, &event).await;
     }
 
-    Ok(( })
+    Ok(())
 }
 
 /// Traite un événement "typing stop"
@@ -91,7 +91,7 @@ pub async fn handle_typing_stop(state: &AppState, user_id: Uuid, channel_id: Uui
         state.ws_hub.broadcast_to_channel(channel_id, &event).await;
     }
 
-    Ok(( })
+    Ok(())
 }
 
 /// Nettoyage périodique du cache typing (expiration)
@@ -101,5 +101,3 @@ pub async fn cleanup_typing_cache() {
 
     cache.retain(|_, timestamp| now.duration_since(*timestamp) < TYPING_TIMEOUT);
 }
-
-

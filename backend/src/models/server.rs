@@ -66,6 +66,13 @@ pub struct BanMemberPayload {
     pub expires_at: Option<DateTime<Utc>>,
 }
 
+#[derive(Debug, Deserialize)]
+pub struct MuteMemberPayload {
+    pub reason: Option<String>,
+    /// ISO 8601 string. Mute is temporary until this timestamp.
+    pub expires_at: DateTime<Utc>,
+}
+
 #[derive(Debug, Clone, Serialize, FromRow)]
 pub struct ServerBan {
     pub server_id: Uuid,
@@ -76,3 +83,12 @@ pub struct ServerBan {
     pub banned_at: DateTime<Utc>,
 }
 
+#[derive(Debug, Clone, Serialize, FromRow)]
+pub struct ServerMute {
+    pub server_id: Uuid,
+    pub user_id: Uuid,
+    pub muted_by: Uuid,
+    pub reason: Option<String>,
+    pub muted_at: DateTime<Utc>,
+    pub expires_at: DateTime<Utc>,
+}

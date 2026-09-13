@@ -59,22 +59,21 @@ pub async fn handle_user_offline(state: &AppState, user_id: Uuid) {
 }
 
 /// Traite une mise à jour de présence manuelle (dnd, invisible, etc.)
-<<<<<<< HEAD
-pub async fn handle_presence_update(state: &AppState, user_id: Uuid, status: String) {
+pub async fn handle_presence_update(state: &AppState, user_id: Uuid, status: UserStatus) {
     // Valider le statut
+    let status_str = match status {
+        UserStatus::Online => "online",
+        UserStatus::Offline => "offline",
+        UserStatus::Dnd => "dnd",
+        UserStatus::Invisible => "invisible",
+    };
     let valid_statuses = ["online", "offline", "dnd", "invisible"];
-    if !valid_statuses.contains(&status.as_str( }) {
+    if !valid_statuses.contains(&status_str) {
         return;
     }
 
-    broadcast_presence_to_shared_servers(state, user_id, &status).await;
-=======
-pub async fn handle_presence_update(state: &AppState, user_id: Uuid, status: UserStatus) {
     broadcast_presence_to_shared_servers(state, user_id, status).await;
->>>>>>> 6a5b2b5a7b997195505aac8ff5300ad81643365c
 
     // Optionnel : sauvegarder en DB
     // state.user_repo.update_status(user_id, status).await?;
 }
-
-

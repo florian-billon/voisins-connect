@@ -23,7 +23,7 @@ impl UserRepository {
 
     pub async fn find_by_id(&self, user_id: Uuid) -> sqlx::Result<Option<User>> {
         sqlx::query_as::<_, User>(
-            "SELECT id, email, password_hash, username, avatar_url, status, created_at FROM users WHERE id = $1",
+            "SELECT id, email, password_hash, username, avatar_url, apartment_number, status, created_at FROM users WHERE id = $1",
         )
         .bind(user_id)
         .fetch_optional(&self.pool)
@@ -32,11 +32,11 @@ impl UserRepository {
 
     pub async fn find_by_ids(&self, user_ids: &[Uuid]) -> sqlx::Result<Vec<User>> {
         if user_ids.is_empty() {
-            return Ok(Vec::new( });
+            return Ok(Vec::new());
         }
 
         sqlx::query_as::<_, User>(
-            "SELECT id, email, password_hash, username, avatar_url, status, created_at FROM users WHERE id = ANY($1)",
+            "SELECT id, email, password_hash, username, avatar_url, apartment_number, status, created_at FROM users WHERE id = ANY($1)",
         )
         .bind(user_ids)
         .fetch_all(&self.pool)
@@ -48,7 +48,7 @@ impl UserRepository {
         user_ids: &[Uuid],
     ) -> sqlx::Result<std::collections::HashMap<Uuid, String>> {
         if user_ids.is_empty() {
-            return Ok(std::collections::HashMap::new( });
+            return Ok(std::collections::HashMap::new());
         }
 
         let rows: Vec<(Uuid, String)> =
@@ -57,7 +57,7 @@ impl UserRepository {
                 .fetch_all(&self.pool)
                 .await?;
 
-        Ok(rows.into_iter().collect( })
+        Ok(rows.into_iter().collect())
     }
 
     pub async fn get_username(&self, user_id: Uuid) -> sqlx::Result<Option<String>> {
@@ -73,7 +73,7 @@ impl UserRepository {
         let normalized = normalize_username(username);
 
         let user = sqlx::query_as::<_, User>(
-            "SELECT id, email, password_hash, username, avatar_url, status, created_at
+            "SELECT id, email, password_hash, username, avatar_url, apartment_number, status, created_at
              FROM users
              WHERE lower(btrim(username }) = lower($1)",
         )
@@ -85,7 +85,7 @@ impl UserRepository {
 
     pub async fn get_by_email(&self, email: &str) -> sqlx::Result<Option<User>> {
         sqlx::query_as::<_, User>(
-            "SELECT id, email, password_hash, username, avatar_url, status, created_at
+            "SELECT id, email, password_hash, username, avatar_url, apartment_number, status, created_at
              FROM users
              WHERE lower(btrim(email }) = lower($1)",
         )
@@ -102,7 +102,7 @@ impl UserRepository {
     ) -> sqlx::Result<Vec<UserSearchResponse>> {
         let normalized = normalize_username(query);
         if normalized.is_empty() {
-            return Ok(Vec::new( });
+            return Ok(Vec::new());
         }
 
         let escaped = escape_like_pattern(&normalized);
@@ -111,7 +111,7 @@ impl UserRepository {
 
         sqlx::query_as::<_, UserSearchResponse>(
             r#"
-            SELECT id, username, avatar_url, status
+            SELECT id, username, avatar_url, apartment_number, status
             FROM users
             WHERE id <> $1
               AND lower(btrim(username }) LIKE lower($2) ESCAPE '\'
@@ -145,6 +145,7 @@ impl UserRepository {
                 u.id,
                 u.username,
                 u.avatar_url,
+                u.apartment_number,
                 u.status,
                 u.created_at,
                 (u.id = $2) AS is_self,
@@ -172,17 +173,17 @@ impl UserRepository {
             "UPDATE users SET 
                 username = COALESCE($1, username), 
                 avatar_url = COALESCE($2, avatar_url), 
-                status = COALESCE($3, status) 
-            WHERE id = $4
-            RETURNING id, email, password_hash, username, avatar_url, status, created_at",
+                apartment_number = COALESCE($3, apartment_number),
+                status = COALESCE($4, status) 
+            WHERE id = $5
+            RETURNING id, email, password_hash, username, avatar_url, apartment_number, status, created_at",
         )
         .bind(payload.username)
         .bind(payload.avatar_url)
+        .bind(payload.apartment_number)
         .bind(payload.status)
         .bind(user_id)
         .fetch_optional(&self.pool)
         .await
     }
 }
-
-

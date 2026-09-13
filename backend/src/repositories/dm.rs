@@ -126,8 +126,6 @@ impl DmRepository {
         .fetch_optional(&self.pool)
         .await?;
 
-        Ok(row.map(|row| (row.get("user1_id"), row.get("user2_id" }) })
+        Ok(row.map(|row| (row.get("user1_id"), row.get("user2_id"))))
     }
 }
-
-

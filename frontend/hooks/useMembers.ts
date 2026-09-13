@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { banMember as apiBanMember, listMembers, kickMember as apiKickMember, ServerMember } from "@/lib/api-client";
+import { banMember as apiBanMember, listMembers, kickMember as apiKickMember, muteMember as apiMuteMember, ServerMember } from "@/lib/api-client";
 import { handleAuthError, isAuthError, getErrorMessage } from "@/lib/auth/utils";
 import { useWebSocket } from "./useWebSocket";
 import { ServerEvent } from "@/lib/gateway";
@@ -99,6 +99,18 @@ export function useMembers(serverId: string | null) {
     }
   }, [serverId, loadMembers, toUiError]);
 
+  const muteMember = useCallback(async (userId: string): Promise<boolean> => {
+    if (!serverId) return false;
+    try {
+      await apiMuteMember(serverId, userId);
+      return true;
+    } catch (err) {
+      const errorMessage = toUiError(err, "error.hooks.members.mute");
+      if (isAuthError(errorMessage)) handleAuthError();
+      return false;
+    }
+  }, [serverId, toUiError]);
+
   const refresh = useCallback(() => {
     if (serverId) {
       loadMembers(serverId);
@@ -125,5 +137,6 @@ export function useMembers(serverId: string | null) {
     getUserStatus,
     kickMember,
     banMember,
+    muteMember,
   };
 }

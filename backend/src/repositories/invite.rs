@@ -63,7 +63,7 @@ impl InviteRepository {
             .bind(invite_id)
             .execute(&self.pool)
             .await?;
-        Ok(( })
+        Ok(())
     }
 
     pub async fn increment_use_if_valid(&self, invite_id: Uuid) -> sqlx::Result<bool> {
@@ -89,8 +89,6 @@ impl InviteRepository {
             .bind(invite_id)
             .execute(&self.pool)
             .await?;
-        Ok(( })
+        Ok(())
     }
 }
-
-

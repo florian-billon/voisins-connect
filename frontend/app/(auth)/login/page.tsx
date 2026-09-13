@@ -51,16 +51,16 @@ export default function LoginPage() {
 
   return (
     <main className="relative w-screen h-screen overflow-hidden">
-      <div className="fixed inset-0 bg-[url('/background.png')] bg-cover bg-center bg-no-repeat brightness-[0.7] contrast-[1.1] z-0" />
+      <div className="fixed inset-0 bg-[url('/background-clouds.png')] bg-cover bg-center bg-no-repeat brightness-[0.7] contrast-[1.1] z-0" />
 
       <div className="relative z-10 flex w-full h-full items-center justify-center">
         <div className="flex flex-col items-center justify-center p-6">
           <Image
             src="/logo.png"
             alt={t("auth.logoAlt")}
-            width={120}
-            height={120}
-            className="mb-6"
+            width={100}
+            height={100}
+            className="mb-4 md:mb-6 w-20 h-20 md:w-30 md:h-30"
           />
 
           <header className="mb-8 text-center">
@@ -69,7 +69,7 @@ export default function LoginPage() {
             </h1>
           </header>
 
-          <section className="w-[380px] p-10 bg-[rgba(20,20,20,0.85)] backdrop-blur-xl rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.5)] border-2 border-[#4fdfff] animate-[fadeIn_0.5s_ease]">
+          <section className="w-full max-w-[380px] p-6 md:p-8 md:px-10 bg-[rgba(20,20,20,0.85)] backdrop-blur-xl rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.5)] border-2 border-[#4fdfff] animate-[fadeIn_0.5s_ease]">
             <div className="text-center mb-8">
               <h3 className="text-white font-bold tracking-widest text-lg">{t("auth.login.title")}</h3>
             </div>

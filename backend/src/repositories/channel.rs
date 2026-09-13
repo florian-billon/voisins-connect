@@ -60,7 +60,7 @@ impl ChannelRepository {
         .bind(server_id)
         .fetch_optional(&self.pool)
         .await?;
-        Ok(result.flatten( })
+        Ok(result.flatten())
     }
 
     pub async fn update(
@@ -89,8 +89,6 @@ impl ChannelRepository {
             .bind(channel_id)
             .execute(&self.pool)
             .await?;
-        Ok(( })
+        Ok(())
     }
 }
-
-

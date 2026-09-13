@@ -22,16 +22,24 @@ export default function SmartImg({ src, alt, fallbackSrc, onError, ...props }: S
     setCurrentSrc(src);
   }
 
+  console.log("SmartImg props:", { src, alt, fallbackSrc, currentSrc });
+
   return (
     <img
       {...props}
       alt={alt}
       src={currentSrc}
       onError={(e) => {
+        console.error("SmartImg error:", e);
+        console.error("Failed to load image:", currentSrc);
         if (fallbackSrc && currentSrc !== fallbackSrc) {
+          console.log("Switching to fallback:", fallbackSrc);
           setCurrentSrc(fallbackSrc);
         }
         onError?.(e);
+      }}
+      onLoad={() => {
+        console.log("SmartImg loaded successfully:", currentSrc);
       }}
     />
   );

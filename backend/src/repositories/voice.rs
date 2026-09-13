@@ -1,7 +1,7 @@
-use sqlx::PgPool;
-use uuid::Uuid;
 use chrono::DateTime;
 use chrono::Utc;
+use sqlx::PgPool;
+use uuid::Uuid;
 
 use crate::models::{VoiceCall, VoiceChannel};
 
@@ -26,7 +26,7 @@ impl VoiceRepository {
             "INSERT INTO voice_calls (initiator_id, recipient_id, voice_channel_id, status) 
              VALUES ($1, $2, $3, $4)
              RETURNING id, initiator_id, recipient_id, voice_channel_id, status, started_at, 
-                      ended_at, duration_seconds, signal_data, created_at, updated_at"
+                      ended_at, duration_seconds, signal_data, created_at, updated_at",
         )
         .bind(initiator_id)
         .bind(recipient_id)
@@ -40,7 +40,7 @@ impl VoiceRepository {
         sqlx::query_as::<_, VoiceCall>(
             "SELECT id, initiator_id, recipient_id, voice_channel_id, status, started_at, 
                     ended_at, duration_seconds, signal_data, created_at, updated_at 
-             FROM voice_calls WHERE id = $1"
+             FROM voice_calls WHERE id = $1",
         )
         .bind(call_id)
         .fetch_optional(&self.pool)
@@ -55,7 +55,7 @@ impl VoiceRepository {
         sqlx::query_as::<_, VoiceCall>(
             "UPDATE voice_calls SET status = $1, updated_at = NOW() WHERE id = $2
              RETURNING id, initiator_id, recipient_id, voice_channel_id, status, started_at, 
-                      ended_at, duration_seconds, signal_data, created_at, updated_at"
+                      ended_at, duration_seconds, signal_data, created_at, updated_at",
         )
         .bind(status)
         .bind(call_id)
@@ -63,10 +63,7 @@ impl VoiceRepository {
         .await
     }
 
-    pub async fn start_call(
-        &self,
-        call_id: Uuid,
-    ) -> sqlx::Result<Option<VoiceCall>> {
+    pub async fn start_call(&self, call_id: Uuid) -> sqlx::Result<Option<VoiceCall>> {
         sqlx::query_as::<_, VoiceCall>(
             "UPDATE voice_calls SET status = $1, started_at = NOW(), updated_at = NOW() WHERE id = $2
              RETURNING id, initiator_id, recipient_id, voice_channel_id, status, started_at, 
@@ -78,16 +75,13 @@ impl VoiceRepository {
         .await
     }
 
-    pub async fn end_call(
-        &self,
-        call_id: Uuid,
-    ) -> sqlx::Result<Option<VoiceCall>> {
+    pub async fn end_call(&self, call_id: Uuid) -> sqlx::Result<Option<VoiceCall>> {
         sqlx::query_as::<_, VoiceCall>(
             "UPDATE voice_calls SET status = $1, ended_at = NOW(), 
-             duration_seconds = EXTRACT(EPOCH FROM (NOW() - started_at })::int,
+             duration_seconds = EXTRACT(EPOCH FROM (NOW() - started_at))::int,
              updated_at = NOW() WHERE id = $2
              RETURNING id, initiator_id, recipient_id, voice_channel_id, status, started_at, 
-                      ended_at, duration_seconds, signal_data, created_at, updated_at"
+                      ended_at, duration_seconds, signal_data, created_at, updated_at",
         )
         .bind("ended")
         .bind(call_id)
@@ -105,7 +99,7 @@ impl VoiceRepository {
                     ended_at, duration_seconds, signal_data, created_at, updated_at
              FROM voice_calls 
              WHERE (initiator_id = $1 OR recipient_id = $1) AND status IN ('ended', 'rejected')
-             ORDER BY created_at DESC LIMIT $2"
+             ORDER BY created_at DESC LIMIT $2",
         )
         .bind(user_id)
         .bind(limit)
@@ -136,7 +130,10 @@ impl VoiceRepository {
         .await
     }
 
-    pub async fn find_voice_channel_by_id(&self, channel_id: Uuid) -> sqlx::Result<Option<VoiceChannel>> {
+    pub async fn find_voice_channel_by_id(
+        &self,
+        channel_id: Uuid,
+    ) -> sqlx::Result<Option<VoiceChannel>> {
         sqlx::query_as::<_, VoiceChannel>(
             "SELECT id, server_id, name, position, max_users, is_premium_only, created_at, updated_at 
              FROM voice_channels WHERE id = $1"
@@ -170,19 +167,19 @@ impl VoiceRepository {
         let mut param_count = 1;
 
         if name.is_some() {
-            query.push_str(&format!(", name = ${}", param_count });
+            query.push_str(&format!(", name = ${}", param_count));
             param_count += 1;
         }
         if position.is_some() {
-            query.push_str(&format!(", position = ${}", param_count });
+            query.push_str(&format!(", position = ${}", param_count));
             param_count += 1;
         }
         if max_users.is_some() {
-            query.push_str(&format!(", max_users = ${}", param_count });
+            query.push_str(&format!(", max_users = ${}", param_count));
             param_count += 1;
         }
 
-        query.push_str(&format!(" WHERE id = ${} RETURNING id, server_id, name, position, max_users, is_premium_only, created_at, updated_at", param_count });
+        query.push_str(&format!(" WHERE id = ${} RETURNING id, server_id, name, position, max_users, is_premium_only, created_at, updated_at", param_count));
 
         let mut q = sqlx::query_as::<_, VoiceChannel>(&query);
         if let Some(n) = name {
@@ -204,8 +201,6 @@ impl VoiceRepository {
             .bind(channel_id)
             .execute(&self.pool)
             .await?;
-        Ok(( })
+        Ok(())
     }
 }
-
-

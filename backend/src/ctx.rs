@@ -16,4 +16,3 @@ impl Ctx {
         self.user_id
     }
 }
-

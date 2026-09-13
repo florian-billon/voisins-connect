@@ -9,11 +9,11 @@ use crate::{AppState, Result};
 pub async fn me(State(state): State<AppState>, ctx: Ctx) -> Result<Json<UserResponse>> {
     let user = state
         .user_repo
-        .find_by_id(ctx.user_id( })
+        .find_by_id(ctx.user_id())
         .await?
         .ok_or(Error::UserNotFound)?;
 
-    Ok(Json(user.into( } })
+    Ok(Json(user.into()))
 }
 
 pub async fn update_me(
@@ -46,7 +46,5 @@ pub async fn update_me(
         crate::services::realtime::handle_presence_update(&state, ctx.user_id(), user.status).await;
     }
 
-    Ok(Json(user.into( } })
+    Ok(Json(user.into()))
 }
-
-

@@ -1,26 +1,55 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Providers } from "./providers";
+import NotificationSystem from "@/components/notifications/NotificationSystem";
+import ServiceWorkerRegister from "./sw-register";
 
 export const metadata: Metadata = {
-  title: "HELLO WORLD",
-  description: "Real Time Messaging Platform",
+  title: "voisins_connect",
+  description: "Application de quartier pour connecter les voisins",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "voisins_connect",
+  },
+  icons: {
+    icon: [
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+    ],
+  },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  themeColor: "#3b82f6",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="fr" className="w-full h-full overflow-hidden" suppressHydrationWarning>
-      <body className="w-full h-full font-medium text-white font-[system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif] antialiased [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:bg-[#4fdfff]/50 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:hover:bg-[#4fdfff] [&::-webkit-scrollbar-track]:bg-black/30">
+      <head>
+        <link rel="manifest" href="/manifest.json" />
+        <link rel="apple-touch-icon" href="/icon-192.png" />
+        <meta name="theme-color" content="#3b82f6" />
+      </head>
+      <body className="w-full h-full font-medium text-white font-[system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif] antialiased [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:bg-[#5b8cff]/50 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:hover:bg-[#5b8cff] [&::-webkit-scrollbar-track]:bg-black/30">
         <Providers>
+          <ServiceWorkerRegister />
           <div className="relative w-screen h-screen">
-            <div
-              className="fixed inset-0 bg-[url('/background.png')] bg-cover bg-center bg-no-repeat brightness-[0.4] contrast-[1.1] saturate-[1.2] z-0"
-            />
-            <div className="fixed inset-0 bg-gradient-to-b from-black/70 via-black/60 to-black/70 backdrop-blur-[2px] z-[1]" />
+            <div className="fixed inset-0 bg-[url('/background-clouds.png')] bg-cover bg-center bg-no-repeat brightness-[0.7] contrast-[1.1] z-0" />
             <div className="relative z-10">
               {children}
             </div>
           </div>
+          <NotificationSystem />
         </Providers>
       </body>
     </html>

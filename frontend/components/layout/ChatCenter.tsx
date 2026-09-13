@@ -6,7 +6,7 @@ import SmartImg from "@/components/ui/SmartImg";
 import Button from "@/components/ui/Button";
 import MessageReactions from "@/components/chat/MessageReactions";
 import GifPicker from "@/components/chat/GifPicker";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { uploadFile } from "@/lib/api-client";
 import { isTauriWindow } from "@/lib/runtime";
 
@@ -24,6 +24,7 @@ type Props = {
   user: User | null;
   currentUser?: User | null;
   viewerId: string | undefined;
+  isServerAdmin: boolean;
   onCreateServer: () => void;
   onCreateChannel: () => void;
   onSendMessage: (e: React.FormEvent) => void;
@@ -37,6 +38,7 @@ type Props = {
   onCancelEdit: () => void;
   onEditContentChange: (val: string) => void;
   onDeleteMessage: (id: string) => void;
+  onAdminDeleteMessage: (id: string) => void;
   onOpenUserProfile: (userId: string) => void;
   onToggleReaction: (messageId: string, emoji: string) => Promise<boolean>;
 };
@@ -44,16 +46,31 @@ type Props = {
 export default function ChatCenter({
   selectedServer, selectedChannel, messages, messagesLoading, messagesError,
   messageInput, showGifPicker, editingMessageId, editContent, typingUsers,
-  user, currentUser, viewerId,
+  user, currentUser, viewerId, isServerAdmin,
   onCreateServer, onCreateChannel, onSendMessage, onMessageInputChange,
   onMessageInputFocus, onMessageInputBlur, onToggleGifPicker, onSendGif,
   onStartEdit, onSaveEdit, onCancelEdit, onEditContentChange,
-  onDeleteMessage, onOpenUserProfile, onToggleReaction,
+  onDeleteMessage, onAdminDeleteMessage, onOpenUserProfile, onToggleReaction,
 }: Props) {
   const { t, locale } = useTranslation();
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
   const userForAvatar = currentUser || user;
+
+  // Auto-scroll to bottom when new messages arrive
+  useEffect(() => {
+    // Toujours scroller vers le bas quand de nouveaux messages arrivent
+    if (messages.length > 0) {
+      // Petit délai pour s'assurer que le DOM est mis à jour
+      setTimeout(() => {
+        const container = messagesContainerRef.current;
+        if (container) {
+          container.scrollTop = container.scrollHeight;
+        }
+      }, 100);
+    }
+  }, [messages]);
 
   const handleFileUpload = async () => {
     if (!selectedChannel) return;
@@ -116,9 +133,9 @@ export default function ChatCenter({
   const renderEmpty = () => (
     <div className="h-full flex items-center justify-center">
       <div className="text-center group">
-        <div className="w-32 h-32 rounded-full bg-[#4fdfff]/5 border-2 border-[#4fdfff]/20 flex items-center justify-center mb-8 mx-auto relative overflow-hidden">
-          <div className="absolute inset-0 bg-[#4fdfff]/5 blur-xl group-hover:blur-2xl transition-all" />
-          <svg className="w-16 h-16 text-[#4fdfff] relative z-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <div className="w-32 h-32 rounded-full bg-[#5b8cff]/5 border-2 border-[#5b8cff]/20 flex items-center justify-center mb-8 mx-auto relative overflow-hidden">
+          <div className="absolute inset-0 bg-[#5b8cff]/5 blur-xl group-hover:blur-2xl transition-all" />
+          <svg className="w-16 h-16 text-[#5b8cff] relative z-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M3 3h7v7H3z" /><path d="M14 3h7v7h-7z" /><path d="M14 14h7v7h-7z" /><path d="M3 14h7v7H3z" />
           </svg>
         </div>
@@ -127,7 +144,7 @@ export default function ChatCenter({
             <>
               <h2 className="text-3xl font-bold text-white mb-2">{t("chat.selectServer")}</h2>
               <p className="text-white/40 text-sm max-w-sm mx-auto leading-relaxed">{t("chat.selectServerPrompt")}</p>
-              <Button onClick={onCreateServer} variant="outline" className="mt-8 border-[#4fdfff] text-[#4fdfff] px-8 py-6 text-lg hover:bg-[#4fdfff]/10 transition-all font-bold mx-auto">
+              <Button onClick={onCreateServer} variant="outline" className="mt-8 border-[#5b8cff] text-[#5b8cff] px-8 py-6 text-lg hover:bg-[#5b8cff]/10 transition-all font-bold mx-auto">
                 {t("chat.createServerButton")}
               </Button>
             </>
@@ -135,7 +152,7 @@ export default function ChatCenter({
             <>
               <h2 className="text-3xl font-bold text-white mb-2">{t("channel.createTitle")}</h2>
               <p className="text-white/40 text-sm max-w-sm mx-auto leading-relaxed">{t("channel.createDescription", { serverName: selectedServer.name })}</p>
-              <Button onClick={onCreateChannel} variant="outline" className="mt-8 border-[#4fdfff] text-[#4fdfff] px-8 py-6 text-lg hover:bg-[#4fdfff]/10 transition-all font-bold mx-auto">
+              <Button onClick={onCreateChannel} variant="outline" className="mt-8 border-[#5b8cff] text-[#5b8cff] px-8 py-6 text-lg hover:bg-[#5b8cff]/10 transition-all font-bold mx-auto">
                 {t("channel.createTitle")}
               </Button>
             </>
@@ -150,8 +167,8 @@ export default function ChatCenter({
       return (
         <div className="h-full flex items-center justify-center">
           <div className="text-center">
-            <div className="w-8 h-8 border-2 border-[#4fdfff] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-            <p className="text-[#4fdfff] text-sm">{t("chat.loadingMessages")}</p>
+            <div className="w-8 h-8 border-2 border-[#5b8cff] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+            <p className="text-[#5b8cff] text-sm">{t("chat.loadingMessages")}</p>
           </div>
         </div>
       );
@@ -162,9 +179,9 @@ export default function ChatCenter({
     if (!Array.isArray(messages) || messages.length === 0) {
       return (
         <div className="h-full flex flex-col items-center justify-center text-center px-4">
-          <div className="w-32 h-32 rounded-full bg-[#4fdfff]/5 border-2 border-[#4fdfff]/20 flex items-center justify-center mb-8 mx-auto relative overflow-hidden group">
-            <div className="absolute inset-0 bg-[#4fdfff]/5 blur-xl group-hover:blur-2xl transition-all" />
-            <svg className="w-16 h-16 text-[#4fdfff] relative z-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <div className="w-32 h-32 rounded-full bg-[#5b8cff]/5 border-2 border-[#5b8cff]/20 flex items-center justify-center mb-8 mx-auto relative overflow-hidden group">
+            <div className="absolute inset-0 bg-[#5b8cff]/5 blur-xl group-hover:blur-2xl transition-all" />
+            <svg className="w-16 h-16 text-[#5b8cff] relative z-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <line x1="4" y1="9" x2="20" y2="9" /><line x1="4" y1="15" x2="20" y2="15" /><line x1="10" y1="3" x2="8" y2="21" /><line x1="16" y1="3" x2="14" y2="21" />
             </svg>
           </div>
@@ -181,12 +198,12 @@ export default function ChatCenter({
               <SmartImg
                 src={getAvatar(msg.author_id, userForAvatar)}
                 alt={msg.username}
-                className="w-10 h-10 rounded-full object-cover border border-[#4fdfff]/30 group-hover:border-[#4fdfff]/50 transition-colors"
+                className="w-10 h-10 rounded-full object-cover border border-[#5b8cff]/30 group-hover:border-[#5b8cff]/50 transition-colors"
               />
             </button>
             <div className="flex-1 min-w-0">
               <div className="flex items-baseline gap-2 mb-1">
-                <button type="button" onClick={() => onOpenUserProfile(msg.author_id)} className="font-semibold text-white hover:text-[#4fdfff] transition-colors cursor-pointer">
+                <button type="button" onClick={() => onOpenUserProfile(msg.author_id)} className="font-semibold text-white hover:text-[#5b8cff] transition-colors cursor-pointer">
                   {msg.username}
                 </button>
                 <span className="text-xs text-white/40">
@@ -204,10 +221,10 @@ export default function ChatCenter({
                     onKeyDown={(e) => e.key === "Escape" && onCancelEdit()}
                     placeholder={t("chat.editPlaceholder")}
                     aria-label={t("chat.editPlaceholder")}
-                    className="w-full px-3 py-1.5 bg-black/50 border border-[#4fdfff]/50 rounded text-white text-sm outline-none focus:border-[#4fdfff]"
+                    className="w-full px-3 py-1.5 bg-black/50 border border-[#5b8cff]/50 rounded text-white text-sm outline-none focus:border-[#5b8cff]"
                   />
                   <div className="flex gap-2 mt-2">
-                    <button type="submit" className="text-[10px] text-[#4fdfff] hover:underline font-bold uppercase">{t("chat.save")}</button>
+                    <button type="submit" className="text-[10px] text-[#5b8cff] hover:underline font-bold uppercase">{t("chat.save")}</button>
                     <button type="button" onClick={onCancelEdit} className="text-[10px] text-white/40 hover:underline font-bold uppercase">{t("common.cancel")}</button>
                   </div>
                 </form>
@@ -215,11 +232,11 @@ export default function ChatCenter({
                 // eslint-disable-next-line @next/next/no-img-element
                 <div className="mt-1 relative group/file">
                   {msg.content.match(/\.(jpg|jpeg|png|gif|webp)$/i) || msg.content.includes("giphy.com") ? (
-                    <img src={msg.content.startsWith("/") ? `${process.env.NEXT_PUBLIC_API_URL}${msg.content}` : msg.content} alt="Attachment" className="max-w-xs max-h-64 rounded-lg border border-white/10 hover:border-[#4fdfff]/50 transition-colors cursor-pointer" loading="lazy" />
+                    <img src={msg.content.startsWith("/") ? `${process.env.NEXT_PUBLIC_API_URL}${msg.content}` : msg.content} alt={t("chat.uploadTooltip")} className="max-w-xs max-h-64 rounded-lg border border-white/10 hover:border-[#5b8cff]/50 transition-colors cursor-pointer" loading="lazy" />
                   ) : (
                     <a href={msg.content.startsWith("/") ? `${process.env.NEXT_PUBLIC_API_URL}${msg.content}` : msg.content} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 transition-colors w-fit">
-                      <div className="w-10 h-10 bg-[#4fdfff]/10 rounded flex items-center justify-center">
-                        <svg className="w-6 h-6 text-[#4fdfff]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <div className="w-10 h-10 bg-[#5b8cff]/10 rounded flex items-center justify-center">
+                        <svg className="w-6 h-6 text-[#5b8cff]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
                       </div>
@@ -240,14 +257,23 @@ export default function ChatCenter({
                 />
               )}
             </div>
-            {!editingMessageId && msg.author_id === user?.id && (
+            {!editingMessageId && (
               <div className="opacity-0 group-hover:opacity-100 flex items-center gap-2 transition-all ml-auto self-start">
-                <button type="button" onClick={() => onStartEdit(msg)} className="p-1.5 text-white/40 hover:text-[#4fdfff] transition-colors" title={t("chat.edit")}>
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                  </svg>
-                </button>
-                <button type="button" onClick={() => onDeleteMessage(msg.id)} className="p-1.5 text-white/40 hover:text-[#ff3333] transition-colors" title={t("chat.delete")}>
+                {msg.author_id === user?.id && (
+                  <button type="button" onClick={() => onStartEdit(msg)} className="p-1.5 text-white/40 hover:text-[#5b8cff] transition-colors" title={t("chat.edit")}>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                  </button>
+                )}
+                {isServerAdmin && msg.author_id !== user?.id && (
+                  <button type="button" onClick={() => onAdminDeleteMessage(msg.id)} className="p-1.5 text-white/40 hover:text-[#ff6b6b] transition-colors" title={t("members.adminDeleteMessage")}>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                  </button>
+                )}
+                <button type="button" onClick={() => onDeleteMessage(msg.id)} className="p-1.5 text-white/40 hover:text-[#ff6b6b] transition-colors" title={t("chat.delete")}>
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                   </svg>
@@ -261,13 +287,13 @@ export default function ChatCenter({
   };
 
   return (
-    <div className="flex-1 flex flex-col bg-[rgba(10,15,20,0.98)]">
-      <div className="flex-1 overflow-y-auto p-4">
+    <div className="flex-1 flex flex-col bg-[rgba(26,42,58,0.98)]">
+      <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-2 md:p-4">
         {!selectedChannel ? renderEmpty() : renderMessages()}
       </div>
 
       {selectedChannel && (
-        <footer className="px-4 py-3 border-t border-[#4fdfff]/20 bg-[rgba(0,0,0,0.2)]">
+        <footer className="px-2 md:px-4 py-2 md:py-3 border-t border-[#5b8cff]/20 bg-[rgba(0,0,0,0.2)]">
           {typingUsers.size > 0 && (() => {
             const entries = Array.from(typingUsers.entries()).filter(([id]) => id !== user?.id);
             if (entries.length === 0) return null;
@@ -275,9 +301,9 @@ export default function ChatCenter({
             return (
               <div className="flex items-center gap-2 px-2 pb-1 text-sm text-white/60">
                 <div className="flex gap-0.5">
-                  <span className="w-1.5 h-1.5 bg-[#4fdfff] rounded-full animate-bounce [animation-delay:0ms]" />
-                  <span className="w-1.5 h-1.5 bg-[#4fdfff] rounded-full animate-bounce [animation-delay:150ms]" />
-                  <span className="w-1.5 h-1.5 bg-[#4fdfff] rounded-full animate-bounce [animation-delay:300ms]" />
+                  <span className="w-1.5 h-1.5 bg-[#5b8cff] rounded-full animate-bounce [animation-delay:0ms]" />
+                  <span className="w-1.5 h-1.5 bg-[#5b8cff] rounded-full animate-bounce [animation-delay:150ms]" />
+                  <span className="w-1.5 h-1.5 bg-[#5b8cff] rounded-full animate-bounce [animation-delay:300ms]" />
                 </div>
                 <span>{t(entries.length === 1 ? "chat.typing" : "chat.typingPlural", { names })}</span>
               </div>
@@ -298,18 +324,18 @@ export default function ChatCenter({
                 searchPlaceholder={t("chat.gifSearch")}
               />
             )}
-            <form onSubmit={onSendMessage} className="flex items-center gap-2">
+            <form onSubmit={onSendMessage} className="flex items-center gap-1 md:gap-2">
               <button
                 type="button"
                 onClick={handleFileUpload}
                 disabled={isUploading}
-                className="px-2 py-2 text-white/40 hover:text-[#4fdfff] transition-colors flex-shrink-0 disabled:opacity-50"
+                className="p-1.5 md:px-2 md:py-2 text-white/40 hover:text-[#5b8cff] transition-colors flex-shrink-0 disabled:opacity-50"
                 title={t("chat.uploadTooltip")}
               >
                 {isUploading ? (
-                  <div className="w-5 h-5 border-2 border-[#4fdfff] border-t-transparent rounded-full animate-spin" />
+                  <div className="w-4 h-4 md:w-5 md:h-5 border-2 border-[#5b8cff] border-t-transparent rounded-full animate-spin" />
                 ) : (
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                   </svg>
                 )}
@@ -317,14 +343,14 @@ export default function ChatCenter({
               <button
                 type="button"
                 onClick={onToggleGifPicker}
-                className="px-2 py-2 text-xs font-bold text-[#4fdfff] border border-[#4fdfff]/40 rounded-lg hover:bg-[#4fdfff]/10 transition-colors flex-shrink-0"
+                className="px-1.5 py-1.5 md:px-2 md:py-2 text-[10px] md:text-xs font-bold text-[#5b8cff] border border-[#5b8cff]/40 rounded-lg hover:bg-[#5b8cff]/10 transition-colors flex-shrink-0"
                 title={t("chat.gifTooltip")}
               >
                 GIF
               </button>
               <div className="relative flex-1">
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40 pointer-events-none">
-                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <div className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 text-white/40 pointer-events-none">
+                  <svg className="w-3.5 h-3.5 md:w-4 md:h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <line x1="4" y1="9" x2="20" y2="9" /><line x1="4" y1="15" x2="20" y2="15" />
                     <line x1="10" y1="3" x2="8" y2="21" /><line x1="16" y1="3" x2="14" y2="21" />
                   </svg>
@@ -335,7 +361,7 @@ export default function ChatCenter({
                   onFocus={onMessageInputFocus}
                   onBlur={onMessageInputBlur}
                   placeholder={`Message #${selectedChannel.name}`}
-                  className="w-full pl-10 pr-4 py-2.5 bg-[rgba(20,20,20,0.8)] border border-[#4fdfff]/30 rounded-lg text-white placeholder:text-white/40 outline-none focus:border-[#4fdfff] focus:bg-[rgba(20,20,20,0.95)] focus:shadow-[0_0_8px_rgba(79,223,255,0.3)] transition-all"
+                  className="w-full pl-8 md:pl-10 pr-3 md:pr-4 py-2 md:py-2.5 bg-[rgba(20,20,20,0.8)] border border-[#5b8cff]/30 rounded-lg text-white placeholder:text-white/40 outline-none focus:border-[#5b8cff] focus:bg-[rgba(20,20,20,0.95)] focus:shadow-[0_0_8px_rgba(79,223,255,0.3)] transition-all text-sm md:text-base"
                 />
               </div>
             </form>

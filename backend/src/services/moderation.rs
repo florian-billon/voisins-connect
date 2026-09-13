@@ -1,18 +1,21 @@
 use uuid::Uuid;
 
+use crate::error::Result;
 use crate::models::{ModeratedMessage, ModerationCheckResult};
 use crate::repositories::ModerationRepository;
-use crate::error::Result;
 
 /// Initialize default moderation rules
 pub async fn initialize_rules(repo: &ModerationRepository) -> Result<()> {
     // Check if rules already exist
-    let rules = repo.get_all_rules()
+    let rules = repo
+        .get_all_rules()
         .await
-        .map_err(|e| crate::error::Error::Database { message: e.to_string() })?;
-    
+        .map_err(|e| crate::error::Error::Database {
+            message: e.to_string(),
+        })?;
+
     if !rules.is_empty() {
-        return Ok(( });
+        return Ok(());
     }
 
     // Create default rules for insults
@@ -27,7 +30,9 @@ pub async fn initialize_rules(repo: &ModerationRepository) -> Result<()> {
     ];
     repo.create_rule("insult", insult_keywords, "flag", 2)
         .await
-        .map_err(|e| crate::error::Error::Database { message: e.to_string() })?;
+        .map_err(|e| crate::error::Error::Database {
+            message: e.to_string(),
+        })?;
 
     // Create default rules for harassment
     let harassment_keywords = vec![
@@ -37,19 +42,19 @@ pub async fn initialize_rules(repo: &ModerationRepository) -> Result<()> {
     ];
     repo.create_rule("harassment", harassment_keywords, "hide", 4)
         .await
-        .map_err(|e| crate::error::Error::Database { message: e.to_string() })?;
+        .map_err(|e| crate::error::Error::Database {
+            message: e.to_string(),
+        })?;
 
     // Create default rules for spam
-    let spam_keywords = vec![
-        "http".to_string(),
-        "https".to_string(),
-        "spam".to_string(),
-    ];
+    let spam_keywords = vec!["http".to_string(), "https".to_string(), "spam".to_string()];
     repo.create_rule("spam", spam_keywords, "flag", 1)
         .await
-        .map_err(|e| crate::error::Error::Database { message: e.to_string() })?;
+        .map_err(|e| crate::error::Error::Database {
+            message: e.to_string(),
+        })?;
 
-    Ok(( })
+    Ok(())
 }
 
 /// Check if a message contains moderation violations
@@ -57,20 +62,23 @@ pub async fn check_message(
     repo: &ModerationRepository,
     content: &str,
 ) -> Result<ModerationCheckResult> {
-    let rules = repo.get_all_rules()
+    let rules = repo
+        .get_all_rules()
         .await
-        .map_err(|e| crate::error::Error::Database { message: e.to_string() })?;
+        .map_err(|e| crate::error::Error::Database {
+            message: e.to_string(),
+        })?;
 
     let content_lower = content.to_lowercase();
 
     for rule in rules {
         for keyword in &rule.keywords {
-            if content_lower.contains(&keyword.to_lowercase( }) {
+            if content_lower.contains(&keyword.to_lowercase()) {
                 return Ok(ModerationCheckResult {
                     is_clean: false,
-                    rule_type: Some(rule.rule_type.clone( }),
+                    rule_type: Some(rule.rule_type.clone()),
                     severity: Some(rule.severity),
-                    action: Some(rule.action.clone( }),
+                    action: Some(rule.action.clone()),
                 });
             }
         }
@@ -95,9 +103,19 @@ pub async fn log_moderated_message(
     action: &str,
     original_content: Option<String>,
 ) -> Result<ModeratedMessage> {
-    repo.log_moderation(user_id, channel_id, dm_id, rule_type, severity, action, original_content)
-        .await
-        .map_err(|e| crate::error::Error::Database { message: e.to_string() })
+    repo.log_moderation(
+        user_id,
+        channel_id,
+        dm_id,
+        rule_type,
+        severity,
+        action,
+        original_content,
+    )
+    .await
+    .map_err(|e| crate::error::Error::Database {
+        message: e.to_string(),
+    })
 }
 
 /// Get moderation logs for a user
@@ -108,10 +126,7 @@ pub async fn get_user_logs(
 ) -> Result<Vec<ModeratedMessage>> {
     repo.get_user_moderation_logs(user_id, limit)
         .await
-        .map_err(|e| crate::error::Error::Database { message: e.to_string() })
+        .map_err(|e| crate::error::Error::Database {
+            message: e.to_string(),
+        })
 }
-
-
-
-
-

@@ -22,17 +22,17 @@ export default function ServerSidebar({ servers, selectedServer, friends, user, 
   const { t } = useTranslation();
 
   return (
-    <aside className="w-[72px] bg-[rgba(0,0,0,0.95)] border-r border-[#4fdfff]/20 flex flex-col items-center py-3 gap-2">
+    <aside className="hidden md:flex w-[72px] bg-[rgba(26,42,58,0.95)] border-r border-[#5b8cff]/20 flex-col items-center py-3 gap-2">
       <button
         type="button"
         onClick={() => onSelectServer(null)}
         className="w-12 h-12 flex items-center justify-center mb-2 cursor-pointer group bg-transparent border-0 shadow-none p-0"
         title={t("common.appName")}
       >
-        <Image src="/logo.png" alt="HW" width={32} height={32} className="group-hover:scale-110 transition-transform" />
+        <Image src="/logo.png" alt={t("common.appName")} width={32} height={32} className="group-hover:scale-110 transition-transform" />
       </button>
 
-      <div className="w-8 h-[2px] bg-[#4fdfff]/20 rounded-full" />
+      <div className="w-8 h-[2px] bg-[#5b8cff]/20 rounded-full" />
 
       <div className="flex-1 w-full overflow-y-auto flex flex-col items-center gap-2 py-2">
         {friends.map((friend) => (
@@ -40,7 +40,7 @@ export default function ServerSidebar({ servers, selectedServer, friends, user, 
             key={`friend-${friend.id}`}
             type="button"
             onClick={() => onOpenFriendDM(friend.username)}
-            className="w-12 h-12 rounded-[24px] bg-[rgba(15,40,30,0.8)] text-[#4fdfff] flex items-center justify-center hover:bg-[#4fdfff]/20 hover:rounded-xl transition-all relative group overflow-hidden"
+            className="w-12 h-12 rounded-[24px] bg-[rgba(123,198,123,0.2)] text-[#5b8cff] flex items-center justify-center hover:bg-[#5b8cff]/20 hover:rounded-xl transition-all relative group overflow-hidden"
             title={`${t("friends.openDm")} ${friend.username}`}
           >
             {friend.avatar_url ? (
@@ -52,7 +52,7 @@ export default function ServerSidebar({ servers, selectedServer, friends, user, 
           </button>
         ))}
 
-        {friends.length > 0 && <div className="w-8 h-[2px] bg-[#4fdfff]/20 rounded-full my-1" />}
+        {friends.length > 0 && <div className="w-8 h-[2px] bg-[#5b8cff]/20 rounded-full my-1" />}
 
         {servers.map((server) => (
           <button
@@ -61,8 +61,8 @@ export default function ServerSidebar({ servers, selectedServer, friends, user, 
             onClick={() => onSelectServer(server)}
             className={`w-12 h-12 rounded-[24px] flex items-center justify-center text-lg font-bold transition-all duration-200 relative group ${
               selectedServer?.id === server.id
-                ? "bg-[#4fdfff] text-black rounded-xl shadow-[0_0_12px_rgba(79,223,255,0.6)]"
-                : "bg-[rgba(20,30,40,0.8)] text-[#4fdfff] hover:bg-[#4fdfff]/20 hover:rounded-xl"
+                ? "bg-[#5b8cff] text-white rounded-xl shadow-[0_0_12px_rgba(91,140,255,0.4)]"
+                : "bg-[rgba(91,140,255,0.2)] text-[#5b8cff] hover:bg-[#5b8cff]/30 hover:rounded-xl"
             }`}
             title={server.name}
           >
@@ -75,7 +75,7 @@ export default function ServerSidebar({ servers, selectedServer, friends, user, 
         <button
           type="button"
           onClick={onNavigateDMs}
-          className="w-12 h-12 rounded-[24px] bg-[rgba(20,30,40,0.8)] text-[#4fdfff] flex items-center justify-center hover:bg-[#4fdfff]/15 hover:border hover:border-[#4fdfff]/30 transition-all group"
+          className="w-12 h-12 rounded-[24px] bg-[rgba(91,140,255,0.2)] text-[#5b8cff] flex items-center justify-center hover:bg-[#5b8cff]/15 hover:border hover:border-[#5b8cff]/30 transition-all group"
           title={t("dm.title")}
         >
           <svg className="w-5 h-5 group-hover:scale-110 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -87,15 +87,15 @@ export default function ServerSidebar({ servers, selectedServer, friends, user, 
         <button
           type="button"
           onClick={onShowProfile}
-          className="w-12 h-12 rounded-[24px] relative group border border-[#4fdfff]/30 hover:border-[#4fdfff] transition-all"
+          className="w-12 h-12 rounded-[24px] relative group border border-[#5b8cff]/30 hover:border-[#5b8cff] transition-all"
           title={t("profile.title")}
         >
           <div className="w-full h-full rounded-[24px] overflow-hidden">
             {user?.avatar_url ? (
-              <SmartImg src={normalizeAvatarUrl(user.avatar_url) || ""} alt="Avatar" className="w-full h-full object-cover" />
+              <SmartImg src={normalizeAvatarUrl(user.avatar_url) || ""} alt={t("profile.avatarLabel")} className="w-full h-full object-cover" />
             ) : (
-              <div className="w-full h-full bg-[#4fdfff]/10 flex items-center justify-center">
-                <span className="text-[#4fdfff] font-bold">{user?.username?.charAt(0).toUpperCase() || "?"}</span>
+              <div className="w-full h-full bg-[#5b8cff]/10 flex items-center justify-center">
+                <span className="text-[#5b8cff] font-bold">{user?.username?.charAt(0).toUpperCase() || "?"}</span>
               </div>
             )}
           </div>
@@ -105,7 +105,7 @@ export default function ServerSidebar({ servers, selectedServer, friends, user, 
         <button
           type="button"
           onClick={() => logout()}
-          className="w-12 h-12 rounded-[24px] bg-[rgba(40,10,10,0.8)] flex items-center justify-center text-[#ff3333] hover:bg-[#ff3333]/20 hover:rounded-xl transition-all"
+          className="w-12 h-12 rounded-[24px] bg-[rgba(255,107,107,0.2)] flex items-center justify-center text-[#ff6b6b] hover:bg-[#ff6b6b]/20 hover:rounded-xl transition-all"
           title={t("auth.logout")}
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

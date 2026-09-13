@@ -2,20 +2,23 @@
 @import "tailwindcss";
 
 /* ============================================
-   HELLO WORLD RTC - Design System
-   Palette: Noir / Bleu cyan (#4fdfff) / Rouge (#ff3333)
+   voisins_connect - Design System
+   Palette: Bleu doux (#5b8cff) / Vert (#7bc67b) / Orange (#ff9f5b)
+   Style: Chaleureux et moderne pour quartier
    ============================================ */
 
 :root {
-  --color-bg-dark: #0a0a0a;
-  --color-bg-panel: rgba(10, 15, 20, 0.85);
-  --color-border: #4fdfff;
-  --color-border-dim: rgba(79, 223, 255, 0.3);
-  --color-accent: #4fdfff;
-  --color-accent-red: #ff3333;
+  --color-bg-dark: #1a2a3a;
+  --color-bg-panel: rgba(30, 50, 70, 0.85);
+  --color-border: #5b8cff;
+  --color-border-dim: rgba(91, 140, 255, 0.3);
+  --color-accent: #5b8cff;
+  --color-accent-green: #7bc67b;
+  --color-accent-orange: #ff9f5b;
+  --color-accent-red: #ff6b6b;
   --color-text: #ffffff;
-  --color-text-dim: rgba(255, 255, 255, 0.6);
-  --color-text-muted: rgba(255, 255, 255, 0.4);
+  --color-text-dim: rgba(255, 255, 255, 0.7);
+  --color-text-muted: rgba(255, 255, 255, 0.5);
 }
 
 @layer base {
@@ -37,7 +40,10 @@
   }
   ::-webkit-scrollbar-thumb {
     background-color: var(--color-accent);
-    border-radius: 3px;
+    border-radius: 4px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: #4a7bef;
   }
 }
 
@@ -49,7 +55,7 @@
   }
   .btn-action {
     padding: 10px 16px;
-    background: #a00000;
+    background: var(--color-accent);
     border: 2px solid var(--color-border);
     color: white;
     font-weight: bold;
@@ -59,8 +65,8 @@
     transition: all 0.2s;
   }
   .btn-action:hover {
-    background: #c00000;
-    box-shadow: 0 0 15px rgba(79, 223, 255, 0.6);
+    background: #4a7bef;
+    box-shadow: 0 0 15px rgba(91, 140, 255, 0.4);
   }
   .input-field {
     width: 100%;
@@ -86,13 +92,13 @@
     color: var(--color-accent);
   }
   .btn-primary {
-    @apply bg-[#a00000] border-2 border-[#4fdfff] text-white font-bold hover:bg-[#c00000] hover:shadow-[0_0_12px_rgba(79,223,255,0.8)] transition-all disabled:opacity-50 disabled:cursor-not-allowed rounded-lg px-4 py-2;
+    @apply bg-[#5b8cff] border-2 border-[#5b8cff] text-white font-bold hover:bg-[#4a7bef] hover:shadow-[0_0_12px_rgba(91,140,255,0.6)] transition-all disabled:opacity-50 disabled:cursor-not-allowed rounded-lg px-4 py-2;
   }
   .btn-secondary {
-    @apply bg-[#5865f2] text-white font-medium hover:bg-[#4752c4] transition-colors disabled:opacity-50 rounded-lg px-4 py-2;
+    @apply bg-[#7bc67b] text-white font-medium hover:bg-[#6ab56b] transition-colors disabled:opacity-50 rounded-lg px-4 py-2;
   }
   .btn-danger {
-    @apply text-[#ff3333] hover:bg-[#ff3333]/20 transition-colors rounded-lg px-2 py-2;
+    @apply text-[#ff6b6b] hover:bg-[#ff6b6b]/20 transition-colors rounded-lg px-2 py-2;
   }
   .btn-ghost {
     @apply bg-[#4e5058] text-white font-medium hover:bg-[#6d6f78] transition-colors rounded-lg px-4 py-2;
@@ -121,4 +127,29 @@
 
 .message-reactions-emoji-picker .epr-category-nav {
   display: none;
+}
+
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+  html, body {
+    font-size: 14px;
+  }
+  
+  ::-webkit-scrollbar {
+    width: 4px;
+  }
+  
+  .panel {
+    backdrop-filter: blur(4px);
+  }
+  
+  .btn-action {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+  
+  .input-field {
+    padding: 10px;
+    font-size: 14px;
+  }
 }

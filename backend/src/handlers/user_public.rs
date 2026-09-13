@@ -21,7 +21,7 @@ pub async fn get_public_user(
         .find_by_id(user_id)
         .await?
         .ok_or(Error::UserNotFound)?;
-    Ok(Json(user.into( } })
+    Ok(Json(user.into()))
 }
 
 #[derive(Debug, Deserialize)]
@@ -39,7 +39,7 @@ pub async fn search_users(
     let normalized = crate::services::usernames::normalize_username(&search);
 
     if normalized.is_empty() {
-        return Ok(Json(vec![] });
+        return Ok(Json(vec![]));
     }
 
     let users = state
@@ -51,7 +51,7 @@ pub async fn search_users(
         )
         .await?;
 
-    Ok(Json(users })
+    Ok(Json(users))
 }
 
 pub async fn get_public_profile(
@@ -61,11 +61,9 @@ pub async fn get_public_profile(
 ) -> Result<Json<PublicUserProfileResponse>> {
     let user = state
         .user_repo
-        .get_public_profile(user_id, ctx.user_id( })
+        .get_public_profile(user_id, ctx.user_id())
         .await?
         .ok_or(Error::UserNotFound)?;
 
-    Ok(Json(user })
+    Ok(Json(user))
 }
-
-

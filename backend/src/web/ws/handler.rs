@@ -12,7 +12,7 @@ use crate::AppState;
 
 /// Handler principal pour l'upgrade WebSocket
 pub async fn ws_handler(ws: WebSocketUpgrade, State(state): State<AppState>) -> Response {
-    ws.on_upgrade(|socket| handle_socket(socket, state })
+    ws.on_upgrade(|socket| handle_socket(socket, state))
 }
 
 /// Gère une connexion WebSocket après upgrade
@@ -25,7 +25,7 @@ async fn handle_socket(socket: axum::extract::ws::WebSocket, state: AppState) {
 
     // Créer la connexion
     let hub = state.ws_hub.clone();
-    let connection = WsConnection::new(conn_id, hub.clone( });
+    let connection = WsConnection::new(conn_id, hub.clone());
 
     // Démarrer la connexion et obtenir le channel d'événements
     let mut event_rx = connection.handle(socket).await;
@@ -41,7 +41,7 @@ async fn handle_socket(socket: axum::extract::ws::WebSocket, state: AppState) {
     let mut authenticated = false;
 
     // Boucle de traitement des événements clients
-    while let Some((_event_conn_id, event }) = event_rx.recv().await {
+    while let Some((_event_conn_id, event)) = event_rx.recv().await {
         // Enregistrer le message reçu
         state.ws_metrics.on_message_received().await;
 
@@ -52,7 +52,7 @@ async fn handle_socket(socket: axum::extract::ws::WebSocket, state: AppState) {
                     Ok(claims) => {
                         // Vérifier que l'utilisateur existe
                         match state.user_repo.find_by_id(claims.sub).await {
-                            Ok(Some(user }) => {
+                            Ok(Some(user)) => {
                                 // Authentification réussie
                                 user_id = Some(claims.sub);
                                 authenticated = true;
@@ -107,7 +107,7 @@ async fn handle_socket(socket: axum::extract::ws::WebSocket, state: AppState) {
                         .await
                 {
                     tracing::error!("[WS] Error sending message: {}", e);
-                    send_error(&hub, conn_id, "MESSAGE_ERROR", &e.to_string( }).await;
+                    send_error(&hub, conn_id, "MESSAGE_ERROR", &e.to_string()).await;
                 }
             }
             ClientEvent::TypingStart { channel_id } => {
@@ -125,7 +125,7 @@ async fn handle_socket(socket: axum::extract::ws::WebSocket, state: AppState) {
                         channel_id,
                         e
                     );
-                    send_error(&hub, conn_id, "TYPING_FORBIDDEN", &e.to_string( }).await;
+                    send_error(&hub, conn_id, "TYPING_FORBIDDEN", &e.to_string()).await;
                 }
             }
             ClientEvent::TypingStop { channel_id } => {
@@ -143,7 +143,7 @@ async fn handle_socket(socket: axum::extract::ws::WebSocket, state: AppState) {
                         channel_id,
                         e
                     );
-                    send_error(&hub, conn_id, "TYPING_FORBIDDEN", &e.to_string( }).await;
+                    send_error(&hub, conn_id, "TYPING_FORBIDDEN", &e.to_string()).await;
                 }
             }
             ClientEvent::Heartbeat { seq } => {
@@ -158,9 +158,9 @@ async fn handle_socket(socket: axum::extract::ws::WebSocket, state: AppState) {
 
                 let uid = user_id.expect("User ID should be set after authentication check");
                 let can_subscribe = match state.channel_repo.find_by_id(channel_id).await {
-                    Ok(Some(channel }) => {
+                    Ok(Some(channel)) => {
                         match state.server_repo.find_member(channel.server_id, uid).await {
-                            Ok(Some(_ }) => true,
+                            Ok(Some(_)) => true,
                             Ok(None) => false,
                             Err(e) => {
                                 tracing::error!("[WS] Subscribe membership check failed: {}", e);
@@ -232,7 +232,3 @@ async fn send_error(hub: &WsHub, conn_id: Uuid, code: &str, message: &str) {
     };
     hub.send_to_connection(conn_id, &error).await;
 }
-
-
-
-

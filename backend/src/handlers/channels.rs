@@ -78,5 +78,3 @@ pub async fn delete_channel(
     services::delete_channel(&state.server_repo, &state.channel_repo, id, ctx.user_id()).await?;
     Ok(StatusCode::NO_CONTENT)
 }
-
-

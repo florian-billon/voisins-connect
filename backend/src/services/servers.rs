@@ -1,6 +1,6 @@
 use crate::error::{Error, Result};
 use crate::models::{
-    BanMemberPayload, CreateServerPayload, MemberRole, Server, ServerBan, ServerMember,
+    BanMemberPayload, CreateServerPayload, MemberRole, Server, ServerBan, ServerMember, ServerMute,
     TransferOwnershipPayload, UpdateServerPayload,
 };
 use crate::repositories::{ServerRepository, UserRepository};
@@ -127,7 +127,7 @@ pub async fn delete_server(
     }
 
     server_repo.delete(server_id).await?;
-    Ok(( })
+    Ok(())
 }
 
 pub async fn join_server(
@@ -170,7 +170,7 @@ pub async fn leave_server(
     }
 
     server_repo.remove_member(server_id, user_id).await?;
-    Ok(( })
+    Ok(())
 }
 
 pub async fn kick_member(
@@ -215,7 +215,7 @@ pub async fn kick_member(
         .await?;
 
     server_repo.remove_member(server_id, target_user_id).await?;
-    Ok(( })
+    Ok(())
 }
 
 pub async fn ban_member(
@@ -282,7 +282,7 @@ pub async fn unban_member(
     }
 
     server_repo.remove_ban(server_id, target_user_id).await?;
-    Ok(( })
+    Ok(())
 }
 
 pub async fn list_bans(
@@ -376,6 +376,66 @@ pub async fn transfer_ownership(
     Ok(updated_server)
 }
 
+pub async fn mute_member(
+    server_repo: &ServerRepository,
+    server_id: Uuid,
+    target_user_id: Uuid,
+    requester_id: Uuid,
+) -> Result<ServerMute> {
+    let server = server_repo
+        .find_by_id(server_id)
+        .await?
+        .ok_or(Error::ServerNotFound)?;
 
+    let requester = server_repo
+        .find_member(server_id, requester_id)
+        .await?
+        .ok_or(Error::ServerForbidden)?;
 
+    if requester.role == MemberRole::Member {
+        return Err(Error::ServerForbidden);
+    }
 
+    let target = server_repo
+        .find_member(server_id, target_user_id)
+        .await?
+        .ok_or(Error::UserNotFound)?;
+
+    if target.user_id == server.owner_id {
+        return Err(Error::ServerForbidden);
+    }
+
+    // Mute for 1 hour
+    let expires_at = Utc::now() + chrono::Duration::hours(1);
+    
+    let mute = server_repo
+        .upsert_mute(
+            server_id,
+            target_user_id,
+            requester_id,
+            None,
+            expires_at,
+        )
+        .await?;
+
+    Ok(mute)
+}
+
+pub async fn unmute_member(
+    server_repo: &ServerRepository,
+    server_id: Uuid,
+    target_user_id: Uuid,
+    requester_id: Uuid,
+) -> Result<()> {
+    let requester = server_repo
+        .find_member(server_id, requester_id)
+        .await?
+        .ok_or(Error::ServerForbidden)?;
+
+    if requester.role == MemberRole::Member {
+        return Err(Error::ServerForbidden);
+    }
+
+    server_repo.remove_mute(server_id, target_user_id).await?;
+    Ok(())
+}

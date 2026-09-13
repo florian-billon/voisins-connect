@@ -159,6 +159,31 @@ pub enum ServerEvent {
     /// Mise à jour de présence utilisateur
     #[serde(rename = "PRESENCE_UPDATE")]
     PresenceUpdate { user_id: Uuid, status: UserStatus },
+
+    /// Appel vocal entrant
+    #[serde(rename = "VOICE_CALL_INCOMING")]
+    VoiceCallIncoming {
+        id: Uuid,
+        initiator_id: Uuid,
+        voice_channel_id: Option<Uuid>,
+        created_at: DateTime<Utc>,
+    },
+
+    /// Appel vocal mis à jour
+    #[serde(rename = "VOICE_CALL_UPDATED")]
+    VoiceCallUpdated {
+        id: Uuid,
+        status: String,
+        updated_at: DateTime<Utc>,
+    },
+
+    /// Appel vocal terminé
+    #[serde(rename = "VOICE_CALL_ENDED")]
+    VoiceCallEnded {
+        id: Uuid,
+        duration_seconds: Option<i32>,
+        ended_at: DateTime<Utc>,
+    },
 }
 
 impl ClientEvent {
@@ -174,4 +199,3 @@ impl ServerEvent {
         serde_json::to_string(self)
     }
 }
-

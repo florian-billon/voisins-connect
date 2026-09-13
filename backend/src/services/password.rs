@@ -19,9 +19,7 @@ mod tests {
         let password = "super_secret_123";
         let hashed = hash_password(password).unwrap();
 
-        assert!(verify_password(password, &hashed).unwrap( });
-        assert!(!verify_password("wrong_password", &hashed).unwrap( });
+        assert!(verify_password(password, &hashed).unwrap());
+        assert!(!verify_password("wrong_password", &hashed).unwrap());
     }
 }
-
-

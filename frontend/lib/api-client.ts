@@ -174,6 +174,7 @@ export interface User {
   email: string;
   username: string;
   avatar_url?: string;
+  apartment_number?: string;
   status: string;
   created_at: string;
 }
@@ -182,6 +183,7 @@ export interface UserSearchResult {
   id: string;
   username: string;
   avatar_url?: string;
+  apartment_number?: string;
   status: string;
 }
 
@@ -190,6 +192,38 @@ export interface Friend {
   username: string;
   avatar_url?: string;
   status: string;
+  created_at: string;
+}
+
+export interface VoiceChannel {
+  id: string;
+  server_id: string;
+  name: string;
+  position: number;
+  max_users?: number;
+  is_premium_only: boolean;
+  created_at: string;
+}
+
+export interface VoiceCall {
+  id: string;
+  initiator_id: string;
+  recipient_id: string;
+  voice_channel_id?: string;
+  status: string;
+  started_at?: string;
+  ended_at?: string;
+  duration_seconds?: number;
+  created_at: string;
+}
+
+export interface UserSubscriptionResponse {
+  id: string;
+  user_id: string;
+  status: "active" | "inactive" | "cancelled";
+  plan_name: string;
+  started_at?: string;
+  expires_at?: string;
   created_at: string;
 }
 
@@ -218,6 +252,12 @@ export async function listFriends(): Promise<Friend[]> {
 export async function addFriend(userId: string): Promise<void> {
   return fetchApi<void>(`/friends/${userId}`, {
     method: "POST",
+  });
+}
+
+export async function removeFriend(userId: string): Promise<void> {
+  return fetchApi<void>(`/friends/${userId}`, {
+    method: "DELETE",
   });
 }
 
@@ -344,6 +384,27 @@ export async function listBans(serverId: string): Promise<ServerBan[]> {
   return fetchApi<ServerBan[]>(`/servers/${serverId}/bans`);
 }
 
+export interface ServerMute {
+  server_id: string;
+  user_id: string;
+  muted_by: string;
+  reason?: string | null;
+  muted_at: string;
+  expires_at: string;
+}
+
+export async function muteMember(serverId: string, userId: string): Promise<ServerMute> {
+  return fetchApi<ServerMute>(`/servers/${serverId}/members/${userId}/mute`, {
+    method: "POST",
+  });
+}
+
+export async function unmuteMember(serverId: string, userId: string): Promise<void> {
+  return fetchApi<void>(`/servers/${serverId}/members/${userId}/mute`, {
+    method: "DELETE",
+  });
+}
+
 export async function listMessages(channelId: string, limit = 50): Promise<Message[]> {
   return fetchApi<Message[]>(`/channels/${channelId}/messages?limit=${limit}`);
 }
@@ -443,6 +504,7 @@ export async function removeDirectMessageReaction(id: string, emoji: string): Pr
 export interface UpdateProfilePayload {
   username?: string;
   avatar_url?: string;
+  apartment_number?: string;
   status?: "online" | "offline" | "dnd" | "invisible";
 }
 
@@ -489,5 +551,39 @@ export async function uploadFile(file: File): Promise<UploadResponse> {
   return fetchApi<UploadResponse>("/upload", {
     method: "POST",
     body: formData,
+  });
+}
+
+// Payment functions
+export async function createStripeCheckoutSession(): Promise<{ checkout_url: string }> {
+  return fetchApi<{ checkout_url: string }>("/payments/stripe/create-checkout-session", {
+    method: "POST",
+  });
+}
+
+export async function createPayPalOrder(): Promise<{ approval_url: string }> {
+  return fetchApi<{ approval_url: string }>("/payments/paypal/create-order", {
+    method: "POST",
+  });
+}
+
+export async function capturePayPalPayment(orderId: string): Promise<{ status: string }> {
+  return fetchApi<{ status: string }>(`/payments/paypal/capture/${orderId}`, {
+    method: "POST",
+  });
+}
+
+export async function getUserSubscription(): Promise<UserSubscriptionResponse | null> {
+  try {
+    return await fetchApi<UserSubscriptionResponse>("/subscription");
+  } catch (error) {
+    console.error("Error fetching subscription:", error);
+    return null;
+  }
+}
+
+export async function cancelSubscription(): Promise<void> {
+  return fetchApi<void>("/subscription/cancel", {
+    method: "POST",
   });
 }

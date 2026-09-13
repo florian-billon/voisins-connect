@@ -1,8 +1,8 @@
 use uuid::Uuid;
 
+use crate::error::Result;
 use crate::models::ProfileUpload;
 use crate::repositories::ProfileRepository;
-use crate::error::Result;
 
 pub async fn create_profile_upload(
     repo: &ProfileRepository,
@@ -13,7 +13,9 @@ pub async fn create_profile_upload(
 ) -> Result<ProfileUpload> {
     repo.create_upload(user_id, file_path, content_type, file_size)
         .await
-        .map_err(|e| crate::error::Error::Database { message: e.to_string() })
+        .map_err(|e| crate::error::Error::Database {
+            message: e.to_string(),
+        })
 }
 
 pub async fn get_user_profile_uploads(
@@ -22,7 +24,9 @@ pub async fn get_user_profile_uploads(
 ) -> Result<Vec<ProfileUpload>> {
     repo.get_user_uploads(user_id)
         .await
-        .map_err(|e| crate::error::Error::Database { message: e.to_string() })
+        .map_err(|e| crate::error::Error::Database {
+            message: e.to_string(),
+        })
 }
 
 pub async fn get_current_avatar(
@@ -31,7 +35,9 @@ pub async fn get_current_avatar(
 ) -> Result<Option<ProfileUpload>> {
     repo.get_current_avatar(user_id)
         .await
-        .map_err(|e| crate::error::Error::Database { message: e.to_string() })
+        .map_err(|e| crate::error::Error::Database {
+            message: e.to_string(),
+        })
 }
 
 pub async fn set_current_avatar(
@@ -41,7 +47,9 @@ pub async fn set_current_avatar(
 ) -> Result<Option<ProfileUpload>> {
     repo.set_current_avatar(user_id, upload_id)
         .await
-        .map_err(|e| crate::error::Error::Database { message: e.to_string() })
+        .map_err(|e| crate::error::Error::Database {
+            message: e.to_string(),
+        })
 }
 
 pub async fn delete_profile_upload(
@@ -51,7 +59,9 @@ pub async fn delete_profile_upload(
 ) -> Result<()> {
     repo.delete_upload(user_id, upload_id)
         .await
-        .map_err(|e| crate::error::Error::Database { message: e.to_string() })
+        .map_err(|e| crate::error::Error::Database {
+            message: e.to_string(),
+        })
 }
 
 pub async fn get_upload_by_id(
@@ -60,9 +70,7 @@ pub async fn get_upload_by_id(
 ) -> Result<Option<ProfileUpload>> {
     repo.get_upload_by_id(upload_id)
         .await
-        .map_err(|e| crate::error::Error::Database { message: e.to_string() })
+        .map_err(|e| crate::error::Error::Database {
+            message: e.to_string(),
+        })
 }
-
-
-
-

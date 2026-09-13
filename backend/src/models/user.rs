@@ -30,6 +30,7 @@ pub struct User {
     pub password_hash: String,
     pub username: String,
     pub avatar_url: Option<String>,
+    pub apartment_number: Option<String>,
     pub status: UserStatus,
     pub created_at: DateTime<Utc>,
 }
@@ -41,6 +42,7 @@ pub struct UserResponse {
     pub email: String,
     pub username: String,
     pub avatar_url: Option<String>,
+    pub apartment_number: Option<String>,
     pub status: UserStatus,
     pub created_at: DateTime<Utc>,
 }
@@ -52,6 +54,7 @@ impl From<User> for UserResponse {
             email: user.email,
             username: user.username,
             avatar_url: user.avatar_url,
+            apartment_number: user.apartment_number,
             status: user.status,
             created_at: user.created_at,
         }
@@ -63,6 +66,7 @@ pub struct UserSearchResponse {
     pub id: Uuid,
     pub username: String,
     pub avatar_url: Option<String>,
+    pub apartment_number: Option<String>,
     pub status: UserStatus,
 }
 
@@ -71,6 +75,7 @@ pub struct FriendSummary {
     pub id: Uuid,
     pub username: String,
     pub avatar_url: Option<String>,
+    pub apartment_number: Option<String>,
     pub status: UserStatus,
     pub created_at: DateTime<Utc>,
 }
@@ -80,6 +85,7 @@ pub struct PublicUserProfileResponse {
     pub id: Uuid,
     pub username: String,
     pub avatar_url: Option<String>,
+    pub apartment_number: Option<String>,
     pub status: UserStatus,
     pub created_at: DateTime<Utc>,
     pub is_self: bool,
@@ -90,6 +96,7 @@ pub struct PublicUserProfileResponse {
 pub struct UpdateMePayload {
     pub username: Option<String>,
     pub avatar_url: Option<String>,
+    pub apartment_number: Option<String>,
     pub status: Option<UserStatus>,
 }
 
@@ -98,6 +105,7 @@ pub struct PublicUserResponse {
     pub id: Uuid,
     pub username: String,
     pub avatar_url: Option<String>,
+    pub apartment_number: Option<String>,
     pub status: UserStatus,
     pub created_at: DateTime<Utc>,
 }
@@ -108,6 +116,7 @@ impl From<User> for PublicUserResponse {
             id: user.id,
             username: user.username,
             avatar_url: user.avatar_url,
+            apartment_number: user.apartment_number,
             status: user.status,
             created_at: user.created_at,
         }
@@ -120,6 +129,7 @@ pub struct SignupPayload {
     pub email: String,
     pub username: String,
     pub password: String,
+    pub apartment_number: Option<String>,
 }
 
 /// Payload pour la connexion
@@ -144,4 +154,3 @@ pub struct Claims {
     pub exp: usize, // expiration timestamp
     pub iat: usize, // issued at
 }
-

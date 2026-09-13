@@ -54,6 +54,7 @@ pub async fn handle_send_message(
         &state.channel_repo,
         &state.user_repo,
         &state.message_repo,
+        &state.moderation_repo,
         channel_id,
         user_id,
         payload,
@@ -75,10 +76,8 @@ pub async fn handle_send_message(
 
     state
         .ws_hub
-        .broadcast_to_channel_with_metrics(channel_id, &event, Some(&state.ws_metrics })
+        .broadcast_to_channel_with_metrics(channel_id, &event, Some(&state.ws_metrics))
         .await;
 
-    Ok(( })
+    Ok(())
 }
-
-

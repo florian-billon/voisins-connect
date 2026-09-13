@@ -62,4 +62,3 @@ pub struct CreateSubscriptionPayload {
     pub status: Option<SubscriptionStatus>,
     pub expires_at: Option<DateTime<Utc>>,
 }
-

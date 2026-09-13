@@ -32,9 +32,11 @@ impl S3Service {
             .content_type(content_type)
             .send()
             .await
-            .map_err(|e| crate::error::Error::Database { message: e.to_string() })?;
+            .map_err(|e| crate::error::Error::Database {
+                message: e.to_string(),
+            })?;
 
-        Ok(format!("https://{}.s3.amazonaws.com/{}", self.bucket, key })
+        Ok(format!("https://{}.s3.amazonaws.com/{}", self.bucket, key))
     }
 
     /// Delete a file from S3
@@ -45,9 +47,11 @@ impl S3Service {
             .key(key)
             .send()
             .await
-            .map_err(|e| crate::error::Error::Database { message: e.to_string() })?;
+            .map_err(|e| crate::error::Error::Database {
+                message: e.to_string(),
+            })?;
 
-        Ok(( })
+        Ok(())
     }
 
     /// Generate a presigned URL for downloading
@@ -55,7 +59,9 @@ impl S3Service {
         let presigner = aws_sdk_s3::presigning::PresigningConfig::expires_in(
             std::time::Duration::from_secs(expires_in),
         )
-        .map_err(|e| crate::error::Error::Database { message: e.to_string() })?;
+        .map_err(|e| crate::error::Error::Database {
+            message: e.to_string(),
+        })?;
 
         let presigned = self
             .client
@@ -64,9 +70,11 @@ impl S3Service {
             .key(key)
             .presigned(presigner)
             .await
-            .map_err(|e| crate::error::Error::Database { message: e.to_string() })?;
+            .map_err(|e| crate::error::Error::Database {
+                message: e.to_string(),
+            })?;
 
-        Ok(presigned.uri().to_string( })
+        Ok(presigned.uri().to_string())
     }
 
     /// Generate profile upload key
@@ -81,8 +89,3 @@ impl S3Service {
         format!("attachments/{}/{}.{}", user_id, Uuid::new_v4(), extension)
     }
 }
-
-
-
-
-

@@ -9,11 +9,10 @@ use crate::{
     ctx::Ctx,
     error::Result,
     models::{
-        InitiateVoiceCallPayload, UpdateVoiceCallPayload, VoiceCallResponse,
-        CreateVoiceChannelPayload, UpdateVoiceChannelPayload, VoiceChannelResponse,
+        CreateVoiceChannelPayload, InitiateVoiceCallPayload, UpdateVoiceCallPayload,
+        UpdateVoiceChannelPayload, VoiceCallResponse, VoiceChannelResponse,
     },
-    services,
-    AppState,
+    services, AppState,
 };
 
 // ============= Voice Calls Handlers =============
@@ -23,6 +22,26 @@ pub async fn initiate_voice_call(
     ctx: Ctx,
     Json(payload): Json<InitiateVoiceCallPayload>,
 ) -> Result<(StatusCode, Json<VoiceCallResponse>)> {
+    if let Some(channel_id) = payload.voice_channel_id {
+        let channel = services::voice::get_voice_channel(&state.voice_repo, channel_id)
+            .await?
+            .ok_or_else(|| crate::error::Error::NotFound {
+                message: "Voice channel not found".to_string(),
+            })?;
+
+        if channel.is_premium_only {
+            let caller_premium =
+                services::subscription::is_premium(&state.subscription_repo, ctx.user_id()).await?;
+            let recipient_premium =
+                services::subscription::is_premium(&state.subscription_repo, payload.recipient_id)
+                    .await?;
+
+            if !caller_premium || !recipient_premium {
+                return Err(crate::error::Error::Unauthorized);
+            }
+        }
+    }
+
     let call = services::voice::initiate_call(
         &state.voice_repo,
         ctx.user_id(),
@@ -31,7 +50,7 @@ pub async fn initiate_voice_call(
     )
     .await?;
 
-    Ok((StatusCode::CREATED, Json(call.into( }) })
+    Ok((StatusCode::CREATED, Json(call.into())))
 }
 
 pub async fn get_voice_call(
@@ -41,14 +60,16 @@ pub async fn get_voice_call(
 ) -> Result<Json<VoiceCallResponse>> {
     let call = services::voice::get_call(&state.voice_repo, call_id)
         .await?
-        .ok_or_else(|| crate::error::Error::NotFound { message: "Voice call not found".to_string()  })?;
+        .ok_or_else(|| crate::error::Error::NotFound {
+            message: "Voice call not found".to_string(),
+        })?;
 
     // Verify user is part of the call
     if call.initiator_id != ctx.user_id() && call.recipient_id != ctx.user_id() {
         return Err(crate::error::Error::Unauthorized);
     }
 
-    Ok(Json(call.into( } })
+    Ok(Json(call.into()))
 }
 
 pub async fn accept_voice_call(
@@ -58,7 +79,9 @@ pub async fn accept_voice_call(
 ) -> Result<Json<VoiceCallResponse>> {
     let call = services::voice::get_call(&state.voice_repo, call_id)
         .await?
-        .ok_or_else(|| crate::error::Error::NotFound { message: "Voice call not found".to_string()  })?;
+        .ok_or_else(|| crate::error::Error::NotFound {
+            message: "Voice call not found".to_string(),
+        })?;
 
     // Verify user is the recipient
     if call.recipient_id != ctx.user_id() {
@@ -67,9 +90,11 @@ pub async fn accept_voice_call(
 
     let updated_call = services::voice::accept_call(&state.voice_repo, call_id)
         .await?
-        .ok_or_else(|| crate::error::Error::NotFound { message: "Voice call not found".to_string()  })?;
+        .ok_or_else(|| crate::error::Error::NotFound {
+            message: "Voice call not found".to_string(),
+        })?;
 
-    Ok(Json(updated_call.into( } })
+    Ok(Json(updated_call.into()))
 }
 
 pub async fn reject_voice_call(
@@ -79,7 +104,9 @@ pub async fn reject_voice_call(
 ) -> Result<Json<VoiceCallResponse>> {
     let call = services::voice::get_call(&state.voice_repo, call_id)
         .await?
-        .ok_or_else(|| crate::error::Error::NotFound { message: "Voice call not found".to_string()  })?;
+        .ok_or_else(|| crate::error::Error::NotFound {
+            message: "Voice call not found".to_string(),
+        })?;
 
     // Verify user is the recipient
     if call.recipient_id != ctx.user_id() {
@@ -88,9 +115,11 @@ pub async fn reject_voice_call(
 
     let updated_call = services::voice::reject_call(&state.voice_repo, call_id)
         .await?
-        .ok_or_else(|| crate::error::Error::NotFound { message: "Voice call not found".to_string()  })?;
+        .ok_or_else(|| crate::error::Error::NotFound {
+            message: "Voice call not found".to_string(),
+        })?;
 
-    Ok(Json(updated_call.into( } })
+    Ok(Json(updated_call.into()))
 }
 
 pub async fn end_voice_call(
@@ -100,7 +129,9 @@ pub async fn end_voice_call(
 ) -> Result<Json<VoiceCallResponse>> {
     let call = services::voice::get_call(&state.voice_repo, call_id)
         .await?
-        .ok_or_else(|| crate::error::Error::NotFound { message: "Voice call not found".to_string()  })?;
+        .ok_or_else(|| crate::error::Error::NotFound {
+            message: "Voice call not found".to_string(),
+        })?;
 
     // Verify user is part of the call
     if call.initiator_id != ctx.user_id() && call.recipient_id != ctx.user_id() {
@@ -109,19 +140,21 @@ pub async fn end_voice_call(
 
     let ended_call = services::voice::end_call(&state.voice_repo, call_id)
         .await?
-        .ok_or_else(|| crate::error::Error::NotFound { message: "Voice call not found".to_string()  })?;
+        .ok_or_else(|| crate::error::Error::NotFound {
+            message: "Voice call not found".to_string(),
+        })?;
 
-    Ok(Json(ended_call.into( } })
+    Ok(Json(ended_call.into()))
 }
 
 pub async fn get_user_voice_calls(
     State(state): State<AppState>,
     ctx: Ctx,
 ) -> Result<Json<Vec<VoiceCallResponse>>> {
-    let calls = services::voice::get_user_recent_calls(&state.voice_repo, ctx.user_id(), 50)
-        .await?;
+    let calls =
+        services::voice::get_user_recent_calls(&state.voice_repo, ctx.user_id(), 50).await?;
 
-    Ok(Json(calls.into_iter().map(|c| c.into( }).collect( } })
+    Ok(Json(calls.into_iter().map(|c| c.into()).collect()))
 }
 
 // ============= Voice Channels Handlers (Premium) =============
@@ -132,13 +165,24 @@ pub async fn create_voice_channel(
     Path(server_id): Path<Uuid>,
     Json(payload): Json<CreateVoiceChannelPayload>,
 ) -> Result<(StatusCode, Json<VoiceChannelResponse>)> {
+    // Premium feature: only premium users can create voice channels
+    let is_premium =
+        services::subscription::is_premium(&state.subscription_repo, ctx.user_id()).await?;
+    if !is_premium {
+        return Err(crate::error::Error::Unauthorized);
+    }
+
     // Verify user is server owner/admin
     let _server = state
         .server_repo
         .find_by_id(server_id)
         .await
-        .map_err(|e| crate::error::Error::Database { message: e.to_string() })?
-        .ok_or_else(|| crate::error::Error::NotFound { message: "Server not found".to_string() })?;
+        .map_err(|e| crate::error::Error::Database {
+            message: e.to_string(),
+        })?
+        .ok_or_else(|| crate::error::Error::NotFound {
+            message: "Server not found".to_string(),
+        })?;
 
     let channel = services::voice::create_voice_channel(
         &state.voice_repo,
@@ -150,7 +194,7 @@ pub async fn create_voice_channel(
     )
     .await?;
 
-    Ok((StatusCode::CREATED, Json(channel.into( }) })
+    Ok((StatusCode::CREATED, Json(channel.into())))
 }
 
 pub async fn list_server_voice_channels(
@@ -158,25 +202,36 @@ pub async fn list_server_voice_channels(
     _ctx: Ctx,
     Path(server_id): Path<Uuid>,
 ) -> Result<Json<Vec<VoiceChannelResponse>>> {
-    let channels = services::voice::list_server_voice_channels(&state.voice_repo, server_id)
-        .await?;
+    let channels =
+        services::voice::list_server_voice_channels(&state.voice_repo, server_id).await?;
 
-    Ok(Json(channels.into_iter().map(|c| c.into( }).collect( } })
+    Ok(Json(channels.into_iter().map(|c| c.into()).collect()))
 }
 
 pub async fn update_voice_channel(
     State(state): State<AppState>,
     ctx: Ctx,
-    Path((server_id, channel_id }): Path<(Uuid, Uuid)>,
+    Path((server_id, channel_id)): Path<(Uuid, Uuid)>,
     Json(payload): Json<UpdateVoiceChannelPayload>,
 ) -> Result<Json<VoiceChannelResponse>> {
+    // Premium feature: only premium users can modify voice channels
+    let is_premium =
+        services::subscription::is_premium(&state.subscription_repo, ctx.user_id()).await?;
+    if !is_premium {
+        return Err(crate::error::Error::Unauthorized);
+    }
+
     // Verify ownership
     let _server = state
         .server_repo
         .find_by_id(server_id)
         .await
-        .map_err(|e| crate::error::Error::Database { message: e.to_string() })?
-        .ok_or_else(|| crate::error::Error::NotFound { message: "Server not found".to_string() })?;
+        .map_err(|e| crate::error::Error::Database {
+            message: e.to_string(),
+        })?
+        .ok_or_else(|| crate::error::Error::NotFound {
+            message: "Server not found".to_string(),
+        })?;
 
     let updated_channel = services::voice::update_voice_channel(
         &state.voice_repo,
@@ -186,29 +241,38 @@ pub async fn update_voice_channel(
         payload.max_users,
     )
     .await?
-    .ok_or_else(|| crate::error::Error::NotFound { message: "Voice channel not found".to_string() })?;
+    .ok_or_else(|| crate::error::Error::NotFound {
+        message: "Voice channel not found".to_string(),
+    })?;
 
-    Ok(Json(updated_channel.into( } })
+    Ok(Json(updated_channel.into()))
 }
 
 pub async fn delete_voice_channel(
     State(state): State<AppState>,
     ctx: Ctx,
-    Path((server_id, channel_id }): Path<(Uuid, Uuid)>,
+    Path((server_id, channel_id)): Path<(Uuid, Uuid)>,
 ) -> Result<StatusCode> {
+    // Premium feature: only premium users can delete voice channels
+    let is_premium =
+        services::subscription::is_premium(&state.subscription_repo, ctx.user_id()).await?;
+    if !is_premium {
+        return Err(crate::error::Error::Unauthorized);
+    }
+
     // Verify ownership
     let _server = state
         .server_repo
         .find_by_id(server_id)
         .await
-        .map_err(|e| crate::error::Error::Database { message: e.to_string() })?
-        .ok_or_else(|| crate::error::Error::NotFound { message: "Server not found".to_string() })?;
+        .map_err(|e| crate::error::Error::Database {
+            message: e.to_string(),
+        })?
+        .ok_or_else(|| crate::error::Error::NotFound {
+            message: "Server not found".to_string(),
+        })?;
 
     services::voice::delete_voice_channel(&state.voice_repo, channel_id).await?;
 
     Ok(StatusCode::NO_CONTENT)
 }
-
-
-
-

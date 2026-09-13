@@ -35,7 +35,7 @@ mod uuid_compat_binary_generic {
         let v = UuidCompat::deserialize(deserializer)?;
         match v {
             UuidCompat::Str(s) => Uuid::parse_str(&s).map_err(D::Error::custom),
-            UuidCompat::BsonUuid(u) => Ok(u.into( }),
+            UuidCompat::BsonUuid(u) => Ok(u.into()),
             UuidCompat::Binary(b) => Uuid::from_slice(&b.bytes).map_err(D::Error::custom),
         }
     }
@@ -92,9 +92,9 @@ mod datetime_compat {
     {
         match DateTimeCompat::deserialize(deserializer)? {
             DateTimeCompat::Rfc3339(value) => DateTime::parse_from_rfc3339(&value)
-                .map(|dt| dt.with_timezone(&Utc })
+                .map(|dt| dt.with_timezone(&Utc))
                 .map_err(D::Error::custom),
-            DateTimeCompat::Bson(value) => Ok(value.to_chrono( }),
+            DateTimeCompat::Bson(value) => Ok(value.to_chrono()),
         }
     }
 
@@ -106,7 +106,7 @@ mod datetime_compat {
             S: Serializer,
         {
             match value {
-                Some(v) => serializer.serialize_some(&bson::DateTime::from_chrono(*v }),
+                Some(v) => serializer.serialize_some(&bson::DateTime::from_chrono(*v)),
                 None => serializer.serialize_none(),
             }
         }
@@ -116,10 +116,10 @@ mod datetime_compat {
             D: Deserializer<'de>,
         {
             match Option::<DateTimeCompat>::deserialize(deserializer)? {
-                Some(DateTimeCompat::Rfc3339(value }) => DateTime::parse_from_rfc3339(&value)
-                    .map(|dt| Some(dt.with_timezone(&Utc } })
+                Some(DateTimeCompat::Rfc3339(value)) => DateTime::parse_from_rfc3339(&value)
+                    .map(|dt| Some(dt.with_timezone(&Utc)))
                     .map_err(D::Error::custom),
-                Some(DateTimeCompat::Bson(value }) => Ok(Some(value.to_chrono( } }),
+                Some(DateTimeCompat::Bson(value)) => Ok(Some(value.to_chrono())),
                 None => Ok(None),
             }
         }
@@ -213,5 +213,3 @@ pub struct UpdateMessagePayload {
 pub struct MessageReactionPayload {
     pub emoji: String,
 }
-
-

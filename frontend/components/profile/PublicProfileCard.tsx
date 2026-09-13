@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Button from "@/components/ui/Button";
 import SmartImg from "@/components/ui/SmartImg";
-import { addFriend, getPublicUserProfile, PublicUserProfile } from "@/lib/api-client";
+import { addFriend, removeFriend, getPublicUserProfile, PublicUserProfile } from "@/lib/api-client";
 import { normalizeAvatarUrl } from "@/lib/avatar";
 import { getStatusColor, getStatusKey } from "@/lib/presence";
 import { useTranslation } from "@/lib/i18n";
@@ -13,18 +13,21 @@ interface PublicProfileCardProps {
   userId: string;
   onClose: () => void;
   onFriendAdded?: () => Promise<void> | void;
+  onFriendRemoved?: () => Promise<void> | void;
 }
 
 export default function PublicProfileCard({
   userId,
   onClose,
   onFriendAdded,
+  onFriendRemoved,
 }: PublicProfileCardProps) {
   const { t, locale } = useTranslation();
   const router = useRouter();
   const [profile, setProfile] = useState<PublicUserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [addingFriend, setAddingFriend] = useState(false);
+  const [removingFriend, setRemovingFriend] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -71,6 +74,24 @@ export default function PublicProfileCard({
       setError(err instanceof Error ? err.message : t("error.default"));
     } finally {
       setAddingFriend(false);
+    }
+  };
+
+  const handleRemoveFriend = async () => {
+    if (!profile || profile.is_self || !profile.is_friend) {
+      return;
+    }
+
+    try {
+      setRemovingFriend(true);
+      setError(null);
+      await removeFriend(profile.id);
+      setProfile({ ...profile, is_friend: false });
+      await onFriendRemoved?.();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t("error.default"));
+    } finally {
+      setRemovingFriend(false);
     }
   };
 
@@ -177,8 +198,14 @@ export default function PublicProfileCard({
                 <>
                   {profile.is_friend ? (
                     <>
-                      <Button variant="ghost" size="md" disabled className="flex-1">
-                        {t("friends.alreadyFriends")}
+                      <Button
+                        variant="outline"
+                        size="md"
+                        onClick={handleRemoveFriend}
+                        isLoading={removingFriend}
+                        className="flex-1"
+                      >
+                        {t("friends.remove")}
                       </Button>
                       <Button variant="primary" size="md" onClick={openDm} className="flex-1">
                         {t("friends.openDm")}

@@ -58,5 +58,25 @@ impl FriendshipRepository {
         .fetch_all(&self.pool)
         .await
     }
-}
 
+    pub async fn delete(&self, user_id: Uuid, friend_id: Uuid) -> sqlx::Result<bool> {
+        let (first, second) = if user_id < friend_id {
+            (user_id, friend_id)
+        } else {
+            (friend_id, user_id)
+        };
+
+        let result = sqlx::query(
+            r#"
+            DELETE FROM friendships
+            WHERE user1_id = $1 AND user2_id = $2
+            "#,
+        )
+        .bind(first)
+        .bind(second)
+        .execute(&self.pool)
+        .await?;
+
+        Ok(result.rows_affected() > 0)
+    }
+}

@@ -1,54 +1,45 @@
+use reqwest::Client;
+use serde_json::Value;
 use uuid::Uuid;
 
-use crate::models::UserSubscriptionResponse;
 use crate::error::Result;
 
 #[derive(Clone)]
 pub struct StripeService {
-    api_key: String,
-    price_id: String,
+    _client: Client,
+    _api_key: String,
+    _price_id: String,
 }
 
 impl StripeService {
     pub fn new(api_key: String, price_id: String) -> Self {
-        Self { api_key, price_id }
+        let client = Client::new();
+        Self {
+            _client: client,
+            _api_key: api_key,
+            _price_id: price_id,
+        }
     }
 
-    /// Create a checkout session for subscription (mock implementation)
+    /// Create a Stripe checkout session for a subscription - Premium disabled
     pub async fn create_checkout_session(
         &self,
-        user_id: Uuid,
-        user_email: &str,
-        success_url: &str,
-        cancel_url: &str,
+        _user_id: Uuid,
+        _user_email: &str,
+        _success_url: &str,
+        _cancel_url: &str,
     ) -> Result<String> {
-        // Mock implementation - in production this would create a real Stripe checkout session
-        let mock_session_url = format!(
-            "https://checkout.stripe.com/pay/cs_test_1234567890?user_id={}&email={}",
-            user_id, user_email
-        );
-        println!("Mock Stripe checkout session created for user {}: {}", user_id, mock_session_url);
-        Ok(mock_session_url)
+        // Premium features disabled
+        Err("Premium features are disabled".into())
     }
 
-    /// Handle successful payment webhook (mock implementation)
-    pub async fn handle_checkout_session_completed(
+    /// Verify a Stripe webhook signature - Premium disabled
+    pub fn verify_webhook_signature(
         &self,
-        session_id: &str,
-    ) -> Result<(String, String)> {
-        // Mock implementation - in production this would verify with Stripe API
-        let customer_email = "user@example.com".to_string();
-        let subscription_id = format!("sub_mock_{}", session_id);
-        println!("Mock Stripe webhook processed for session: {}", session_id);
-        Ok((customer_email, subscription_id })
-    }
-
-    /// Cancel a subscription (mock implementation)
-    pub async fn cancel_subscription(&self, subscription_id: &str) -> Result<()> {
-        // Mock implementation - in production this would cancel via Stripe API
-        println!("Mock Stripe subscription cancelled: {}", subscription_id);
-        Ok(( })
+        _payload: &[u8],
+        _signature: &str,
+    ) -> Result<bool> {
+        // Premium features disabled
+        Ok(false)
     }
 }
-
-

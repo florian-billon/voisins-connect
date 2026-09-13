@@ -83,6 +83,7 @@ CREATE TABLE IF NOT EXISTS users (
     password_hash VARCHAR(255) NOT NULL,
     username VARCHAR(32) NOT NULL CHECK (username = trim(username)) CHECK (char_length(username) BETWEEN 1 AND 32),
     avatar_url VARCHAR(500),
+    apartment_number VARCHAR(20),
     status user_status NOT NULL DEFAULT 'Offline',
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -223,6 +224,21 @@ CREATE TABLE IF NOT EXISTS server_bans (
 CREATE INDEX IF NOT EXISTS idx_server_bans_user ON server_bans(user_id);
 CREATE INDEX IF NOT EXISTS idx_server_bans_server ON server_bans(server_id);
 CREATE INDEX IF NOT EXISTS idx_server_bans_expires ON server_bans(expires_at);
+
+-- SERVER MUTES (temporary message blocking)
+CREATE TABLE IF NOT EXISTS server_mutes (
+    server_id UUID NOT NULL REFERENCES servers(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    muted_by UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    reason VARCHAR(500),
+    muted_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    expires_at TIMESTAMPTZ NOT NULL,
+    PRIMARY KEY (server_id, user_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_server_mutes_user ON server_mutes(user_id);
+CREATE INDEX IF NOT EXISTS idx_server_mutes_server ON server_mutes(server_id);
+CREATE INDEX IF NOT EXISTS idx_server_mutes_expires ON server_mutes(expires_at);
 
 -- DIRECT MESSAGES (private conversations)
 CREATE TABLE IF NOT EXISTS direct_messages (

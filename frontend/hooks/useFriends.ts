@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Friend, listFriends as apiListFriends } from "@/lib/api-client";
+import { Friend, listFriends as apiListFriends, removeFriend as apiRemoveFriend } from "@/lib/api-client";
 import { handleAuthError, isAuthError, getErrorMessage } from "@/lib/auth/utils";
 import { hasStoredToken } from "@/lib/token-storage";
 import { useTranslation } from "@/lib/i18n";
@@ -27,6 +27,17 @@ export function useFriends(userId: string | null = null) {
     }
   }, [t]);
 
+  const removeFriend = useCallback(async (friendId: string) => {
+    try {
+      await apiRemoveFriend(friendId);
+      setFriends(friends.filter(f => f.id !== friendId));
+    } catch (err) {
+      const errorMessage = getErrorMessage(err, t("error.hooks.friends.remove"));
+      console.error("Erreur lors de la suppression de l'ami:", err);
+      throw err;
+    }
+  }, [friends, t]);
+
   useEffect(() => {
     refreshFriends();
   }, [refreshFriends, userId]);
@@ -34,5 +45,6 @@ export function useFriends(userId: string | null = null) {
   return {
     friends,
     refreshFriends,
+    removeFriend,
   };
 }

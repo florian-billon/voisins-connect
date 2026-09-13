@@ -18,6 +18,7 @@ export default function RegisterPage() {
   const [error, setError] = useState("");
   const [formData, setFormData] = useState({
     username: "",
+    apartment_number: "",
     email: "",
     password: "",
     confirmPassword: "",
@@ -45,7 +46,7 @@ export default function RegisterPage() {
     }
 
     try {
-      const result = await signup(formData.username.trim(), formData.email, formData.password);
+      const result = await signup(formData.username.trim(), formData.apartment_number.trim(), formData.email, formData.password);
 
       if (result.error) {
         setError(result.error);
@@ -63,16 +64,16 @@ export default function RegisterPage() {
 
   return (
     <main className="relative w-screen h-screen overflow-hidden">
-      <div className="fixed inset-0 bg-[url('/background.png')] bg-cover bg-center bg-no-repeat brightness-[0.7] contrast-[1.1] z-0" />
+      <div className="fixed inset-0 bg-[url('/background-clouds.png')] bg-cover bg-center bg-no-repeat brightness-[0.7] contrast-[1.1] z-0" />
 
       <div className="relative z-10 flex w-full h-full items-center justify-center">
         <div className="flex flex-col items-center justify-center p-6">
           <Image
             src="/logo.png"
             alt={t("auth.logoAlt")}
-            width={120}
-            height={120}
-            className="mb-6"
+            width={100}
+            height={100}
+            className="mb-4 md:mb-6 w-20 h-20 md:w-30 md:h-30"
           />
 
           <header className="mb-8 text-center">
@@ -81,7 +82,7 @@ export default function RegisterPage() {
             </h1>
           </header>
 
-          <section className="w-[380px] p-10 bg-[rgba(20,20,20,0.85)] backdrop-blur-xl rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.5)] border-2 border-[#4fdfff] animate-[fadeIn_0.5s_ease]">
+          <section className="w-full max-w-[380px] p-6 md:p-8 md:px-10 bg-[rgba(20,20,20,0.85)] backdrop-blur-xl rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.5)] border-2 border-[#5b8cff] animate-[fadeIn_0.5s_ease]">
             <div className="text-center mb-8">
               <h3 className="text-white font-bold tracking-widest text-lg">{t("auth.register.title")}</h3>
             </div>
@@ -101,6 +102,12 @@ export default function RegisterPage() {
                 maxLength={32}
                 value={formData.username}
                 onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+              />
+              <Input
+                type="text"
+                placeholder={t("auth.register.apartmentPlaceholder")}
+                value={formData.apartment_number}
+                onChange={(e) => setFormData({ ...formData, apartment_number: e.target.value })}
               />
               <Input
                 type="email"
@@ -138,7 +145,7 @@ export default function RegisterPage() {
             </form>
 
             <div className="mt-6 text-center text-sm">
-              <Link href="/login" className="text-[#4fdfff] hover:underline transition-colors">
+              <Link href="/login" className="text-[#5b8cff] hover:underline transition-colors">
                 {t("auth.register.hasAccount")}
               </Link>
             </div>

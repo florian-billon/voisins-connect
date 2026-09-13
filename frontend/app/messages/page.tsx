@@ -34,6 +34,10 @@ import {
   uploadFile,
 } from "@/lib/api-client";
 import { isTauriWindow } from "@/lib/runtime";
+import VoiceCallManager from "@/components/voice/VoiceCallManager";
+import VoiceCall from "@/components/voice/VoiceCall";
+// import PremiumSettings from "@/components/premium/PremiumSettings";
+// import PremiumFloatingButton from "@/components/premium/PremiumFloatingButton";
 
 const SCROLL_BOTTOM_THRESHOLD_PX = 80;
 
@@ -58,7 +62,7 @@ function DirectMessagesPageContent() {
   const { t, locale } = useTranslation();
   const { ready: guardReady } = useRouteGuard("protected");
   const { user: currentUser } = useAuth();
-  const { friends } = useFriends();
+  const { friends, refreshFriends } = useFriends();
   const { onEvent } = useWebSocket();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -76,6 +80,7 @@ function DirectMessagesPageContent() {
   const [searchResults, setSearchResults] = useState<UserSearchResult[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
   const [selectedPublicUserId, setSelectedPublicUserId] = useState<string | null>(null);
+  // const [showPremium, setShowPremium] = useState(false);
   const [showGifPicker, setShowGifPicker] = useState(false);
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
   const [editContent, setEditContent] = useState("");
@@ -160,6 +165,45 @@ function DirectMessagesPageContent() {
     pendingScrollBehaviorRef.current = "auto";
   }, [selectedConversationId]);
 
+  // Ouvrir automatiquement le modal Premium si le paramètre est présent - Disabled
+  /* useEffect(() => {
+    const showPremiumParam = searchParams.get("showPremium");
+    if (showPremiumParam === "true") {
+      setShowPremium(true);
+      // Nettoyer l'URL pour éviter de réouvrir le modal au rechargement
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, "", newUrl);
+    }
+  }, [searchParams]); */
+
+  // Gérer les succès de paiement
+  useEffect(() => {
+    const premiumSuccess = searchParams.get("premium");
+    const paymentMethod = searchParams.get("method");
+    
+    if (premiumSuccess === "success") {
+      // Afficher une notification de succès
+      const message = paymentMethod === "paypal" 
+        ? "Paiement PayPal réussi ! Bienvenue dans l'abonnement Premium 🎉"
+        : "Paiement réussi ! Bienvenue dans l'abonnement Premium 🎉";
+      
+      alert(message);
+      
+      // Nettoyer l'URL
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, "", newUrl);
+      
+      // Rafraîchir les données de l'utilisateur
+      window.location.reload();
+    } else if (premiumSuccess === "cancelled") {
+      alert("Paiement annulé. Vous pouvez réessayer à tout moment.");
+      
+      // Nettoyer l'URL
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, "", newUrl);
+    }
+  }, [searchParams]);
+
   useEffect(() => {
     let cancelled = false;
 
@@ -195,24 +239,13 @@ function DirectMessagesPageContent() {
   }, [selectedConversationId]);
 
   useEffect(() => {
-    if (!selectedConversationId || messages.length === 0) {
-      return;
+    // Toujours scroller vers le bas quand de nouveaux messages arrivent
+    if (messages.length > 0) {
+      // Petit délai pour s'assurer que le DOM est mis à jour
+      setTimeout(() => {
+        scrollMessagesToBottom("smooth");
+      }, 100);
     }
-
-    if (!shouldStickToBottomRef.current && pendingScrollBehaviorRef.current === null) {
-      return;
-    }
-
-    const behavior = pendingScrollBehaviorRef.current ?? "smooth";
-    const animationFrame = window.requestAnimationFrame(() => {
-      scrollMessagesToBottom(behavior);
-      pendingScrollBehaviorRef.current = null;
-      shouldStickToBottomRef.current = true;
-    });
-
-    return () => {
-      window.cancelAnimationFrame(animationFrame);
-    };
   }, [messages, scrollMessagesToBottom, selectedConversationId]);
 
   useEffect(() => {
@@ -645,8 +678,35 @@ function DirectMessagesPageContent() {
 
   return (
     <main className="flex w-full h-screen overflow-hidden">
+      {/* Mobile Header */}
+      <header className="md:hidden h-14 bg-[rgba(5,10,15,0.95)] border-b border-[#4fdfff]/20 flex items-center justify-between px-4">
+        <button
+          onClick={() => router.push("/")}
+          className="p-2 text-white/60 hover:text-white transition-colors"
+          aria-label="Retour"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+        </button>
+
+        <div className="flex-1 mx-4">
+          <h1 className="text-white font-semibold truncate">{t("dm.title")}</h1>
+        </div>
+
+        <button
+          onClick={() => setShowNewChatModal(true)}
+          className="p-2 text-[#4fdfff] hover:text-white transition-colors"
+          aria-label={t("dm.newConversation")}
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+          </svg>
+        </button>
+      </header>
+
       {/* ========== FRIENDS SIDEBAR ========== */}
-      <aside className="w-[72px] bg-[rgba(0,0,0,0.95)] border-r border-[#4fdfff]/20 flex flex-col items-center py-3 gap-2">
+      <aside className="hidden md:flex w-[72px] bg-[rgba(0,0,0,0.95)] border-r border-[#4fdfff]/20 flex flex-col items-center py-3 gap-2">
         <button
           onClick={() => router.push("/")}
           className="w-12 h-12 flex items-center justify-center mb-2 cursor-pointer group bg-transparent border-0 shadow-none p-0"
@@ -654,7 +714,7 @@ function DirectMessagesPageContent() {
         >
           <Image
             src="/logo.png"
-            alt="HW"
+            alt={t("auth.logoAlt")}
             width={32}
             height={32}
             className="group-hover:scale-110 transition-transform"
@@ -707,7 +767,7 @@ function DirectMessagesPageContent() {
               {currentUser?.avatar_url ? (
                 <SmartImg
                   src={normalizeAvatarUrl(currentUser.avatar_url) || ''}
-                  alt="Avatar"
+                  alt={t("profile.avatarLabel")}
                   className="w-full h-full object-cover"
                 />
               ) : (
@@ -732,11 +792,21 @@ function DirectMessagesPageContent() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
             </svg>
           </button>
+          {/* Premium button - Disabled since everything is free */}
+          {/* <button
+            onClick={() => setShowPremium(true)}
+            className="w-12 h-12 rounded-[24px] bg-gradient-to-br from-yellow-500/20 to-yellow-600/20 border border-yellow-500/30 text-yellow-400 flex items-center justify-center hover:from-yellow-500/30 hover:to-yellow-600/30 hover:border-yellow-500/50 transition-all relative overflow-hidden"
+            title={t("premium.title")}
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15l-2-2L9.5 7.5m0 5L7 12m5 0l-2 2m0-5l-2.5-2.5M5 12h14" />
+            </svg>
+          </button> */}
         </div>
       </aside>
 
       {/* ========== DM SIDEBAR ========== */}
-      <aside className="w-60 bg-[rgba(5,10,15,0.95)] border-r border-[#4fdfff]/20 flex flex-col min-h-0">
+      <aside className="hidden md:flex w-60 bg-[rgba(5,10,15,0.95)] border-r border-[#4fdfff]/20 flex flex-col min-h-0">
         <div className="h-12 px-4 flex items-center justify-between border-b border-[#4fdfff]/30 shadow-lg bg-[rgba(0,0,0,0.3)]">
           <h2 className="font-bold text-white truncate flex-1 uppercase tracking-widest text-[10px]">{t("dm.title")}</h2>
           <button
@@ -766,7 +836,11 @@ function DirectMessagesPageContent() {
             {conversations.map((conv) => (
               <button
                 key={conv.id}
-                onClick={() => selectConversation(conv)}
+                onClick={() => {
+                  selectConversation(conv);
+                  // On mobile, after selecting a conversation, we could close the sidebar
+                  // For now, let's keep it simple since the conversation area is the main view
+                }}
                 className={`w-full flex items-center gap-3 px-2 py-2 rounded transition-colors ${
                   selectedConversationId === conv.id
                     ? "bg-[#4fdfff]/15 text-white"
@@ -798,10 +872,65 @@ function DirectMessagesPageContent() {
       <div className="flex-1 min-w-0 flex flex-col bg-[rgba(10,15,20,0.98)]">
         {selectedConversationId ? (
            <div className="flex-1 min-h-0 flex flex-col">
+              {/* En-tête de la conversation avec bouton d'appel */}
+              <div className="px-2 md:px-4 py-2 md:py-3 border-b border-[#4fdfff]/20 bg-[rgba(0,0,0,0.2)] flex items-center justify-between">
+                {/* Mobile conversation selector */}
+                <div className="md:hidden flex-1 mr-2">
+                  <select
+                    value={selectedConversationId}
+                    onChange={(e) => {
+                      const conv = conversations.find(c => c.id === e.target.value);
+                      if (conv) selectConversation(conv);
+                    }}
+                    className="w-full bg-[rgba(20,20,20,0.8)] border border-[#4fdfff]/30 rounded px-2 py-1 text-white text-sm outline-none focus:border-[#4fdfff]"
+                  >
+                    {conversations.map(conv => (
+                      <option key={conv.id} value={conv.id}>{conv.username}</option>
+                    ))}
+                  </select>
+                </div>
+                
+                {/* Desktop header */}
+                <div className="hidden md:flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-[#4fdfff]/10 border border-[#4fdfff]/30 flex items-center justify-center overflow-hidden">
+                    <SmartImg
+                      src={selectedConversationAvatar}
+                      alt={selectedConversation?.username || t("dm.title")}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div>
+                    <h3 className="text-white font-semibold">
+                      @{selectedConversation?.username || t("dm.title")}
+                    </h3>
+                    <p className="text-white/60 text-sm">
+                      {selectedConversation ? "En ligne" : "Hors ligne"}
+                    </p>
+                  </div>
+                </div>
+                
+                {/* Voice call button - hidden on very small screens */}
+                <div className="hidden sm:block">
+                  <VoiceCall
+                    currentUser={currentUser}
+                    targetUser={selectedConversation ? {
+                      id: selectedConversation.recipient_id,
+                      username: selectedConversation.username,
+                      email: selectedConversation.recipient_id + "@example.com", // Email fictif pour la compatibilité
+                      avatar_url: selectedConversation.avatar_url,
+                      status: selectedConversation.status, // Propriété status requise pour le type User
+                      created_at: selectedConversation.created_at
+                    } : null}
+                    onCallStart={() => console.log("Call started")}
+                    onCallEnd={() => console.log("Call ended")}
+                  />
+                </div>
+              </div>
+              
               <div
                 ref={messagesContainerRef}
                 onScroll={updateStickToBottom}
-                className="flex-1 min-h-0 overflow-y-auto p-4"
+                className="flex-1 min-h-0 overflow-y-auto p-2 md:p-4"
               >
                 {error && <p className="text-sm text-[#ff3333]">{error}</p>}
                 {messages.length === 0 ? (
@@ -809,12 +938,12 @@ function DirectMessagesPageContent() {
                     <div className="w-20 h-20 rounded-full bg-[#4fdfff]/10 border-2 border-[#4fdfff]/30 flex items-center justify-center mb-4 overflow-hidden">
                       <SmartImg
                         src={selectedConversationAvatar}
-                        alt={selectedConversation?.username || "Conversation"}
+                        alt={selectedConversation?.username || t("dm.title")}
                         className="w-full h-full object-cover"
                       />
                     </div>
                     <h4 className="text-xl font-semibold text-white mb-2">
-                      {selectedConversation ? `@${selectedConversation.username}` : "Conversation"}
+                      {selectedConversation ? `@${selectedConversation.username}` : t("dm.title")}
                     </h4>
                     <p className="text-white/50 text-sm">Aucun message pour le moment.</p>
                   </div>
@@ -876,7 +1005,7 @@ function DirectMessagesPageContent() {
                               // eslint-disable-next-line @next/next/no-img-element
                               <img
                                 src={message.content.startsWith("/") ? `${process.env.NEXT_PUBLIC_API_URL}${message.content}` : message.content}
-                                alt="Attachment"
+                                alt={t("chat.uploadTooltip")}
                                 className="max-w-xs max-h-64 rounded-lg border border-white/10 hover:border-[#4fdfff]/50 transition-colors cursor-pointer"
                                 loading="lazy"
                               />
@@ -942,7 +1071,7 @@ function DirectMessagesPageContent() {
                 </div>
                 )}
               </div>
-              <footer className="px-4 py-3 border-t border-[#4fdfff]/20 bg-[rgba(0,0,0,0.2)]">
+              <footer className="px-2 md:px-4 py-2 md:py-3 border-t border-[#4fdfff]/20 bg-[rgba(0,0,0,0.2)]">
                   <div className="relative">
                     <input
                       type="file"
@@ -958,18 +1087,18 @@ function DirectMessagesPageContent() {
                         searchPlaceholder={t("chat.gifSearch")}
                       />
                     )}
-                    <form onSubmit={handleSendDirectMessage} className="flex items-center gap-2">
+                    <form onSubmit={handleSendDirectMessage} className="flex items-center gap-1 md:gap-2">
                        <button
                         type="button"
                         onClick={handleFileUpload}
                         disabled={isUploading}
-                        className="px-2 py-2 text-white/40 hover:text-[#4fdfff] transition-colors flex-shrink-0 disabled:opacity-50"
+                        className="p-1.5 md:px-2 md:py-2 text-white/40 hover:text-[#4fdfff] transition-colors flex-shrink-0 disabled:opacity-50"
                         title={t("chat.uploadTooltip")}
                       >
                         {isUploading ? (
-                          <div className="w-5 h-5 border-2 border-[#4fdfff] border-t-transparent rounded-full animate-spin" />
+                          <div className="w-4 h-4 md:w-5 md:h-5 border-2 border-[#4fdfff] border-t-transparent rounded-full animate-spin" />
                         ) : (
-                          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                           </svg>
                         )}
@@ -977,7 +1106,7 @@ function DirectMessagesPageContent() {
                       <button
                         type="button"
                         onClick={() => setShowGifPicker(true)}
-                        className="px-2 py-2 text-xs font-bold text-[#4fdfff] border border-[#4fdfff]/40 rounded-lg hover:bg-[#4fdfff]/10 transition-colors flex-shrink-0"
+                        className="px-1.5 py-1.5 md:px-2 md:py-2 text-[10px] md:text-xs font-bold text-[#4fdfff] border border-[#4fdfff]/40 rounded-lg hover:bg-[#4fdfff]/10 transition-colors flex-shrink-0"
                         title={t("chat.gifTooltip")}
                       >
                         GIF
@@ -987,7 +1116,7 @@ function DirectMessagesPageContent() {
                           value={messageInput}
                           onChange={(e) => setMessageInput(e.target.value)}
                           placeholder={`Message @${selectedConversation?.username}`}
-                          className="w-full pl-4 pr-12 py-2.5 bg-[rgba(20,20,20,0.8)] border border-[#4fdfff]/30 rounded-lg text-white placeholder:text-white/40 outline-none focus:border-[#4fdfff] focus:bg-[rgba(20,20,20,0.95)] transition-all"
+                          className="w-full pl-3 md:pl-4 pr-3 md:pr-12 py-2 md:py-2.5 bg-[rgba(20,20,20,0.8)] border border-[#4fdfff]/30 rounded-lg text-white placeholder:text-white/40 outline-none focus:border-[#4fdfff] focus:bg-[rgba(20,20,20,0.95)] transition-all text-sm md:text-base"
                         />
                       </div>
                     </form>
@@ -1141,8 +1270,34 @@ function DirectMessagesPageContent() {
         <PublicProfileCard
           userId={selectedPublicUserId}
           onClose={() => setSelectedPublicUserId(null)}
+          onFriendAdded={refreshFriends}
+          onFriendRemoved={refreshFriends}
         />
       )}
+
+      {/* Premium Settings Modal - Disabled since everything is free */}
+      {/* {showPremium && (
+        <PremiumSettings
+          user={currentUser}
+          onClose={() => setShowPremium(false)}
+        />
+      )} */}
+
+      {/* Voice Call Manager */}
+      <VoiceCallManager
+        user={currentUser}
+        onIncomingCall={(call) => {
+          console.log("Incoming call:", call);
+          // Handle incoming call logic
+        }}
+        onCallEnded={(callId) => {
+          console.log("Call ended:", callId);
+          // Handle call ended logic
+        }}
+      />
+      
+      {/* Premium Floating Button - Disabled since everything is free */}
+      {/* <PremiumFloatingButton /> */}
     </main>
   );
 }

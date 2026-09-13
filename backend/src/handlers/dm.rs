@@ -141,7 +141,7 @@ pub async fn list_messages(
         })?;
 
     if messages.is_empty() {
-        return Ok(Json(vec![] });
+        return Ok(Json(vec![]));
     }
 
     let author_ids: Vec<Uuid> = messages.iter().map(|message| message.author_id).collect();
@@ -153,7 +153,7 @@ pub async fn list_messages(
             let username = usernames
                 .get(&message.author_id)
                 .cloned()
-                .unwrap_or_else(|| "Unknown".to_string( });
+                .unwrap_or_else(|| "Unknown".to_string());
             to_response(message, username)
         })
         .collect();
@@ -174,8 +174,33 @@ pub async fn create_message(
         });
     }
 
-    if !state.dm_repo.user_has_access(dm_id, ctx.user_id( }).await? {
+    if !state.dm_repo.user_has_access(dm_id, ctx.user_id()).await? {
         return Err(Error::MessageForbidden);
+    }
+
+    let moderation_result =
+        crate::services::moderation::check_message(&state.moderation_repo, content).await?;
+    if !moderation_result.is_clean {
+        crate::services::moderation::log_moderated_message(
+            &state.moderation_repo,
+            ctx.user_id(),
+            None,
+            None,
+            moderation_result.rule_type.as_deref().unwrap_or("unknown"),
+            moderation_result.severity.unwrap_or(0),
+            moderation_result.action.as_deref().unwrap_or("flag"),
+            Some(content.to_string()),
+        )
+        .await?;
+
+        match moderation_result.action.as_deref() {
+            Some("hide") | Some("remove") => {
+                return Err(Error::BadRequest {
+                    message: "Message blocked by moderation".to_string(),
+                });
+            }
+            _ => {}
+        }
     }
 
     let message = DirectMessageItem {
@@ -200,11 +225,11 @@ pub async fn create_message(
 
     let username = state
         .user_repo
-        .get_username(ctx.user_id( })
+        .get_username(ctx.user_id())
         .await?
         .ok_or(Error::UserNotFound)?;
 
-    let response = to_response(message, username.clone( });
+    let response = to_response(message, username.clone());
 
     let event = ServerEvent::DirectMessageCreate {
         id: response.id,
@@ -219,7 +244,7 @@ pub async fn create_message(
 
     broadcast_to_dm_participants(&state, dm_id, &event).await?;
 
-    Ok(Json(response })
+    Ok(Json(response))
 }
 
 pub async fn update_message(
@@ -246,7 +271,7 @@ pub async fn update_message(
 
     if !state
         .dm_repo
-        .user_has_access(message.dm_id, ctx.user_id( })
+        .user_has_access(message.dm_id, ctx.user_id())
         .await?
     {
         return Err(Error::MessageForbidden);
@@ -258,6 +283,31 @@ pub async fn update_message(
 
     if message.deleted_at.is_some() {
         return Err(Error::MessageNotFound);
+    }
+
+    let moderation_result =
+        crate::services::moderation::check_message(&state.moderation_repo, content).await?;
+    if !moderation_result.is_clean {
+        crate::services::moderation::log_moderated_message(
+            &state.moderation_repo,
+            ctx.user_id(),
+            None,
+            Some(message.dm_id),
+            moderation_result.rule_type.as_deref().unwrap_or("unknown"),
+            moderation_result.severity.unwrap_or(0),
+            moderation_result.action.as_deref().unwrap_or("flag"),
+            Some(content.to_string()),
+        )
+        .await?;
+
+        match moderation_result.action.as_deref() {
+            Some("hide") | Some("remove") => {
+                return Err(Error::BadRequest {
+                    message: "Message blocked by moderation".to_string(),
+                });
+            }
+            _ => {}
+        }
     }
 
     state
@@ -274,7 +324,7 @@ pub async fn update_message(
         .await?
         .ok_or(Error::UserNotFound)?;
 
-    let edited_at = Some(chrono::Utc::now( });
+    let edited_at = Some(chrono::Utc::now());
     let response = DirectMessageItemResponse {
         id: message.message_id,
         dm_id: message.dm_id,
@@ -297,7 +347,7 @@ pub async fn update_message(
         broadcast_to_dm_participants(&state, response.dm_id, &event).await?;
     }
 
-    Ok(Json(response })
+    Ok(Json(response))
 }
 
 pub async fn delete_message(
@@ -316,7 +366,7 @@ pub async fn delete_message(
 
     if !state
         .dm_repo
-        .user_has_access(message.dm_id, ctx.user_id( })
+        .user_has_access(message.dm_id, ctx.user_id())
         .await?
     {
         return Err(Error::MessageForbidden);
@@ -367,7 +417,7 @@ pub async fn add_reaction(
 
     if !state
         .dm_repo
-        .user_has_access(message.dm_id, ctx.user_id( })
+        .user_has_access(message.dm_id, ctx.user_id())
         .await?
     {
         return Err(Error::MessageForbidden);
@@ -379,71 +429,7 @@ pub async fn add_reaction(
 
     state
         .dm_message_repo
-        .add_reaction(id, ctx.user_id(), payload.emoji.trim( })
-        .await
-        .map_err(|e| Error::DatabaseError {
-            message: format!("MongoDB update failed: {}", e),
-        })?;
-
-    let updated = state
-        .dm_message_repo
-        .find_by_id(id)
-        .await
-        .map_err(|e| Error::DatabaseError {
-            message: format!("MongoDB query failed: {}", e),
-        })?
-        .ok_or(Error::MessageNotFound)?;
-
-    let username = state
-        .user_repo
-        .get_username(updated.author_id)
-        .await?
-        .ok_or(Error::UserNotFound)?;
-
-    let response = to_response(updated, username);
-    let event = ServerEvent::DirectMessageReactionUpdate {
-        id: response.id,
-        dm_id: response.dm_id,
-        reactions: response.reactions.clone(),
-    };
-
-    broadcast_to_dm_participants(&state, response.dm_id, &event).await?;
-
-    Ok(Json(response })
-}
-
-pub async fn remove_reaction(
-    State(state): State<AppState>,
-    ctx: Ctx,
-    Path(id): Path<Uuid>,
-    Json(payload): Json<MessageReactionPayload>,
-) -> Result<Json<DirectMessageItemResponse>> {
-    validate_reaction_emoji(&payload.emoji)?;
-
-    let message = state
-        .dm_message_repo
-        .find_by_id(id)
-        .await
-        .map_err(|e| Error::DatabaseError {
-            message: format!("MongoDB query failed: {}", e),
-        })?
-        .ok_or(Error::MessageNotFound)?;
-
-    if !state
-        .dm_repo
-        .user_has_access(message.dm_id, ctx.user_id( })
-        .await?
-    {
-        return Err(Error::MessageForbidden);
-    }
-
-    if message.deleted_at.is_some() {
-        return Err(Error::MessageNotFound);
-    }
-
-    state
-        .dm_message_repo
-        .remove_reaction(id, ctx.user_id(), payload.emoji.trim( })
+        .add_reaction(id, ctx.user_id(), payload.emoji.trim())
         .await
         .map_err(|e| Error::DatabaseError {
             message: format!("MongoDB update failed: {}", e),
@@ -476,4 +462,66 @@ pub async fn remove_reaction(
     Ok(Json(response))
 }
 
+pub async fn remove_reaction(
+    State(state): State<AppState>,
+    ctx: Ctx,
+    Path(id): Path<Uuid>,
+    Json(payload): Json<MessageReactionPayload>,
+) -> Result<Json<DirectMessageItemResponse>> {
+    validate_reaction_emoji(&payload.emoji)?;
 
+    let message = state
+        .dm_message_repo
+        .find_by_id(id)
+        .await
+        .map_err(|e| Error::DatabaseError {
+            message: format!("MongoDB query failed: {}", e),
+        })?
+        .ok_or(Error::MessageNotFound)?;
+
+    if !state
+        .dm_repo
+        .user_has_access(message.dm_id, ctx.user_id())
+        .await?
+    {
+        return Err(Error::MessageForbidden);
+    }
+
+    if message.deleted_at.is_some() {
+        return Err(Error::MessageNotFound);
+    }
+
+    state
+        .dm_message_repo
+        .remove_reaction(id, ctx.user_id(), payload.emoji.trim())
+        .await
+        .map_err(|e| Error::DatabaseError {
+            message: format!("MongoDB update failed: {}", e),
+        })?;
+
+    let updated = state
+        .dm_message_repo
+        .find_by_id(id)
+        .await
+        .map_err(|e| Error::DatabaseError {
+            message: format!("MongoDB query failed: {}", e),
+        })?
+        .ok_or(Error::MessageNotFound)?;
+
+    let username = state
+        .user_repo
+        .get_username(updated.author_id)
+        .await?
+        .ok_or(Error::UserNotFound)?;
+
+    let response = to_response(updated, username);
+    let event = ServerEvent::DirectMessageReactionUpdate {
+        id: response.id,
+        dm_id: response.dm_id,
+        reactions: response.reactions.clone(),
+    };
+
+    broadcast_to_dm_participants(&state, response.dm_id, &event).await?;
+
+    Ok(Json(response))
+}

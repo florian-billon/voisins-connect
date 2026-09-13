@@ -11,7 +11,7 @@ fn generate_invite_code() -> String {
     let mut rng = rand::rng();
     (0..8)
         .map(|_| {
-            let idx = rng.random_range(0..CHARS.len( });
+            let idx = rng.random_range(0..CHARS.len());
             CHARS[idx] as char
         })
         .collect()
@@ -153,5 +153,3 @@ pub async fn join_server_with_code(
 
     Ok(invite.server_id)
 }
-
-

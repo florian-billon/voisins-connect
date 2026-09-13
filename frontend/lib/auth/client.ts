@@ -41,13 +41,13 @@ export async function login(email: string, password: string) {
   return { error: null };
 }
 
-export async function signup(username: string, email: string, password: string) {
+export async function signup(username: string, apartment_number: string, email: string, password: string) {
   let res: Response;
   try {
     res = await fetch(`${API_URL}/auth/signup`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, email, password }),
+      body: JSON.stringify({ username, apartment_number, email, password }),
       cache: "no-store",
     });
   } catch {

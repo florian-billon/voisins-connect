@@ -80,7 +80,7 @@ export default function MessageReactions({
           </button>
 
           {open && (
-            <div className="absolute z-20 mt-2 left-0 border border-[#4fdfff]/30 rounded-lg overflow-hidden shadow-xl">
+            <div className="absolute z-50 mt-2 left-0 border border-[#4fdfff]/30 rounded-lg overflow-hidden shadow-xl bg-[rgba(10,15,20,0.98)]">
               <EmojiPicker
                 className="message-reactions-emoji-picker"
                 width={320}
