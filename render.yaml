@@ -3,7 +3,8 @@ services:
     name: voisins-connect-backend
     env: docker
     plan: free
-    dockerContext: .
+    dockerContext: backend
+    dockerfilePath: ./backend/Dockerfile
     envVars:
       - key: DATABASE_URL
         sync: false

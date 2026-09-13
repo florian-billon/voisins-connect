@@ -8,7 +8,7 @@ RUN apt-get update && apt-get install -y \
     libssl-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy Cargo files
+# Copy Cargo files first
 COPY Cargo.toml Cargo.lock ./
 
 # Create a dummy main.rs to cache dependencies

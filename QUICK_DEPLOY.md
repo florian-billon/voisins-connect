@@ -31,8 +31,9 @@ PORT=3001
 5. **Configurez le service** :
    - **Name** : `voisins-connect-backend`
    - **Runtime** : Docker
+   - **Docker Context** : `backend`
+   - **Dockerfile Path** : `./backend/Dockerfile`
    - **Branch** : `main`
-   - **Root Directory** : Laissez vide (root du dépôt)
 6. **Configurez les variables d'environnement** :
    - `DATABASE_URL` : `postgresql://neondb_owner:npg_iVuGFgOAzM64@ep-jolly-water-ahsgdocs-pooler.c-3.us-east-1.aws.neon.tech/neondb?sslmode=require`
    - `MONGODB_URL` : `mongodb+srv://helloworld:helloworld@cluster0.o2z1nqe.mongodb.net/?appName=Cluster0`
