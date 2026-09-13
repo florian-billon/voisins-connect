@@ -4,7 +4,8 @@ import { getStoredToken } from "./token-storage";
 
 const IDEMPOTENT_REQUEST_RETRIES = 7;
 const IDEMPOTENT_REQUEST_INITIAL_DELAY_MS = 1000;
-const IDEMPOTENT_REQUEST_MAX_DELAY_MS = 5000;
+const IDEMPOTENT_REQUEST_MAX_DELAY_MS = 10000;
+const DEFAULT_FETCH_TIMEOUT_MS = 30000;
 
 function isIdempotentRequest(method?: string): boolean {
   return !method || method.toUpperCase() === "GET";
@@ -33,12 +34,18 @@ async function fetchApi<T>(
     cache: "no-store",
   };
 
+  // Add timeout for cold starts
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), DEFAULT_FETCH_TIMEOUT_MS);
+  requestInit.signal = controller.signal;
+
   try {
     const res = await fetchWithRetry(`${API_URL}${endpoint}`, requestInit, {
       retries: isIdempotentRequest(options.method) ? IDEMPOTENT_REQUEST_RETRIES : 0,
       initialDelayMs: IDEMPOTENT_REQUEST_INITIAL_DELAY_MS,
       maxDelayMs: IDEMPOTENT_REQUEST_MAX_DELAY_MS,
     });
+    clearTimeout(timeoutId);
 
     if (!res.ok) {
       const errorText = await res.text();
@@ -77,6 +84,7 @@ async function fetchApi<T>(
     if (res.status === 204) return {} as T;
     return await res.json();
   } catch (err) {
+    clearTimeout(timeoutId);
     if (err instanceof Error) {
       const message = err.message.toLowerCase();
       const isNetworkLikeError =
@@ -95,6 +103,7 @@ async function fetchApi<T>(
       throw err;
     }
 
+    clearTimeout(timeoutId);
     throw new Error("error.backendUnavailable");
   }
 }
