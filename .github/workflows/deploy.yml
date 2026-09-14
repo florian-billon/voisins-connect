@@ -1,0 +1,27 @@
+name: Deploy voisins_connect
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to Render
+        run: |
+          echo "Backend deployment requires manual setup on Render.com"
+          echo "Please visit https://render.com and connect your GitHub repo"
+          echo "Repo: florian-billon/voisins-connect"
+          echo "Docker Context: /backend"
+
+  deploy-frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to Vercel
+        run: |
+          echo "Frontend deployment requires manual setup on Vercel.com"
+          echo "Please visit https://vercel.com and connect your GitHub repo"
+          echo "Repo: florian-billon/voisins-connect"
+          echo "Root Directory: frontend"
