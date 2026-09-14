@@ -715,8 +715,8 @@ function DirectMessagesPageContent() {
           <Image
             src="/logo.png"
             alt={t("auth.logoAlt")}
-            width={32}
-            height={32}
+            width={48}
+            height={48}
             className="group-hover:scale-110 transition-transform"
           />
         </button>

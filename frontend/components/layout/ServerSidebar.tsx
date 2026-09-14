@@ -29,7 +29,7 @@ export default function ServerSidebar({ servers, selectedServer, friends, user, 
         className="w-12 h-12 flex items-center justify-center mb-2 cursor-pointer group bg-transparent border-0 shadow-none p-0"
         title={t("common.appName")}
       >
-        <Image src="/logo.png" alt={t("common.appName")} width={32} height={32} className="group-hover:scale-110 transition-transform" />
+        <Image src="/logo.png" alt={t("common.appName")} width={48} height={48} className="group-hover:scale-110 transition-transform" />
       </button>
 
       <div className="w-8 h-[2px] bg-[#5b8cff]/20 rounded-full" />

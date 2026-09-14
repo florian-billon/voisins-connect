@@ -58,9 +58,9 @@ export default function LoginPage() {
           <Image
             src="/logo.png"
             alt={t("auth.logoAlt")}
-            width={100}
-            height={100}
-            className="mb-4 md:mb-6 w-20 h-20 md:w-30 md:h-30"
+            width={150}
+            height={150}
+            className="mb-4 md:mb-6 w-30 h-30 md:w-45 md:h-45"
           />
 
           <header className="mb-8 text-center">
