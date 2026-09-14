@@ -243,7 +243,7 @@ export default function Home() {
     }
   };
 
-  if (!guardReady || serversLoading) {
+  if (!guardReady) {
     return (
       <main className="flex w-full h-screen gap-2 p-2 items-center justify-center">
         <div className="text-center">
