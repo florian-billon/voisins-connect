@@ -15,13 +15,11 @@ export function useRouteGuard(mode: GuardMode) {
       const authenticated = hasStoredToken();
 
       if (mode === "protected" && !authenticated) {
-        setReady(false);
         router.replace("/login");
         return;
       }
 
       if (mode === "guest" && authenticated) {
-        setReady(false);
         router.replace("/");
         return;
       }
