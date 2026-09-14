@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { hasStoredToken, subscribeToTokenChanges } from "../token-storage";
 
 type GuardMode = "protected" | "guest";
@@ -9,22 +9,24 @@ type GuardMode = "protected" | "guest";
 export function useRouteGuard(mode: GuardMode) {
   const router = useRouter();
   const [ready, setReady] = useState(false);
-  const isRedirecting = useRef(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const syncGuard = () => {
-      if (isRedirecting.current) return;
+    setMounted(true);
+  }, []);
 
+  useEffect(() => {
+    if (!mounted) return;
+
+    const syncGuard = () => {
       const authenticated = hasStoredToken();
 
       if (mode === "protected" && !authenticated) {
-        isRedirecting.current = true;
         router.replace("/login");
         return;
       }
 
       if (mode === "guest" && authenticated) {
-        isRedirecting.current = true;
         router.replace("/");
         return;
       }
@@ -33,11 +35,13 @@ export function useRouteGuard(mode: GuardMode) {
     };
 
     syncGuard();
-    return subscribeToTokenChanges(() => {
-      isRedirecting.current = false;
+
+    const unsubscribe = subscribeToTokenChanges(() => {
       syncGuard();
     });
-  }, [mode, router]);
+
+    return unsubscribe;
+  }, [mode, router, mounted]);
 
   return { ready };
 }
