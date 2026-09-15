@@ -2,7 +2,6 @@
 
 import { useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { useRouteGuard } from "@/lib/auth/guards";
 import { useChat } from "@/components/providers/ChatProvider";
 import ProfileCard from "@/components/profile/ProfileCard";
 import PublicProfileCard from "@/components/profile/PublicProfileCard";
@@ -32,9 +31,8 @@ import AdminMuteModal from "@/components/modals/AdminMuteModal";
 export default function Home() {
   const router = useRouter();
   const { t } = useTranslation();
-  // const { ready: guardReady } = useRouteGuard("protected"); // Temporarily disabled to fix redirect loop
 
-  console.log("Home page rendering, guard disabled");
+  console.log("Home page rendering");
 
   const {
     user, friends, refreshFriends,

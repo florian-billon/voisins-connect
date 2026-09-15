@@ -5,7 +5,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { signup } from "@/lib/auth/client";
-import { useRouteGuard } from "@/lib/auth/guards";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import { useTranslation } from "@/lib/i18n";
@@ -13,7 +12,6 @@ import { useTranslation } from "@/lib/i18n";
 export default function RegisterPage() {
   const router = useRouter();
   const { t } = useTranslation();
-  // const { ready } = useRouteGuard("guest"); // Temporarily disabled to fix redirect loop
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [formData, setFormData] = useState({
@@ -23,10 +21,6 @@ export default function RegisterPage() {
     password: "",
     confirmPassword: "",
   });
-
-  // if (!ready) {
-  //   return <main className="min-h-screen" />;
-  // }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
