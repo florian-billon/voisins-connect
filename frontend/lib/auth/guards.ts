@@ -20,17 +20,21 @@ export function useRouteGuard(mode: GuardMode) {
 
     const syncGuard = () => {
       const authenticated = hasStoredToken();
+      console.log(`Guard ${mode}: authenticated=${authenticated}, ready=${ready}`);
 
       if (mode === "protected" && !authenticated) {
+        console.log("Guard: redirecting to /login");
         router.replace("/login");
         return;
       }
 
       if (mode === "guest" && authenticated) {
+        console.log("Guard: redirecting to /");
         router.replace("/");
         return;
       }
 
+      console.log("Guard: setting ready=true");
       setReady(true);
     };
 
