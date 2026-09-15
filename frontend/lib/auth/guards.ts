@@ -28,6 +28,7 @@ export function useRouteGuard(mode: GuardMode) {
       const authenticated = hasStoredToken();
       console.log(`Guard ${mode}: authenticated=${authenticated}, ready=${ready}`);
 
+      // Si mode est protected et qu'il y a un token, ne pas rediriger (même si le token est invalide côté serveur)
       if (mode === "protected" && !authenticated) {
         console.log("Guard: redirecting to /login");
         hasRedirected.current = true;
