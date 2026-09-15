@@ -32,9 +32,9 @@ import AdminMuteModal from "@/components/modals/AdminMuteModal";
 export default function Home() {
   const router = useRouter();
   const { t } = useTranslation();
-  const { ready: guardReady } = useRouteGuard("protected");
+  // const { ready: guardReady } = useRouteGuard("protected"); // Temporarily disabled to fix redirect loop
 
-  console.log("Home page rendering, guardReady:", guardReady);
+  console.log("Home page rendering, guard disabled");
 
   const {
     user, friends, refreshFriends,
