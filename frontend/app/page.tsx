@@ -254,6 +254,25 @@ export default function Home() {
     );
   }
 
+  if (serversError) {
+    return (
+      <main className="flex w-full h-screen gap-2 p-2 items-center justify-center">
+        <div className="text-center max-w-md">
+          <div className="bg-red-500/20 border border-red-500 text-red-300 px-6 py-4 rounded-lg mb-4">
+            <p className="font-bold mb-2">Erreur de chargement</p>
+            <p className="text-sm">{serversError}</p>
+          </div>
+          <button
+            onClick={() => window.location.reload()}
+            className="bg-[#4fdfff] text-black px-6 py-2 rounded-lg font-bold hover:bg-[#4fdfff]/80 transition-colors"
+          >
+            Réessayer
+          </button>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className="flex w-full h-screen">
       {/* Mobile Header */}
