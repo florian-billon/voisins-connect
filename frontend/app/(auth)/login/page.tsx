@@ -13,7 +13,7 @@ import { useTranslation } from "@/lib/i18n";
 export default function LoginPage() {
   const router = useRouter();
   const { t } = useTranslation();
-  const { ready } = useRouteGuard("guest");
+  // const { ready } = useRouteGuard("guest"); // Temporarily disabled to fix redirect loop
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [formData, setFormData] = useState({
@@ -21,16 +21,16 @@ export default function LoginPage() {
     password: "",
   });
 
-  if (!ready) {
-    return (
-      <main className="relative w-screen h-screen overflow-hidden">
-        <div className="fixed inset-0 bg-[url('/background-clouds.png')] bg-cover bg-center bg-no-repeat brightness-[0.7] contrast-[1.1] z-0" />
-        <div className="relative z-10 flex w-full h-full items-center justify-center">
-          <div className="w-16 h-16 border-2 border-[#4fdfff] border-t-transparent rounded-full animate-spin" />
-        </div>
-      </main>
-    );
-  }
+  // if (!ready) {
+  //   return (
+  //     <main className="relative w-screen h-screen overflow-hidden">
+  //       <div className="fixed inset-0 bg-[url('/background-clouds.png')] bg-cover bg-center bg-no-repeat brightness-[0.7] contrast-[1.1] z-0" />
+  //       <div className="relative z-10 flex w-full h-full items-center justify-center">
+  //         <div className="w-16 h-16 border-2 border-[#4fdfff] border-t-transparent rounded-full animate-spin" />
+  //       </div>
+  //     </main>
+  //   );
+  // }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

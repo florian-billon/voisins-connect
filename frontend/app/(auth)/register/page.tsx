@@ -13,7 +13,7 @@ import { useTranslation } from "@/lib/i18n";
 export default function RegisterPage() {
   const router = useRouter();
   const { t } = useTranslation();
-  const { ready } = useRouteGuard("guest");
+  // const { ready } = useRouteGuard("guest"); // Temporarily disabled to fix redirect loop
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [formData, setFormData] = useState({
@@ -24,9 +24,9 @@ export default function RegisterPage() {
     confirmPassword: "",
   });
 
-  if (!ready) {
-    return <main className="min-h-screen" />;
-  }
+  // if (!ready) {
+  //   return <main className="min-h-screen" />;
+  // }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
