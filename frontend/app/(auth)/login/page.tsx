@@ -50,7 +50,7 @@ export default function LoginPage() {
       const params = new URLSearchParams(window.location.search);
       const redirectTarget = params.get("redirect") || params.get("next") || "/";
       console.log("Redirection vers:", redirectTarget);
-      router.replace(redirectTarget);
+      window.location.href = redirectTarget;
       return;
     } catch (err) {
       console.error("Erreur login:", err);

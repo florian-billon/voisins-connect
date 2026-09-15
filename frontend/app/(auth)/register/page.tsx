@@ -53,7 +53,7 @@ export default function RegisterPage() {
         return;
       }
 
-      router.replace("/");
+      window.location.href = "/";
       return;
     } catch {
       setError(t("auth.register.error"));
