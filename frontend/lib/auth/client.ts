@@ -19,17 +19,21 @@ async function safeJson<T>(res: Response): Promise<T | null> {
 export async function login(email: string, password: string) {
   let res: Response;
   try {
+    console.log("Login API call to:", `${API_URL}/auth/login`);
     res = await fetch(`${API_URL}/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
       cache: "no-store",
     });
-  } catch {
+    console.log("Login response status:", res.status);
+  } catch (err) {
+    console.error("Login fetch error:", err);
     return { error: "Erreur de connexion. Vérifiez que le backend est joignable." };
   }
 
   const data = await safeJson<{ error?: string; token?: string; user?: unknown }>(res);
+  console.log("Login response data:", data);
   if (!res.ok) {
     return { error: data?.error || "Identifiants invalides" };
   }
@@ -38,6 +42,7 @@ export async function login(email: string, password: string) {
   }
 
   setStoredToken(data.token);
+  console.log("Token stored successfully");
   return { error: null };
 }
 

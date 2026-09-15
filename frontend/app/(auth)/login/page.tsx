@@ -38,7 +38,9 @@ export default function LoginPage() {
     setError("");
 
     try {
+      console.log("Tentative de login avec:", formData.email);
       const result = await login(formData.email, formData.password);
+      console.log("Résultat login:", result);
 
       if (result.error) {
         setError(result.error);
@@ -47,9 +49,11 @@ export default function LoginPage() {
 
       const params = new URLSearchParams(window.location.search);
       const redirectTarget = params.get("redirect") || params.get("next") || "/";
+      console.log("Redirection vers:", redirectTarget);
       router.replace(redirectTarget);
       return;
-    } catch {
+    } catch (err) {
+      console.error("Erreur login:", err);
       setError(t("auth.login.error"));
     } finally {
       setIsLoading(false);
