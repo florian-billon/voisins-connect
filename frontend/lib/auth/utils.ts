@@ -7,12 +7,8 @@ import { clearToken } from "./client";
  */
 export async function handleAuthError() {
   await clearToken();
-  // Éviter la boucle de redirection si on est déjà sur une page d'auth
-  if (typeof window !== "undefined" && 
-      !window.location.pathname.includes("/login") && 
-      !window.location.pathname.includes("/register")) {
-    window.location.href = "/login";
-  }
+  // Ne pas rediriger automatiquement - laisser le guard gérer la redirection
+  // pour éviter les conflits entre useAuth et useRouteGuard
 }
 
 /**
