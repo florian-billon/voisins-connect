@@ -33,7 +33,7 @@ export default function Home() {
   const router = useRouter();
   const { t } = useTranslation();
   const { ready: guardReady } = useRouteGuard("protected");
-  
+
   const {
     user, friends, refreshFriends,
     servers, selectedServer, selectServer, createServer, creatingServer,
@@ -242,17 +242,6 @@ export default function Home() {
       setAdminMuteUsername("");
     }
   };
-
-  if (!guardReady) {
-    return (
-      <main className="flex w-full h-screen gap-2 p-2 items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-2 border-[#4fdfff] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-[#4fdfff] font-mono text-sm tracking-widest animate-pulse">{t("chat.initializing")}</p>
-        </div>
-      </main>
-    );
-  }
 
   if (serversError) {
     return (
