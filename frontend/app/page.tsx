@@ -34,6 +34,8 @@ export default function Home() {
   const { t } = useTranslation();
   const { ready: guardReady } = useRouteGuard("protected");
 
+  console.log("Home page rendering, guardReady:", guardReady);
+
   const {
     user, friends, refreshFriends,
     servers, selectedServer, selectServer, createServer, creatingServer,
@@ -244,6 +246,7 @@ export default function Home() {
   };
 
   if (serversError) {
+    console.log("Home page showing error:", serversError);
     return (
       <main className="flex w-full h-screen gap-2 p-2 items-center justify-center">
         <div className="text-center max-w-md">
@@ -261,6 +264,8 @@ export default function Home() {
       </main>
     );
   }
+
+  console.log("Home page rendering UI, servers:", servers.length, "selectedServer:", selectedServer?.name);
 
   return (
     <main className="flex w-full h-screen">
