@@ -21,6 +21,7 @@ export async function login(email: string, password: string) {
   let res: Response;
   try {
     console.log("🟡 Login API call to:", `${API_URL}/auth/login`);
+    console.log("🟡 Request body:", JSON.stringify({ email, password }));
     res = await fetch(`${API_URL}/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -33,6 +34,7 @@ export async function login(email: string, password: string) {
     return { error: "Erreur de connexion. Vérifiez que le backend est joignable." };
   }
 
+  console.log("🟡 Before safeJson");
   const data = await safeJson<{ error?: string; token?: string; user?: unknown }>(res);
   console.log("🟡 Login response data:", data);
   if (!res.ok) {
