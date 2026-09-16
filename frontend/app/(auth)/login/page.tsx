@@ -23,7 +23,7 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     console.log("🔴 handleSubmit appelé - début de la fonction");
     e.preventDefault();
-    console.log("🔴 preventDefault appelé");
+    console.log("🔴 preventDefault appelé, default prevented:", e.defaultPrevented);
     setIsLoading(true);
     setError("");
 
