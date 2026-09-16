@@ -144,9 +144,9 @@ export default function ChatCenter({
             <>
               <h2 className="text-3xl font-bold text-white mb-2">{t("chat.selectServer")}</h2>
               <p className="text-white/40 text-sm max-w-sm mx-auto leading-relaxed">{t("chat.selectServerPrompt")}</p>
-              <Button onClick={onCreateServer} variant="outline" className="mt-8 border-[#5b8cff] text-[#5b8cff] px-8 py-6 text-lg hover:bg-[#5b8cff]/10 transition-all font-bold mx-auto">
+              <button onClick={onCreateServer} className="mt-8 border-2 border-[#5b8cff] text-[#5b8cff] px-8 py-6 text-lg hover:bg-[#5b8cff]/10 transition-all font-bold mx-auto rounded-lg cursor-pointer">
                 {t("chat.createServerButton")}
-              </Button>
+              </button>
             </>
           ) : (
             <>
