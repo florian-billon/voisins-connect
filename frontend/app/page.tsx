@@ -246,7 +246,7 @@ export default function Home() {
   if (serversError) {
     console.log("Home page showing error:", serversError);
     return (
-      <main className="flex w-full h-screen gap-2 p-2 items-center justify-center">
+      <main className="flex w-full min-h-screen gap-2 p-2 items-center justify-center">
         <div className="text-center max-w-md">
           <div className="bg-red-500/20 border border-red-500 text-red-300 px-6 py-4 rounded-lg mb-4">
             <p className="font-bold mb-2">Erreur de chargement</p>
@@ -266,7 +266,7 @@ export default function Home() {
   console.log("Home page rendering UI, servers:", servers.length, "selectedServer:", selectedServer?.name);
 
   return (
-    <main className="flex w-full h-screen">
+    <main className="flex w-full min-h-screen">
       {/* Mobile Header */}
       <MobileHeader
         selectedServer={selectedServer}

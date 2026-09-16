@@ -57,28 +57,28 @@ export default function RegisterPage() {
   };
 
   return (
-    <main className="relative w-screen h-screen overflow-hidden">
+    <main className="relative w-full min-h-screen">
       <div className="fixed inset-0 bg-[url('/background-clouds.png')] bg-cover bg-center bg-no-repeat brightness-[0.7] contrast-[1.1] z-0" />
 
-      <div className="relative z-10 flex w-full h-full items-center justify-center">
-        <div className="flex flex-col items-center justify-center p-6">
+      <div className="relative z-10 flex w-full min-h-screen items-center justify-center p-4">
+        <div className="flex flex-col items-center justify-center w-full max-w-md">
           <Image
             src="/logo.png"
             alt={t("auth.logoAlt")}
             width={150}
             height={150}
-            className="mb-4 md:mb-6 w-30 h-30 md:w-45 md:h-45"
+            className="mb-4 md:mb-6 w-24 h-24 md:w-36 md:h-36"
           />
 
           <header className="mb-8 text-center">
-            <h1 className="text-white text-xl font-bold">
+            <h1 className="text-white text-lg md:text-xl font-bold">
               {t("auth.welcomeMessage")}
             </h1>
           </header>
 
-          <section className="w-full max-w-[380px] p-6 md:p-8 md:px-10 bg-[rgba(20,20,20,0.85)] backdrop-blur-xl rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.5)] border-2 border-[#5b8cff] animate-[fadeIn_0.5s_ease]">
-            <div className="text-center mb-8">
-              <h3 className="text-white font-bold tracking-widest text-lg">{t("auth.register.title")}</h3>
+          <section className="w-full p-4 md:p-6 md:px-8 bg-[rgba(20,20,20,0.85)] backdrop-blur-xl rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.5)] border-2 border-[#5b8cff] animate-[fadeIn_0.5s_ease]">
+            <div className="text-center mb-6 md:mb-8">
+              <h3 className="text-white font-bold tracking-widest text-base md:text-lg">{t("auth.register.title")}</h3>
             </div>
 
             {error && (
