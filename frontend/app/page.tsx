@@ -59,6 +59,13 @@ export default function Home() {
     updateServer, updateChannel,
   } = useChat();
 
+  // Redirect to login if not authenticated
+  if (!user && !serversLoading) {
+    console.log("No user found, redirecting to login");
+    router.push("/login");
+    return null;
+  }
+
   const [newServerName, setNewServerName] = useState("");
   const [newChannelName, setNewChannelName] = useState("");
   const [channelSearchState, setChannelSearchState] = useState<{ serverId: string | null; value: string }>({ serverId: null, value: "" });
