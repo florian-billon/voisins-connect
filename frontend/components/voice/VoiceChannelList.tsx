@@ -133,11 +133,7 @@ export default function VoiceChannelList({
   };
 
   if (!selectedServer) {
-    return (
-      <div className="p-4 text-center text-white/40">
-        {t("voice.selectServer")}
-      </div>
-    );
+    return null; // Don't show anything when no server is selected
   }
 
   return (
