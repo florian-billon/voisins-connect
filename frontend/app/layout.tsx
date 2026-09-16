@@ -45,7 +45,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <ServiceWorkerRegister />
           <div className="relative w-full min-h-screen">
             <div className="fixed inset-0 bg-[url('/background-clouds.png')] bg-cover bg-center bg-no-repeat brightness-[0.7] contrast-[1.1] z-0 pointer-events-none" />
-            <div className="relative z-10">
+            <div className="relative z-50">
               {children}
             </div>
           </div>
