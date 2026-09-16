@@ -303,7 +303,7 @@ export default function Home() {
         onSelectChannel={selectChannel}
         onChannelSearch={(serverId, value) => setChannelSearchState({ serverId, value })}
         onCreateChannel={() => setShowCreateChannel(true)}
-        onCreateServer={() => setShowCreateServer(true)}
+        onCreateServer={() => { console.log("onCreateServer appelé (ChannelSidebar)"); setShowCreateServer(true); }}
         onDeleteChannel={handleDeleteChannel}
         onEditChannel={(c) => { setChannelToRename(c); setShowRenameChannel(true); }}
         onEditServer={() => setShowRenameServer(true)}
@@ -356,7 +356,7 @@ export default function Home() {
         user={user}
         viewerId={viewerId}
         isServerAdmin={isServerAdmin}
-        onCreateServer={() => setShowCreateServer(true)}
+        onCreateServer={() => { console.log("onCreateServer appelé (ChatCenter)"); setShowCreateServer(true); }}
         onCreateChannel={() => setShowCreateChannel(true)}
         onSendMessage={handleSendMessage}
         onMessageInputChange={handleInputChange}
