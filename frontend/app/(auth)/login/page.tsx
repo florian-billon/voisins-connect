@@ -108,6 +108,7 @@ export default function LoginPage() {
                 isLoading={isLoading}
                 fullWidth
                 className="mt-4"
+                onClick={() => console.log("🟠 Bouton SE CONNECTER cliqué")}
               >
                 {t("auth.login.submit")}
               </Button>
