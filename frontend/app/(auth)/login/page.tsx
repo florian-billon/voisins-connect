@@ -10,6 +10,7 @@ import Input from "@/components/ui/Input";
 import { useTranslation } from "@/lib/i18n";
 
 export default function LoginPage() {
+  console.log("🟢 LoginPage component monté");
   const router = useRouter();
   const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
@@ -20,14 +21,16 @@ export default function LoginPage() {
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
+    console.log("🔴 handleSubmit appelé - début de la fonction");
     e.preventDefault();
+    console.log("🔴 preventDefault appelé");
     setIsLoading(true);
     setError("");
 
     try {
-      console.log("Tentative de login avec:", formData.email);
+      console.log("🔴 Tentative de login avec:", formData.email);
       const result = await login(formData.email, formData.password);
-      console.log("Résultat login:", result);
+      console.log("🔴 Résultat login:", result);
 
       if (result.error) {
         setError(result.error);
@@ -35,11 +38,11 @@ export default function LoginPage() {
       }
 
       // Force redirection to home page
-      console.log("Redirection forcée vers /");
+      console.log("🔴 Redirection forcée vers /");
       window.location.href = "/";
       return;
     } catch (err) {
-      console.error("Erreur login:", err);
+      console.error("🔴 Erreur login:", err);
       setError(t("auth.login.error"));
     } finally {
       setIsLoading(false);
@@ -83,14 +86,20 @@ export default function LoginPage() {
                 placeholder={t("auth.login.emailPlaceholder")}
                 required
                 value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                onChange={(e) => {
+                  console.log("🔵 Email changé:", e.target.value);
+                  setFormData({ ...formData, email: e.target.value });
+                }}
               />
               <Input
                 type="password"
                 placeholder={t("auth.login.passwordPlaceholder")}
                 required
                 value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                onChange={(e) => {
+                  console.log("🔵 Password changé:", "***");
+                  setFormData({ ...formData, password: e.target.value });
+                }}
               />
               <Button
                 type="submit"
