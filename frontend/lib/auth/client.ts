@@ -22,13 +22,14 @@ export async function login(email: string, password: string) {
   try {
     console.log("🟡 Login API call to:", `${API_URL}/auth/login`);
     console.log("🟡 Request body:", JSON.stringify({ email, password }));
+    console.log("🟡 About to call fetch...");
     res = await fetch(`${API_URL}/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
       cache: "no-store",
     });
-    console.log("🟡 Login response status:", res.status);
+    console.log("🟡 Fetch completed, response status:", res.status);
   } catch (err) {
     console.error("🟡 Login fetch error:", err);
     return { error: "Erreur de connexion. Vérifiez que le backend est joignable." };
