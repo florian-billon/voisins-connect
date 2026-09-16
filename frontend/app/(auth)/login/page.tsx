@@ -29,6 +29,7 @@ export default function LoginPage() {
 
     try {
       console.log("🔴 Tentative de login avec:", formData.email);
+      console.log("🔴 Appel de la fonction login()...");
       const result = await login(formData.email, formData.password);
       console.log("🔴 Résultat login:", result);
 
