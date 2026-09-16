@@ -34,10 +34,9 @@ export default function LoginPage() {
         return;
       }
 
-      const params = new URLSearchParams(window.location.search);
-      const redirectTarget = params.get("redirect") || params.get("next") || "/";
-      console.log("Redirection vers:", redirectTarget);
-      window.location.href = redirectTarget;
+      // Force redirection to home page
+      console.log("Redirection forcée vers /");
+      window.location.href = "/";
       return;
     } catch (err) {
       console.error("Erreur login:", err);
