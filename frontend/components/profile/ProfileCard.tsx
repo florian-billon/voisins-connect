@@ -199,7 +199,7 @@ export default function ProfileCard({ user, onClose, onUpdate }: ProfileCardProp
         onClick={onClose}
       />
 
-      <div className="relative w-full max-w-[420px] bg-[rgba(5,10,15,0.98)] border border-[#5b8cff]/30 rounded-xl shadow-[0_20px_60px_rgba(0,0,0,0.8)] overflow-hidden animate-[fadeIn_0.2s_ease]">
+      <div className="relative w-full max-w-[420px] max-h-[90vh] bg-[rgba(5,10,15,0.98)] border border-[#5b8cff]/30 rounded-xl shadow-[0_20px_60px_rgba(0,0,0,0.8)] overflow-y-auto animate-[fadeIn_0.2s_ease]">
 
         <div className="relative bg-gradient-to-br from-[#5b8cff]/10 to-[#ff6b6b]/5 p-6 pb-16">
           <button
