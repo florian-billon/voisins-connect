@@ -32,6 +32,8 @@ export default function Home() {
   const router = useRouter();
   const { t } = useTranslation();
 
+  console.log("Home page rendering");
+
   const {
     user, friends, refreshFriends,
     servers, selectedServer, selectServer, createServer, creatingServer,
@@ -59,6 +61,7 @@ export default function Home() {
 
   // Redirect to login if not authenticated
   if (!user && !serversLoading) {
+    console.log("No user found, redirecting to login");
     router.push("/login");
     return null;
   }
@@ -248,6 +251,7 @@ export default function Home() {
   };
 
   if (serversError) {
+    console.log("Home page showing error:", serversError);
     return (
       <main className="flex w-full min-h-screen gap-2 p-2 items-center justify-center">
         <div className="text-center max-w-md">
@@ -265,6 +269,8 @@ export default function Home() {
       </main>
     );
   }
+
+  console.log("Home page rendering UI, servers:", servers.length, "selectedServer:", selectedServer?.name);
 
   return (
     <main className="flex w-full min-h-screen">
