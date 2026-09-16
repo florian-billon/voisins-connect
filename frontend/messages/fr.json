@@ -232,6 +232,7 @@
     "startButton": "Démarrer une conversation"
   },
   "voice": {
+    "selectServer": "Salons vocaux",
     "channels": "Salons vocaux",
     "create": "Créer",
     "createChannel": "Créer un salon vocal",
