@@ -39,10 +39,9 @@ export function useAuth() {
           setUser(null);
           setError(errorMessage);
         }
-        // Temporarily disabled to prevent redirect loop
-        // if (isAuthError(errorMessage)) {
-        //   await handleAuthError();
-        // }
+        if (isAuthError(errorMessage)) {
+          await handleAuthError();
+        }
       } finally {
         if (!cancelled) {
           setLoading(false);
