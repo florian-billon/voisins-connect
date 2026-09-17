@@ -33,7 +33,7 @@ export default function MessagesPage() {
       // Si un username est passé en paramètre, trouver ou créer la conversation
       if (usernameParam) {
         const existingConv = convs.find(c => 
-          c.participants.some(p => p.username === usernameParam)
+          c.username === usernameParam
         );
         
         if (existingConv) {
@@ -99,13 +99,11 @@ export default function MessagesPage() {
   }
 
   const getConversationName = (conv: DirectConversation) => {
-    const otherParticipant = conv.participants.find(p => p.user_id !== user?.id);
-    return otherParticipant?.username || "Conversation";
+    return conv.username || "Conversation";
   };
 
   const getConversationAvatar = (conv: DirectConversation) => {
-    const otherParticipant = conv.participants.find(p => p.user_id !== user?.id);
-    return otherParticipant?.avatar_url;
+    return conv.avatar_url;
   };
 
   return (
