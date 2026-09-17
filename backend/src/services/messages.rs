@@ -187,11 +187,15 @@ pub async fn delete_message(
         })?
         .ok_or(Error::MessageNotFound)?;
 
-    servers::get_member(server_repo, message.server_id, user_id)
+    let member = servers::get_member(server_repo, message.server_id, user_id)
         .await?
         .ok_or(Error::MessageForbidden)?;
 
-    if message.author_id != user_id {
+    // Allow deletion if user is the author OR is an owner/admin
+    let is_owner = member.role == "owner" || member.role == "Owner";
+    let is_admin = member.role == "admin" || member.role == "Admin" || member.role == "ADMINISTRATEUR";
+    
+    if message.author_id != user_id && !is_owner && !is_admin {
         return Err(Error::MessageForbidden);
     }
 
@@ -225,11 +229,15 @@ pub async fn update_message(
         })?
         .ok_or(Error::MessageNotFound)?;
 
-    servers::get_member(server_repo, message.server_id, user_id)
+    let member = servers::get_member(server_repo, message.server_id, user_id)
         .await?
         .ok_or(Error::MessageForbidden)?;
 
-    if message.author_id != user_id {
+    // Allow update if user is the author OR is an owner/admin
+    let is_owner = member.role == "owner" || member.role == "Owner";
+    let is_admin = member.role == "admin" || member.role == "Admin" || member.role == "ADMINISTRATEUR";
+    
+    if message.author_id != user_id && !is_owner && !is_admin {
         return Err(Error::MessageForbidden);
     }
 
