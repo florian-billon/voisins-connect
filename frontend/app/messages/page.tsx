@@ -170,7 +170,7 @@ export default function MessagesPage() {
                     <div
                       key={msg.id}
                       className={`max-w-[70%] p-3 rounded-lg ${
-                        msg.sender_id === user?.id
+                        msg.author_id === user?.id
                           ? "ml-auto bg-[#5b8cff]/20 border border-[#5b8cff]/30"
                           : "mr-auto bg-[#2a2a2a]"
                       }`}
