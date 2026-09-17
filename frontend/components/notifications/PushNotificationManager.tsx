@@ -6,8 +6,11 @@ export default function PushNotificationManager() {
   const [permission, setPermission] = useState<NotificationPermission>("default");
   const [subscription, setSubscription] = useState<PushSubscription | null>(null);
   const [loading, setLoading] = useState(false);
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
+    setIsClient(true);
+    
     // Check current permission
     setPermission(Notification.permission);
 
@@ -16,18 +19,22 @@ export default function PushNotificationManager() {
   }, []);
 
   const checkSubscription = async () => {
-    if ("serviceWorker" in navigator && "PushManager" in window) {
-      try {
-        const registration = await navigator.serviceWorker.ready;
-        const existingSubscription = await registration.pushManager.getSubscription();
-        setSubscription(existingSubscription);
-      } catch (error) {
-        console.error("Error checking subscription:", error);
-      }
+    if (typeof window === "undefined") return;
+    if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
+      return;
+    }
+    
+    try {
+      const registration = await navigator.serviceWorker.ready;
+      const existingSubscription = await registration.pushManager.getSubscription();
+      setSubscription(existingSubscription);
+    } catch (error) {
+      console.error("Error checking subscription:", error);
     }
   };
 
   const requestPermission = async () => {
+    if (typeof window === "undefined") return;
     if (!("Notification" in window)) {
       alert("Ce navigateur ne supporte pas les notifications");
       return;
@@ -49,6 +56,7 @@ export default function PushNotificationManager() {
   };
 
   const subscribeToPush = async () => {
+    if (typeof window === "undefined") return;
     if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
       return;
     }
@@ -123,8 +131,8 @@ export default function PushNotificationManager() {
     return outputArray;
   }
 
-  // Ne rien afficher si les notifications ne sont pas supportées
-  if (!("Notification" in window)) {
+  // Ne rien afficher côté serveur ou si les notifications ne sont pas supportées
+  if (!isClient || typeof window === "undefined" || !("Notification" in window)) {
     return null;
   }
 
