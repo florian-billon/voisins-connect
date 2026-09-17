@@ -4,7 +4,7 @@ use uuid::Uuid;
 use crate::error::{Error, Result};
 use crate::models::{
     ChannelMessage, CreateMessagePayload, MessageReactionPayload, MessageReactionPublic,
-    MessageWithUser, UpdateMessagePayload,
+    MessageWithUser, UpdateMessagePayload, MemberRole,
 };
 use crate::repositories::{
     ChannelRepository, MessageRepository, ModerationRepository, ServerRepository, UserRepository,
@@ -192,8 +192,8 @@ pub async fn delete_message(
         .ok_or(Error::MessageForbidden)?;
 
     // Allow deletion if user is the author OR is an owner/admin
-    let is_owner = member.role == "owner" || member.role == "Owner";
-    let is_admin = member.role == "admin" || member.role == "Admin" || member.role == "ADMINISTRATEUR";
+    let is_owner = member.role == MemberRole::Owner;
+    let is_admin = member.role == MemberRole::Admin;
     
     if message.author_id != user_id && !is_owner && !is_admin {
         return Err(Error::MessageForbidden);
@@ -234,8 +234,8 @@ pub async fn update_message(
         .ok_or(Error::MessageForbidden)?;
 
     // Allow update if user is the author OR is an owner/admin
-    let is_owner = member.role == "owner" || member.role == "Owner";
-    let is_admin = member.role == "admin" || member.role == "Admin" || member.role == "ADMINISTRATEUR";
+    let is_owner = member.role == MemberRole::Owner;
+    let is_admin = member.role == MemberRole::Admin;
     
     if message.author_id != user_id && !is_owner && !is_admin {
         return Err(Error::MessageForbidden);
