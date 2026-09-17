@@ -23,7 +23,7 @@ impl InviteRepository {
         sqlx::query_as::<_, Invite>(
             r#"
             INSERT INTO invites (code, server_id, created_by, max_uses, expires_at, uses, revoked, created_at)
-            VALUES ($1, $2, $3, $4, $5, 0, FALSE, NOW( })
+            VALUES ($1, $2, $3, $4, $5, 0, FALSE, NOW())
             RETURNING id, code, server_id, created_by, max_uses, uses, expires_at, revoked, created_at
             "#,
         )
@@ -73,7 +73,7 @@ impl InviteRepository {
         SET uses = uses + 1
         WHERE id = $1
           AND revoked = FALSE
-          AND (expires_at IS NULL OR expires_at > NOW( })
+          AND (expires_at IS NULL OR expires_at > NOW())
           AND (max_uses IS NULL OR uses < max_uses)
         "#,
         )
