@@ -1,10 +1,8 @@
 use axum::{
     extract::State,
-    http::StatusCode,
     Json,
 };
 use serde::{Deserialize, Serialize};
-use uuid::Uuid;
 
 use crate::ctx::Ctx;
 use crate::error::Result;

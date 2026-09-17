@@ -1,5 +1,6 @@
-use crate::error::{Error, Result};
+use crate::error::Result;
 
+#[derive(Clone)]
 pub struct PushService {
     vapid_private_key: String,
     vapid_public_key: String,
