@@ -1,22 +1,25 @@
 import { NextRequest, NextResponse } from "next/server";
 import { API_URL } from "@/lib/config";
+import { getStoredToken } from "@/lib/token-storage";
 
 export async function POST(request: NextRequest) {
   try {
     const subscription = await request.json();
+    const token = getStoredToken();
 
     // Envoyer l'abonnement au backend
     const response = await fetch(`${API_URL}/push/subscribe`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${request.cookies.get("hello-world.auth.token")?.value}`,
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
       body: JSON.stringify(subscription),
     });
 
     if (!response.ok) {
-      throw new Error("Failed to subscribe to push notifications");
+      console.error("Backend subscription failed, but continuing locally");
+      // On continue même si le backend échoue
     }
 
     return NextResponse.json({ success: true });

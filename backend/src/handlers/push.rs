@@ -29,22 +29,22 @@ pub struct SubscribeResponse {
 }
 
 pub async fn subscribe_push(
-    State(state): State<AppState>,
+    State(_state): State<AppState>,
     ctx: Ctx,
     Json(subscription): Json<PushSubscription>,
 ) -> Result<Json<SubscribeResponse>> {
-    // Dans une implémentation complète, nous stockerions l'abonnement dans la base de données
-    // Pour l'instant, nous allons simplement le logger
+    // Stocker l'abonnement dans la base de données pour utilisation future
+    // Pour l'instant, nous le loggons seulement
     tracing::info!(
-        "User {} subscribed to push notifications: {}",
+        "User {} subscribed to push notifications - endpoint: {}, p256dh: {}",
         ctx.user_id(),
-        subscription.endpoint
+        subscription.endpoint,
+        subscription.keys.p256dh
     );
 
-    // TODO: Stocker l'abonnement dans MongoDB ou PostgreSQL
-    // Exemple:
-    // state.push_subscription_repo.create(ctx.user_id(), subscription).await?;
-
+    // TODO: Créer une table PostgreSQL pour stocker les abonnements push
+    // avec les colonnes: user_id, endpoint, p256dh, auth, created_at
+    
     Ok(Json(SubscribeResponse {
         success: true,
         message: "Successfully subscribed to push notifications".to_string(),
@@ -57,7 +57,7 @@ pub async fn unsubscribe_push(
     Json(subscription): Json<PushSubscription>,
 ) -> Result<Json<SubscribeResponse>> {
     tracing::info!(
-        "User {} unsubscribed from push notifications: {}",
+        "User {} unsubscribed from push notifications - endpoint: {}",
         ctx.user_id(),
         subscription.endpoint
     );

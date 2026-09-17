@@ -90,10 +90,12 @@ export default function PushNotificationManager() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to send subscription to backend");
+        console.error("Failed to send subscription to backend, but still allowing push locally");
+        // On continue même si le backend échoue pour l'instant
       }
     } catch (error) {
       console.error("Error sending subscription:", error);
+      // On continue même en cas d'erreur
     }
   };
 

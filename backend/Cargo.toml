@@ -51,6 +51,3 @@ tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 futures-util = "0.3"
 http = "1"
-
-# Web Push
-web-push = "0.10"
