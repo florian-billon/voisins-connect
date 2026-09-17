@@ -8,6 +8,7 @@ pub mod moderation;
 pub mod password;
 // pub mod paypal; // Supprimé - tout gratuit
 pub mod profile;
+pub mod push;
 pub mod realtime;
 pub mod s3;
 pub mod servers;

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'hello-voisin-v1';
+const CACHE_NAME = 'hello-voisin-v2';
 const urlsToCache = [
   '/',
   '/login',
@@ -39,4 +39,44 @@ self.addEventListener('activate', (event) => {
       );
     })
   );
+});
+
+// Web Push Notifications
+self.addEventListener('push', (event) => {
+  const options = {
+    body: event.data ? event.data.text() : 'Nouveau message sur Voisins Connect',
+    icon: '/icon-192.png',
+    badge: '/icon-192.png',
+    vibrate: [200, 100, 200],
+    data: {
+      dateOfArrival: Date.now(),
+      primaryKey: 1
+    },
+    actions: [
+      {
+        action: 'explore',
+        title: 'Voir',
+        icon: '/icon-192.png'
+      },
+      {
+        action: 'close',
+        title: 'Fermer',
+        icon: '/icon-192.png'
+      }
+    ]
+  };
+
+  event.waitUntil(
+    self.registration.showNotification('Voisins Connect', options)
+  );
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+
+  if (event.action === 'explore') {
+    event.waitUntil(
+      clients.openWindow('/')
+    );
+  }
 });

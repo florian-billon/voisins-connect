@@ -3,6 +3,7 @@ import "./globals.css";
 import { Providers } from "./providers";
 import NotificationSystem from "@/components/notifications/NotificationSystem";
 import ServiceWorkerRegister from "./sw-register";
+import PushNotificationManager from "@/components/notifications/PushNotificationManager";
 
 export const metadata: Metadata = {
   title: "voisins_connect",
@@ -47,6 +48,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             {children}
           </div>
           <NotificationSystem />
+          <PushNotificationManager />
         </Providers>
       </body>
     </html>

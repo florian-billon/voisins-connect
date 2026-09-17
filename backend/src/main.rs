@@ -59,6 +59,7 @@ pub struct AppState {
     pub profile_repo: ProfileRepository,
     pub s3_service: services::s3::S3Service,
     pub webrtc_service: services::webrtc::WebRTCService,
+    pub push_service: services::push::PushService,
     pub ws_hub: web::WsHub,
     pub ws_metrics: web::WsMetrics,
 }
@@ -199,6 +200,17 @@ async fn main() {
 
     let webrtc_service = services::webrtc::WebRTCService::new();
 
+    let vapid_private_key = read_env_var("VAPID_PRIVATE_KEY")
+        .expect("VAPID_PRIVATE_KEY environment variable must be set");
+    let vapid_public_key = read_env_var("VAPID_PUBLIC_KEY")
+        .expect("VAPID_PUBLIC_KEY environment variable must be set");
+    let vapid_subject = env_var_or_default("VAPID_SUBJECT", "mailto:contact@voisins-connect.app");
+    let push_service = services::push::PushService::new(
+        vapid_private_key,
+        vapid_public_key,
+        vapid_subject,
+    );
+
     let ws_hub = WsHub::new();
     let ws_metrics = WsMetrics::new();
 
@@ -233,6 +245,7 @@ async fn main() {
         profile_repo,
         s3_service,
         webrtc_service,
+        push_service,
         ws_hub,
         ws_metrics,
     };
@@ -289,6 +302,8 @@ async fn main() {
             get(handlers::user_public::get_public_profile),
         )
         .route("/auth/logout", post(handlers::auth::logout))
+        .route("/push/subscribe", post(handlers::push::subscribe_push))
+        .route("/push/unsubscribe", post(handlers::push::unsubscribe_push))
         .route_layer(middleware::from_fn_with_state(
             state.clone(),
             web::mw_require_auth,

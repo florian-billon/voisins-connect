@@ -6,6 +6,7 @@ pub mod invites;
 pub mod messages;
 // pub mod paypal; // Supprimé - tout gratuit
 pub mod profile;
+pub mod push;
 pub mod s3;
 pub mod servers;
 // pub mod stripe; // Supprimé - tout gratuit
