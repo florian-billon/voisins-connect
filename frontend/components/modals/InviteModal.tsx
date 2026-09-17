@@ -27,7 +27,7 @@ export default function InviteModal({ serverId, serverName, onClose }: Props) {
       try {
         setLoading(true);
         setError(null);
-        const res = await createInvite(serverId, { max_uses: 10, expires_at: null });
+        const res = await createInvite(serverId, { max_uses: null, expires_at: null });
         setCode(res.code);
       } catch (e: any) {
         setError(e?.message ?? t("invite.modal.error"));
@@ -46,7 +46,7 @@ export default function InviteModal({ serverId, serverName, onClose }: Props) {
     try {
       setLoading(true);
       setError(null);
-      const res = await createInvite(serverId, { max_uses: 10, expires_at: null });
+      const res = await createInvite(serverId, { max_uses: null, expires_at: null });
       setCode(res.code);
     } catch (e: any) {
       setError(e?.message ?? t("invite.modal.error"));
