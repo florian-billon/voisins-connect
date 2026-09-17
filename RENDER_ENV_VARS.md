@@ -44,7 +44,17 @@ S3_BUCKET = dummy
 
 ---
 
-## 📋 Instructions
+## � Web Push VAPID Keys (pour notifications push futures)
+
+```
+VAPID_PUBLIC_KEY = BMdUmXuSDj6rvdghKjGUtI7DfRQ3eUGfLnVnyet4LexV2G32gcqfV8C4SqU90JpwpkDeVi2dug6zuHj8MCYRlms
+VAPID_PRIVATE_KEY = kF7SMmZrQ9YfykUq5srXBGtPKqrT-3VZ16Q4hiu_cz0
+VAPID_SUBJECT = mailto:contact@voisins-connect.app
+```
+
+---
+
+## �📋 Instructions
 
 1. Allez sur votre service Render : voisins-connect
 2. Cliquez sur "Environment Variables"
@@ -60,3 +70,4 @@ S3_BUCKET = dummy
 - Conservez l'URL MongoDB existante
 - Le JWT_SECRET peut être changé pour plus de sécurité
 - S3_BUCKET est un dummy car la fonctionnalité S3 n'est pas utilisée
+- Les clés VAPID sont pour les notifications push (pas encore activées en production)
