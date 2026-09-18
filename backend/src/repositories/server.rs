@@ -19,15 +19,12 @@ impl ServerRepository {
         name: &str,
         owner_id: Uuid,
     ) -> sqlx::Result<Server> {
+        let trimmed_name = name.trim();
         sqlx::query_as::<_, Server>(
-            r#"
-            INSERT INTO servers (id, name, owner_id, created_at, updated_at)
-            VALUES ($1, $2, $3, NOW(), NOW())
-            RETURNING id, name, owner_id, created_at, updated_at
-            "#,
+            "INSERT INTO servers (id, name, owner_id, created_at, updated_at) VALUES ($1, $2, $3, NOW(), NOW()) RETURNING id, name, owner_id, created_at, updated_at",
         )
         .bind(server_id)
-        .bind(name.trim())
+        .bind(trimmed_name)
         .bind(owner_id)
         .fetch_one(&self.pool)
         .await
@@ -47,16 +44,12 @@ impl ServerRepository {
         owner_id: Uuid,
         name: &str,
     ) -> sqlx::Result<Option<Server>> {
+        let trimmed_name = name.trim();
         sqlx::query_as::<_, Server>(
-            r#"
-            SELECT id, name, owner_id, created_at, updated_at
-            FROM servers
-            WHERE owner_id = $1 AND lower(name) = lower($2)
-            LIMIT 1
-            "#,
+            "SELECT id, name, owner_id, created_at, updated_at FROM servers WHERE owner_id = $1 AND lower(name) = lower($2) LIMIT 1",
         )
         .bind(owner_id)
-        .bind(name.trim())
+        .bind(trimmed_name)
         .fetch_optional(&self.pool)
         .await
     }
@@ -83,12 +76,7 @@ impl ServerRepository {
     ) -> sqlx::Result<Option<Server>> {
         let trimmed_name = name.as_ref().map(|n| n.trim().to_string());
         sqlx::query_as::<_, Server>(
-            r#"
-            UPDATE servers
-            SET name = COALESCE($1, name), updated_at = NOW()
-            WHERE id = $2
-            RETURNING id, name, owner_id, created_at, updated_at
-            "#,
+            "UPDATE servers SET name = COALESCE($1, name), updated_at = NOW() WHERE id = $2 RETURNING id, name, owner_id, created_at, updated_at",
         )
         .bind(trimmed_name)
         .bind(server_id)
