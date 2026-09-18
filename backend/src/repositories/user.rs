@@ -75,7 +75,7 @@ impl UserRepository {
         let user = sqlx::query_as::<_, User>(
             "SELECT id, email, password_hash, username, avatar_url, apartment_number, status, created_at
              FROM users
-             WHERE lower(btrim(username }) = lower($1)",
+             WHERE lower(username) = lower($1)",
         )
         .bind(normalized)
         .fetch_optional(&self.pool)
@@ -87,7 +87,7 @@ impl UserRepository {
         sqlx::query_as::<_, User>(
             "SELECT id, email, password_hash, username, avatar_url, apartment_number, status, created_at
              FROM users
-             WHERE lower(btrim(email }) = lower($1)",
+             WHERE lower(email) = lower($1)",
         )
         .bind(email)
         .fetch_optional(&self.pool)
@@ -114,14 +114,14 @@ impl UserRepository {
             SELECT id, username, avatar_url, apartment_number, status
             FROM users
             WHERE id <> $1
-              AND lower(btrim(username }) LIKE lower($2) ESCAPE '\'
+              AND lower(username) LIKE lower($2) ESCAPE '\'
             ORDER BY
               CASE
-                WHEN lower(btrim(username }) = lower($3) THEN 0
-                WHEN lower(btrim(username }) LIKE lower($4) ESCAPE '\' THEN 1
+                WHEN lower(username) = lower($3) THEN 0
+                WHEN lower(username) LIKE lower($4) ESCAPE '\' THEN 1
                 ELSE 2
               END,
-              lower(btrim(username }) ASC
+              lower(username) ASC
             LIMIT $5
             "#,
         )
