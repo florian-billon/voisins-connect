@@ -81,7 +81,7 @@ CREATE TABLE IF NOT EXISTS users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     email VARCHAR(255) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
-    username VARCHAR(32) NOT NULL CHECK (username = btrim(username)) CHECK (char_length(username) BETWEEN 1 AND 32),
+    username VARCHAR(32) NOT NULL CHECK (char_length(username) BETWEEN 1 AND 32),
     avatar_url VARCHAR(500),
     apartment_number VARCHAR(20),
     status user_status NOT NULL DEFAULT 'Offline',
@@ -169,17 +169,15 @@ $$;
 
 -- INDEXES (idempotent)
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
-CREATE UNIQUE INDEX IF NOT EXISTS uq_users_username_normalized ON users (lower(btrim(username)));
+CREATE UNIQUE INDEX IF NOT EXISTS uq_users_username_normalized ON users (lower(username));
 CREATE INDEX IF NOT EXISTS idx_servers_owner ON servers(owner_id);
-CREATE INDEX IF NOT EXISTS idx_servers_owner_name_normalized ON servers(owner_id, lower(btrim(name)));
+CREATE INDEX IF NOT EXISTS idx_servers_owner_name_normalized ON servers(owner_id, lower(name));
 CREATE INDEX IF NOT EXISTS idx_server_members_user ON server_members(user_id);
 CREATE INDEX IF NOT EXISTS idx_channels_server ON channels(server_id);
 CREATE INDEX IF NOT EXISTS idx_invites_code ON invites(code);
 CREATE INDEX IF NOT EXISTS idx_invites_server ON invites(server_id);
 
-UPDATE servers
-SET name = btrim(name)
-WHERE name <> btrim(name);
+-- UPDATE servers - trimming done in application code
 
 CREATE OR REPLACE FUNCTION prevent_duplicate_server_name_per_owner()
 RETURNS trigger
@@ -190,7 +188,7 @@ BEGIN
         SELECT 1
         FROM servers s
         WHERE s.owner_id = NEW.owner_id
-          AND lower(btrim(s.name)) = lower(btrim(NEW.name))
+          AND lower(s.name) = lower(NEW.name)
           AND s.id <> NEW.id
     ) THEN
         RAISE EXCEPTION 'Duplicate server name for owner'
@@ -198,7 +196,7 @@ BEGIN
                   CONSTRAINT = 'servers_owner_name_unique_live';
     END IF;
 
-    NEW.name := btrim(NEW.name);
+    -- Trimming done in application code
     RETURN NEW;
 END;
 $$;

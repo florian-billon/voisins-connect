@@ -27,7 +27,7 @@ impl ServerRepository {
             "#,
         )
         .bind(server_id)
-        .bind(name)
+        .bind(name.trim())
         .bind(owner_id)
         .fetch_one(&self.pool)
         .await
@@ -51,12 +51,12 @@ impl ServerRepository {
             r#"
             SELECT id, name, owner_id, created_at, updated_at
             FROM servers
-            WHERE owner_id = $1 AND lower(btrim(name)) = lower(btrim($2))
+            WHERE owner_id = $1 AND lower(name) = lower($2)
             LIMIT 1
             "#,
         )
         .bind(owner_id)
-        .bind(name)
+        .bind(name.trim())
         .fetch_optional(&self.pool)
         .await
     }
@@ -81,6 +81,7 @@ impl ServerRepository {
         server_id: Uuid,
         name: Option<String>,
     ) -> sqlx::Result<Option<Server>> {
+        let trimmed_name = name.as_ref().map(|n| n.trim().to_string());
         sqlx::query_as::<_, Server>(
             r#"
             UPDATE servers
@@ -89,7 +90,7 @@ impl ServerRepository {
             RETURNING id, name, owner_id, created_at, updated_at
             "#,
         )
-        .bind(name)
+        .bind(trimmed_name)
         .bind(server_id)
         .fetch_optional(&self.pool)
         .await
