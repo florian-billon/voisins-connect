@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { listDirectConversations, createDirectConversation, listDirectMessages, sendDirectMessage, DirectConversation, DirectMessage, listFriends, Friend } from "@/lib/api-client";
@@ -9,7 +9,7 @@ import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import SmartImg from "@/components/ui/SmartImg";
 
-export default function MessagesPage() {
+function MessagesContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { t } = useTranslation();
@@ -210,5 +210,13 @@ export default function MessagesPage() {
         )}
       </div>
     </main>
+  );
+}
+
+export default function MessagesPage() {
+  return (
+    <Suspense fallback={<div className="flex w-full min-h-screen items-center justify-center text-white">Chargement...</div>}>
+      <MessagesContent />
+    </Suspense>
   );
 }
