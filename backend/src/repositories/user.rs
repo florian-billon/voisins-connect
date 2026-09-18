@@ -153,7 +153,8 @@ impl UserRepository {
                     SELECT 1
                     FROM friendships f
                     WHERE (f.user1_id = $2 AND f.user2_id = u.id)
-                       OR (f.user1_id = u.id AND f.user2_id = $2 }) AS is_friend
+                       OR (f.user1_id = u.id AND f.user2_id = $2)
+                ) AS is_friend
             FROM users u
             WHERE u.id = $1
             "#,
