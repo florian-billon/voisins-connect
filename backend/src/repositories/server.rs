@@ -51,7 +51,7 @@ impl ServerRepository {
             r#"
             SELECT id, name, owner_id, created_at, updated_at
             FROM servers
-            WHERE owner_id = $1 AND lower(trim(name)) = lower(trim($2))
+            WHERE owner_id = $1 AND lower(btrim(name)) = lower(btrim($2))
             LIMIT 1
             "#,
         )

@@ -81,7 +81,7 @@ CREATE TABLE IF NOT EXISTS users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     email VARCHAR(255) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
-    username VARCHAR(32) NOT NULL CHECK (username = trim(username)) CHECK (char_length(username) BETWEEN 1 AND 32),
+    username VARCHAR(32) NOT NULL CHECK (username = btrim(username)) CHECK (char_length(username) BETWEEN 1 AND 32),
     avatar_url VARCHAR(500),
     apartment_number VARCHAR(20),
     status user_status NOT NULL DEFAULT 'Offline',
@@ -169,17 +169,17 @@ $$;
 
 -- INDEXES (idempotent)
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
-CREATE UNIQUE INDEX IF NOT EXISTS uq_users_username_normalized ON users (lower(trim(username)));
+CREATE UNIQUE INDEX IF NOT EXISTS uq_users_username_normalized ON users (lower(btrim(username)));
 CREATE INDEX IF NOT EXISTS idx_servers_owner ON servers(owner_id);
-CREATE INDEX IF NOT EXISTS idx_servers_owner_name_normalized ON servers(owner_id, lower(trim(name)));
+CREATE INDEX IF NOT EXISTS idx_servers_owner_name_normalized ON servers(owner_id, lower(btrim(name)));
 CREATE INDEX IF NOT EXISTS idx_server_members_user ON server_members(user_id);
 CREATE INDEX IF NOT EXISTS idx_channels_server ON channels(server_id);
 CREATE INDEX IF NOT EXISTS idx_invites_code ON invites(code);
 CREATE INDEX IF NOT EXISTS idx_invites_server ON invites(server_id);
 
 UPDATE servers
-SET name = trim(name)
-WHERE name <> trim(name);
+SET name = btrim(name)
+WHERE name <> btrim(name);
 
 CREATE OR REPLACE FUNCTION prevent_duplicate_server_name_per_owner()
 RETURNS trigger
@@ -190,7 +190,7 @@ BEGIN
         SELECT 1
         FROM servers s
         WHERE s.owner_id = NEW.owner_id
-          AND lower(trim(s.name)) = lower(trim(NEW.name))
+          AND lower(btrim(s.name)) = lower(btrim(NEW.name))
           AND s.id <> NEW.id
     ) THEN
         RAISE EXCEPTION 'Duplicate server name for owner'
@@ -198,7 +198,7 @@ BEGIN
                   CONSTRAINT = 'servers_owner_name_unique_live';
     END IF;
 
-    NEW.name := trim(NEW.name);
+    NEW.name := btrim(NEW.name);
     RETURN NEW;
 END;
 $$;
