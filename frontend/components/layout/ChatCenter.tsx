@@ -28,7 +28,7 @@ type Props = {
   onCreateServer: () => void;
   onCreateChannel: () => void;
   onSendMessage: (e: React.FormEvent) => void;
-  onMessageInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onMessageInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
   onMessageInputFocus: () => void;
   onMessageInputBlur: () => void;
   onToggleGifPicker: () => void;
@@ -196,7 +196,7 @@ export default function ChatCenter({
           <div key={msg.id} className="flex items-start gap-3 px-4 py-2 rounded hover:bg-white/5 transition-colors group">
             <button type="button" onClick={() => onOpenUserProfile(msg.author_id)} className="flex-shrink-0" title={msg.username}>
               <SmartImg
-                src={getAvatar(msg.author_id, userForAvatar)}
+                src={getAvatar(msg.author_id, userForAvatar, msg.avatar_url)}
                 alt={msg.username}
                 className="w-10 h-10 rounded-full object-cover border border-[#5b8cff]/30 group-hover:border-[#5b8cff]/50 transition-colors"
               />
@@ -366,7 +366,8 @@ export default function ChatCenter({
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && !e.shiftKey) {
                       e.preventDefault();
-                      onMessageSubmit(e);
+                      // Utiliser le formulaire parent pour soumettre
+                      (e.target as HTMLTextAreaElement).form?.requestSubmit();
                     }
                     // Shift+Enter permet le saut de ligne natif du textarea
                   }}

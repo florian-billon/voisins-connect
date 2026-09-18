@@ -9,38 +9,10 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
 -- ENUM TYPES
 DO $$ BEGIN
-CREATE TYPE user_status AS ENUM ('Online', 'Offline', 'Dnd', 'Invisible');
+CREATE TYPE user_status AS ENUM ('online', 'offline', 'dnd', 'invisible');
 EXCEPTION
     WHEN duplicate_object THEN NULL;
 END $$;
-
-DO $$
-BEGIN
-    IF EXISTS (
-        SELECT 1
-        FROM pg_type t
-        JOIN pg_enum e ON e.enumtypid = t.oid
-        WHERE t.typname = 'user_status'
-          AND e.enumlabel = 'online'
-    ) THEN
-        ALTER TYPE user_status RENAME VALUE 'online' TO 'Online';
-    END IF;
-END;
-$$;
-
-DO $$
-BEGIN
-    IF EXISTS (
-        SELECT 1
-        FROM pg_type t
-        JOIN pg_enum e ON e.enumtypid = t.oid
-        WHERE t.typname = 'user_status'
-          AND e.enumlabel = 'offline'
-    ) THEN
-        ALTER TYPE user_status RENAME VALUE 'offline' TO 'Offline';
-    END IF;
-END;
-$$;
 
 DO $$
 BEGIN

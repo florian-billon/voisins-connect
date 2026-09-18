@@ -131,6 +131,7 @@ export interface Message {
   channel_id: string;
   author_id: string;
   username: string;
+  avatar_url?: string | null;
   content: string;
   created_at: string;
   edited_at?: string;

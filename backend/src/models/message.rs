@@ -191,6 +191,7 @@ pub struct MessageWithUser {
     pub channel_id: Uuid,
     pub author_id: Uuid,
     pub username: String,
+    pub avatar_url: Option<String>,
     pub content: String,
     pub created_at: DateTime<Utc>,
     #[serde(skip_serializing_if = "Option::is_none")]

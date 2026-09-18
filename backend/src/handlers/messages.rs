@@ -71,6 +71,7 @@ pub async fn update_message(
     let message = services::update_message(
         &state.server_repo,
         &state.message_repo,
+        &state.user_repo,
         &state.moderation_repo,
         id,
         ctx.user_id(),
@@ -122,6 +123,7 @@ pub async fn add_reaction(
     let message = services::messages::add_reaction(
         &state.server_repo,
         &state.message_repo,
+        &state.user_repo,
         id,
         ctx.user_id(),
         payload,
@@ -150,6 +152,7 @@ pub async fn remove_reaction(
     let message = services::messages::remove_reaction(
         &state.server_repo,
         &state.message_repo,
+        &state.user_repo,
         id,
         ctx.user_id(),
         payload,

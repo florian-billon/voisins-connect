@@ -60,6 +60,23 @@ impl UserRepository {
         Ok(rows.into_iter().collect())
     }
 
+    pub async fn get_usernames_and_avatars_batch(
+        &self,
+        user_ids: &[Uuid],
+    ) -> sqlx::Result<std::collections::HashMap<Uuid, (String, Option<String>)>> {
+        if user_ids.is_empty() {
+            return Ok(std::collections::HashMap::new());
+        }
+
+        let rows: Vec<(Uuid, String, Option<String>)> =
+            sqlx::query_as("SELECT id, username, avatar_url FROM users WHERE id = ANY($1)")
+                .bind(user_ids)
+                .fetch_all(&self.pool)
+                .await?;
+
+        Ok(rows.into_iter().map(|(id, username, avatar_url)| (id, (username, avatar_url))).collect())
+    }
+
     pub async fn get_username(&self, user_id: Uuid) -> sqlx::Result<Option<String>> {
         let username: Option<String> =
             sqlx::query_scalar("SELECT username FROM users WHERE id = $1")

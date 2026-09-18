@@ -26,11 +26,17 @@ export function getAvatarFromId(id: string): string {
 }
 
 /**
- * Retourne l'avatar approprié : si c'est l'utilisateur connecté, utilise son avatar réel
+ * Retourne l'avatar approprié : utilise l'avatar fourni s'il existe, sinon l'avatar par défaut
  */
-export function getAvatar(userId: string, currentUser: User | null): string {
+export function getAvatar(userId: string, currentUser: User | null, avatarUrl?: string | null): string {
+  // Priorité : avatarUrl passé en paramètre (pour les autres utilisateurs)
+  if (avatarUrl) {
+    return normalizeAvatarUrl(avatarUrl) || getAvatarFromId(userId);
+  }
+  // Sinon : avatar de l'utilisateur connecté si c'est lui
   if (currentUser && userId === currentUser.id) {
     return normalizeAvatarUrl(currentUser.avatar_url) || getAvatarFromId(userId);
   }
+  // Sinon : avatar par défaut
   return getAvatarFromId(userId);
 }

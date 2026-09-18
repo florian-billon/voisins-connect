@@ -58,6 +58,11 @@ pub async fn create_message(
         .await?
         .ok_or(Error::UserNotFound)?;
 
+    let user = user_repo
+        .find_by_id(user_id)
+        .await?
+        .ok_or(Error::UserNotFound)?;
+
     let message_id = Uuid::new_v4();
     let now = Utc::now();
     let content = payload.content.clone();
@@ -113,6 +118,7 @@ pub async fn create_message(
         channel_id,
         author_id: user_id,
         username,
+        avatar_url: user.avatar_url,
         content,
         created_at: now,
         edited_at: None,
@@ -149,23 +155,27 @@ pub async fn list_messages(
     }
 
     let author_ids: Vec<Uuid> = messages.iter().map(|m| m.author_id).collect();
-    let usernames = user_repo.get_usernames_batch(&author_ids).await?;
+    let user_data = user_repo.get_usernames_and_avatars_batch(&author_ids).await?;
 
     let mut result: Vec<MessageWithUser> = messages
         .into_iter()
-        .map(|m| MessageWithUser {
-            id: m.message_id,
-            server_id: m.server_id,
-            channel_id: m.channel_id,
-            author_id: m.author_id,
-            username: usernames
+        .map(|m| {
+            let (username, avatar_url) = user_data
                 .get(&m.author_id)
                 .cloned()
-                .unwrap_or_else(|| "Unknown".to_string()),
-            content: m.content,
-            created_at: m.created_at,
-            edited_at: m.edited_at,
-            reactions: to_public_reactions(m.reactions),
+                .unwrap_or_else(|| ("Unknown".to_string(), None));
+            MessageWithUser {
+                id: m.message_id,
+                server_id: m.server_id,
+                channel_id: m.channel_id,
+                author_id: m.author_id,
+                username,
+                avatar_url,
+                content: m.content,
+                created_at: m.created_at,
+                edited_at: m.edited_at,
+                reactions: to_public_reactions(m.reactions),
+            }
         })
         .collect();
 
@@ -216,6 +226,7 @@ pub async fn delete_message(
 pub async fn update_message(
     server_repo: &ServerRepository,
     message_repo: &MessageRepository,
+    user_repo: &UserRepository,
     moderation_repo: &ModerationRepository,
     message_id: Uuid,
     user_id: Uuid,
@@ -276,12 +287,18 @@ pub async fn update_message(
             message: format!("MongoDB update failed: {}", e),
         })?;
 
+    let user = user_repo
+        .find_by_id(message.author_id)
+        .await?
+        .ok_or(Error::UserNotFound)?;
+
     Ok(MessageWithUser {
         id: message.message_id,
         server_id: message.server_id,
         channel_id: message.channel_id,
         author_id: message.author_id,
-        username: String::new(),
+        username: user.username,
+        avatar_url: user.avatar_url,
         content: payload.content,
         created_at: message.created_at,
         edited_at: Some(Utc::now()),
@@ -292,6 +309,7 @@ pub async fn update_message(
 pub async fn add_reaction(
     server_repo: &ServerRepository,
     message_repo: &MessageRepository,
+    user_repo: &UserRepository,
     message_id: Uuid,
     user_id: Uuid,
     payload: MessageReactionPayload,
@@ -329,12 +347,18 @@ pub async fn add_reaction(
         })?
         .ok_or(Error::MessageNotFound)?;
 
+    let user = user_repo
+        .find_by_id(updated.author_id)
+        .await?
+        .ok_or(Error::UserNotFound)?;
+
     Ok(MessageWithUser {
         id: updated.message_id,
         server_id: updated.server_id,
         channel_id: updated.channel_id,
         author_id: updated.author_id,
-        username: String::new(),
+        username: user.username,
+        avatar_url: user.avatar_url,
         content: updated.content,
         created_at: updated.created_at,
         edited_at: updated.edited_at,
@@ -345,6 +369,7 @@ pub async fn add_reaction(
 pub async fn remove_reaction(
     server_repo: &ServerRepository,
     message_repo: &MessageRepository,
+    user_repo: &UserRepository,
     message_id: Uuid,
     user_id: Uuid,
     payload: MessageReactionPayload,
@@ -382,12 +407,18 @@ pub async fn remove_reaction(
         })?
         .ok_or(Error::MessageNotFound)?;
 
+    let user = user_repo
+        .find_by_id(updated.author_id)
+        .await?
+        .ok_or(Error::UserNotFound)?;
+
     Ok(MessageWithUser {
         id: updated.message_id,
         server_id: updated.server_id,
         channel_id: updated.channel_id,
         author_id: updated.author_id,
-        username: String::new(),
+        username: user.username,
+        avatar_url: user.avatar_url,
         content: updated.content,
         created_at: updated.created_at,
         edited_at: updated.edited_at,
