@@ -116,7 +116,7 @@ export default function Home() {
     if (selectedChannel?.id) typingStop(selectedChannel.id);
   }, [selectedChannel?.id, typingStop]);
 
-  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setMessageInput(e.target.value);
     scheduleTypingStop();
   }, [scheduleTypingStop]);
