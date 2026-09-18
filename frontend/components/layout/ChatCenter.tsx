@@ -361,13 +361,14 @@ export default function ChatCenter({
                   onFocus={onMessageInputFocus}
                   onBlur={onMessageInputBlur}
                   placeholder={`Message #${selectedChannel.name}`}
-                  className="w-full pl-8 md:pl-10 pr-3 md:pr-4 py-2 md:py-2.5 bg-[rgba(20,20,20,0.8)] border border-[#5b8cff]/30 rounded-lg text-white placeholder:text-white/40 outline-none focus:border-[#5b8cff] focus:bg-[rgba(20,20,20,0.95)] focus:shadow-[0_0_8px_rgba(79,223,255,0.3)] transition-all text-sm md:text-base resize-none"
+                  className="w-full pl-8 md:pl-10 pr-3 md:pr-4 py-2 md:py-2.5 bg-[rgba(20,20,20,0.8)] border border-[#5b8cff]/30 rounded-lg text-white placeholder:text-white/40 outline-none focus:border-[#5b8cff] focus:bg-[rgba(20,20,20,0.95)] focus:shadow-[0_0_8px_rgba(79,223,255,0.3)] transition-all text-sm md:text-base"
                   rows={1}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && !e.shiftKey) {
                       e.preventDefault();
                       onMessageSubmit(e);
                     }
+                    // Shift+Enter permet le saut de ligne natif du textarea
                   }}
                 />
               </div>
