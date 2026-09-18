@@ -14,34 +14,6 @@ EXCEPTION
     WHEN duplicate_object THEN NULL;
 END $$;
 
-DO $$
-BEGIN
-    IF EXISTS (
-        SELECT 1
-        FROM pg_type t
-        JOIN pg_enum e ON e.enumtypid = t.oid
-        WHERE t.typname = 'user_status'
-          AND e.enumlabel = 'dnd'
-    ) THEN
-        ALTER TYPE user_status RENAME VALUE 'dnd' TO 'Dnd';
-    END IF;
-END;
-$$;
-
-DO $$
-BEGIN
-    IF EXISTS (
-        SELECT 1
-        FROM pg_type t
-        JOIN pg_enum e ON e.enumtypid = t.oid
-        WHERE t.typname = 'user_status'
-          AND e.enumlabel = 'invisible'
-    ) THEN
-        ALTER TYPE user_status RENAME VALUE 'invisible' TO 'Invisible';
-    END IF;
-END;
-$$;
-
 DO $$ BEGIN
 CREATE TYPE member_role AS ENUM ('owner', 'admin', 'member');
 EXCEPTION
@@ -56,7 +28,7 @@ CREATE TABLE IF NOT EXISTS users (
     username VARCHAR(32) NOT NULL CHECK (char_length(username) BETWEEN 1 AND 32),
     avatar_url VARCHAR(500),
     apartment_number VARCHAR(20),
-    status user_status NOT NULL DEFAULT 'Offline',
+    status user_status NOT NULL DEFAULT 'offline',
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
@@ -109,7 +81,7 @@ ALTER TABLE users
 ALTER COLUMN username TYPE VARCHAR(32);
 
 ALTER TABLE users
-ALTER COLUMN status SET DEFAULT 'Offline';
+ALTER COLUMN status SET DEFAULT 'offline';
 
 DO $$
 BEGIN
