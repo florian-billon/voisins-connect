@@ -45,6 +45,8 @@ pub enum Error {
     MessageForbidden,
     #[error("Unauthorized")]
     Unauthorized,
+    #[error("Forbidden: {message}")]
+    Forbidden { message: String },
     #[error("Validation error: {message}")]
     Validation { message: String },
     #[error("Not found: {message}")]
@@ -142,6 +144,7 @@ impl Error {
             Self::MessageNotFound => (StatusCode::NOT_FOUND, "Message not found"),
             Self::MessageForbidden => (StatusCode::FORBIDDEN, "Message access forbidden"),
             Self::Unauthorized => (StatusCode::UNAUTHORIZED, "Unauthorized"),
+            Self::Forbidden { .. } => (StatusCode::FORBIDDEN, "Forbidden"),
             Self::Validation { .. } => (StatusCode::BAD_REQUEST, "Validation error"),
             Self::NotFound { .. } => (StatusCode::NOT_FOUND, "Not found"),
             Self::Database { .. } | Self::DatabaseError { .. } => {

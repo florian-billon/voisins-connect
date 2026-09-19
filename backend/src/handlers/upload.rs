@@ -2,7 +2,7 @@ use axum::{
     extract::{Multipart, State},
     Json,
 };
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 use crate::ctx::Ctx;
@@ -15,6 +15,11 @@ use crate::AppState;
 pub struct UploadResponse {
     pub url: String,
     pub filename: String,
+}
+
+#[derive(Serialize)]
+pub struct RefreshUrlResponse {
+    pub url: String,
 }
 
 pub async fn upload_file(
@@ -59,10 +64,10 @@ pub async fn upload_file(
 
         tracing::info!("[UPLOAD] S3 upload completed, generating presigned URL");
 
-        // Générer une URL signée valide pendant 24 heures
+        // Générer une URL signée valide pendant 30 jours
         let presigned_url = state
             .s3_service
-            .get_presigned_url(&s3_key, 86400) // 24 heures
+            .get_presigned_url(&s3_key, 2592000) // 30 jours
             .await?;
 
         tracing::info!("[UPLOAD] Presigned URL generated: {}", presigned_url);
@@ -91,6 +96,48 @@ pub async fn upload_file(
             message: "Aucun fichier reçu".to_string(),
         })
     }
+}
+
+/// Rafraîchir une URL signée pour un fichier existant
+pub async fn refresh_file_url(
+    State(state): State<AppState>,
+    ctx: Ctx,
+    Json(payload): Json<RefreshUrlRequest>,
+) -> Result<Json<RefreshUrlResponse>> {
+    tracing::info!("[UPLOAD] Refreshing URL for user {} and file {}", ctx.user_id(), payload.file_path);
+
+    // Vérifier que l'utilisateur a le droit d'accéder à ce fichier
+    // Pour l'instant, on vérifie juste que le fichier appartient à l'utilisateur
+    let attachment = state
+        .attachment_repo
+        .find_by_path(&payload.file_path)
+        .await
+        .map_err(|_| Error::NotFound {
+            message: "Fichier non trouvé".to_string(),
+        })?;
+
+    if attachment.sender_id != ctx.user_id() {
+        return Err(Error::Forbidden {
+            message: "Vous n'avez pas accès à ce fichier".to_string(),
+        });
+    }
+
+    // Générer une nouvelle URL signée valide pendant 30 jours
+    let presigned_url = state
+        .s3_service
+        .get_presigned_url(&payload.file_path, 2592000) // 30 jours
+        .await?;
+
+    tracing::info!("[UPLOAD] URL refreshed successfully");
+
+    Ok(Json(RefreshUrlResponse {
+        url: presigned_url,
+    }))
+}
+
+#[derive(Deserialize)]
+pub struct RefreshUrlRequest {
+    pub file_path: String,
 }
 
 fn determine_content_type(filename: &str) -> &'static str {
