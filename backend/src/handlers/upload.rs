@@ -65,16 +65,24 @@ pub async fn upload_file(
         tracing::info!("[UPLOAD] S3 upload completed, generating presigned URL");
 
         // Générer une URL signée valide pendant 30 jours
-        let presigned_url = state
+        let presigned_url = match state
             .s3_service
             .get_presigned_url(&s3_key, 2592000) // 30 jours
-            .await?;
-
-        tracing::info!("[UPLOAD] Presigned URL generated: {}", presigned_url);
+            .await
+        {
+            Ok(url) => {
+                tracing::info!("[UPLOAD] Presigned URL generated successfully: {}", url);
+                url
+            }
+            Err(e) => {
+                tracing::error!("[UPLOAD] Failed to generate presigned URL: {:?}", e);
+                return Err(e);
+            }
+        };
 
         // Stockage des métadonnées en base de données (PostgreSQL)
         tracing::info!("[UPLOAD] Storing metadata in database");
-        let _attachment = state
+        let _attachment = match state
             .attachment_repo
             .create(AttachmentCreate {
                 sender_id: ctx.user_id(),
@@ -83,7 +91,17 @@ pub async fn upload_file(
                 content_type,
                 file_size: Some(file_size),
             })
-            .await?;
+            .await
+        {
+            Ok(attachment) => {
+                tracing::info!("[UPLOAD] Metadata stored successfully with ID: {}", attachment.id);
+                attachment
+            }
+            Err(e) => {
+                tracing::error!("[UPLOAD] Failed to store metadata in database: {:?}", e);
+                return Err(e);
+            }
+        };
 
         tracing::info!("[UPLOAD] Upload completed successfully for file: {}", s3_key);
 

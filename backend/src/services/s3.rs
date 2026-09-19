@@ -12,7 +12,16 @@ pub struct S3Service {
 
 impl S3Service {
     pub async fn new(bucket: String) -> Result<Self> {
-        let config = aws_config::load_from_env().await;
+        // Charger la configuration AWS depuis les variables d'environnement
+        let mut config_loader = aws_config::defaults(aws_config::BehaviorVersion::latest());
+
+        // Si un endpoint personnalisé est défini (pour Backblaze B2, etc.)
+        if let Ok(endpoint_url) = std::env::var("AWS_ENDPOINT_URL") {
+            tracing::info!("Using custom S3 endpoint: {}", endpoint_url);
+            config_loader = config_loader.endpoint_url(endpoint_url);
+        }
+
+        let config = config_loader.load().await;
         let client = Client::new(&config);
         Ok(Self { client, bucket })
     }
@@ -24,6 +33,8 @@ impl S3Service {
         body: ByteStream,
         content_type: &str,
     ) -> Result<String> {
+        tracing::info!("[S3] Uploading file to bucket: {}, key: {}", self.bucket, key);
+
         self.client
             .put_object()
             .bucket(&self.bucket)
@@ -32,11 +43,24 @@ impl S3Service {
             .content_type(content_type)
             .send()
             .await
-            .map_err(|e| crate::error::Error::Database {
-                message: e.to_string(),
+            .map_err(|e| {
+                tracing::error!("[S3] Failed to upload file: {:?}", e);
+                crate::error::Error::Database {
+                    message: e.to_string(),
+                }
             })?;
 
-        Ok(format!("https://{}.s3.amazonaws.com/{}", self.bucket, key))
+        tracing::info!("[S3] File uploaded successfully");
+
+        // Return the custom endpoint URL if configured, otherwise standard S3 URL
+        let url = if let Ok(endpoint_url) = std::env::var("AWS_ENDPOINT_URL") {
+            format!("{}/{}/{}", endpoint_url, self.bucket, key)
+        } else {
+            format!("https://{}.s3.amazonaws.com/{}", self.bucket, key)
+        };
+
+        tracing::info!("[S3] File URL: {}", url);
+        Ok(url)
     }
 
     /// Delete a file from S3
@@ -56,11 +80,16 @@ impl S3Service {
 
     /// Generate a presigned URL for downloading
     pub async fn get_presigned_url(&self, key: &str, expires_in: u64) -> Result<String> {
+        tracing::info!("[S3] Generating presigned URL for key: {}, expires_in: {}s", key, expires_in);
+
         let presigner = aws_sdk_s3::presigning::PresigningConfig::expires_in(
             std::time::Duration::from_secs(expires_in),
         )
-        .map_err(|e| crate::error::Error::Database {
-            message: e.to_string(),
+        .map_err(|e| {
+            tracing::error!("[S3] Failed to create presigning config: {:?}", e);
+            crate::error::Error::Database {
+                message: e.to_string(),
+            }
         })?;
 
         let presigned = self
@@ -70,11 +99,16 @@ impl S3Service {
             .key(key)
             .presigned(presigner)
             .await
-            .map_err(|e| crate::error::Error::Database {
-                message: e.to_string(),
+            .map_err(|e| {
+                tracing::error!("[S3] Failed to generate presigned URL: {:?}", e);
+                crate::error::Error::Database {
+                    message: e.to_string(),
+                }
             })?;
 
-        Ok(presigned.uri().to_string())
+        let url = presigned.uri().to_string();
+        tracing::info!("[S3] Presigned URL generated successfully: {}", url);
+        Ok(url)
     }
 
     /// Generate profile upload key
