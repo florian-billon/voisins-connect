@@ -25,11 +25,31 @@ pub async fn upload_file(
     mut multipart: Multipart,
 ) -> Result<Json<UploadResponse>> {
     let upload_dir = PathBuf::from("uploads");
-    fs::create_dir_all(&upload_dir)
-        .await
-        .map_err(|err| Error::InternalError {
+    
+    // Créer le dossier uploads avec permissions 755
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        if !upload_dir.exists() {
+            fs::create_dir_all(&upload_dir).await.map_err(|err| Error::InternalError {
+                message: format!("Failed to create upload directory: {err}"),
+            })?;
+            let mut perms = fs::metadata(&upload_dir).await.map_err(|err| Error::InternalError {
+                message: format!("Failed to get upload directory metadata: {err}"),
+            })?.permissions();
+            perms.set_mode(0o755);
+            fs::set_permissions(&upload_dir, perms).await.map_err(|err| Error::InternalError {
+                message: format!("Failed to set upload directory permissions: {err}"),
+            })?;
+        }
+    }
+    
+    #[cfg(not(unix))]
+    {
+        fs::create_dir_all(&upload_dir).await.map_err(|err| Error::InternalError {
             message: format!("Failed to create upload directory: {err}"),
         })?;
+    }
 
     if let Some(field) = multipart
         .next_field()
