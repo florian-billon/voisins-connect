@@ -24,6 +24,8 @@ pub async fn upload_file(
     ctx: Ctx,
     mut multipart: Multipart,
 ) -> Result<Json<UploadResponse>> {
+    tracing::info!("[UPLOAD] Starting file upload for user {}", ctx.user_id());
+    
     let upload_dir = PathBuf::from("uploads");
     
     // Créer le dossier uploads avec permissions 755
@@ -31,6 +33,7 @@ pub async fn upload_file(
     {
         use std::os::unix::fs::PermissionsExt;
         if !upload_dir.exists() {
+            tracing::info!("[UPLOAD] Creating upload directory with permissions");
             fs::create_dir_all(&upload_dir).await.map_err(|err| Error::InternalError {
                 message: format!("Failed to create upload directory: {err}"),
             })?;
@@ -46,9 +49,12 @@ pub async fn upload_file(
     
     #[cfg(not(unix))]
     {
-        fs::create_dir_all(&upload_dir).await.map_err(|err| Error::InternalError {
-            message: format!("Failed to create upload directory: {err}"),
-        })?;
+        if !upload_dir.exists() {
+            tracing::info!("[UPLOAD] Creating upload directory");
+            fs::create_dir_all(&upload_dir).await.map_err(|err| Error::InternalError {
+                message: format!("Failed to create upload directory: {err}"),
+            })?;
+        }
     }
 
     if let Some(field) = multipart
@@ -60,6 +66,8 @@ pub async fn upload_file(
     {
         let original_name = field.file_name().unwrap_or("fichier").to_string();
         let content_type = field.content_type().map(|s| s.to_string());
+
+        tracing::info!("[UPLOAD] Received file: {}, content_type: {:?}", original_name, content_type);
 
         let extension = original_name
             .rsplit('.')
@@ -73,15 +81,21 @@ pub async fn upload_file(
         })?;
 
         let file_size = data.len() as i64;
+        tracing::info!("[UPLOAD] File size: {} bytes", file_size);
 
         let file_path = upload_dir.join(&unique_name);
+        tracing::info!("[UPLOAD] Writing file to: {:?}", file_path);
+        
         fs::write(&file_path, &data)
             .await
             .map_err(|err| Error::InternalError {
                 message: format!("Failed to persist uploaded file: {err}"),
             })?;
+        
+        tracing::info!("[UPLOAD] File written successfully");
 
         // Stockage des métadonnées en base de données (PostgreSQL)
+        tracing::info!("[UPLOAD] Storing metadata in database");
         let _attachment = state
             .attachment_repo
             .create(AttachmentCreate {
@@ -92,6 +106,8 @@ pub async fn upload_file(
                 file_size: Some(file_size),
             })
             .await?;
+        
+        tracing::info!("[UPLOAD] Upload completed successfully for file: {}", unique_name);
 
         Ok(Json(UploadResponse {
             url: format!("/files/{}", unique_name),

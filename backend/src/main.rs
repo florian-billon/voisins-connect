@@ -224,6 +224,34 @@ async fn main() {
         .expect("Failed to initialize moderation rules");
     tracing::info!("Default moderation rules initialized");
 
+    // Créer le dossier uploads au démarrage avec les bonnes permissions
+    tracing::info!("Creating uploads directory");
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        let upload_dir = std::path::PathBuf::from("uploads");
+        if !upload_dir.exists() {
+            tokio::fs::create_dir_all(&upload_dir)
+                .await
+                .expect("Failed to create upload directory");
+            let mut perms = tokio::fs::metadata(&upload_dir)
+                .await
+                .expect("Failed to get upload directory metadata")
+                .permissions();
+            perms.set_mode(0o755);
+            tokio::fs::set_permissions(&upload_dir, perms)
+                .await
+                .expect("Failed to set upload directory permissions");
+        }
+    }
+    #[cfg(not(unix))]
+    {
+        tokio::fs::create_dir_all("uploads")
+            .await
+            .expect("Failed to create upload directory");
+    }
+    tracing::info!("Uploads directory ready");
+
     let state = AppState {
         db: pool,
         mongo: mongo_db,
