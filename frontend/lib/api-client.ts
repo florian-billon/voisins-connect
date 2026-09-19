@@ -564,6 +564,13 @@ export async function uploadFile(file: File): Promise<UploadResponse> {
   });
 }
 
+export async function refreshImageUrl(filePath: string): Promise<{ url: string }> {
+  return fetchApi<{ url: string }>("/upload/refresh-url", {
+    method: "POST",
+    body: JSON.stringify({ file_path: filePath }),
+  });
+}
+
 // Payment functions
 export async function createStripeCheckoutSession(): Promise<{ checkout_url: string }> {
   return fetchApi<{ checkout_url: string }>("/payments/stripe/create-checkout-session", {

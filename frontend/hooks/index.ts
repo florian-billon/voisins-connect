@@ -42,3 +42,4 @@ export { useFriends } from "./useFriends";
 export { useWebSocket } from "./useWebSocket";
 export { useVoiceCalls } from "./useVoiceCalls";
 export { useProfileUploads } from "./useProfileUploads";
+export { useImageUrl } from "./useImageUrl";
