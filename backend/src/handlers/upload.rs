@@ -52,12 +52,20 @@ pub async fn upload_file(
         // Upload vers S3
         tracing::info!("[UPLOAD] Uploading to S3 with key: {}", s3_key);
         let byte_stream = aws_sdk_s3::primitives::ByteStream::from(data);
-        let s3_url = state
+        let _s3_url = state
             .s3_service
             .upload_file(&s3_key, byte_stream, s3_content_type)
             .await?;
 
-        tracing::info!("[UPLOAD] S3 upload completed: {}", s3_url);
+        tracing::info!("[UPLOAD] S3 upload completed, generating presigned URL");
+
+        // Générer une URL signée valide pendant 24 heures
+        let presigned_url = state
+            .s3_service
+            .get_presigned_url(&s3_key, 86400) // 24 heures
+            .await?;
+
+        tracing::info!("[UPLOAD] Presigned URL generated: {}", presigned_url);
 
         // Stockage des métadonnées en base de données (PostgreSQL)
         tracing::info!("[UPLOAD] Storing metadata in database");
@@ -75,7 +83,7 @@ pub async fn upload_file(
         tracing::info!("[UPLOAD] Upload completed successfully for file: {}", s3_key);
 
         Ok(Json(UploadResponse {
-            url: s3_url,
+            url: presigned_url,
             filename: original_name,
         }))
     } else {
