@@ -38,7 +38,7 @@ export default function MobileChannelSidebar({
   if (!isOpen || !selectedServer) return null;
 
   return (
-    <div className="fixed inset-0 z-40 md:hidden">
+    <div className="fixed inset-0 z-45 md:hidden">
       <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={onClose} />
       <div className="absolute left-0 top-0 bottom-0 w-80 bg-[rgba(30,50,70,0.98)] border-r border-[#5b8cff]/20 flex flex-col">
         <div className="h-16 px-4 flex items-center justify-between border-b border-[#5b8cff]/30 bg-[rgba(0,0,0,0.3)]">

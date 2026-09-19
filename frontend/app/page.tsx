@@ -16,6 +16,7 @@ import MemberSidebar from "@/components/layout/MemberSidebar";
 import MobileNavigation from "@/components/layout/MobileNavigation";
 import MobileHeader from "@/components/layout/MobileHeader";
 import MobileChannelSidebar from "@/components/layout/MobileChannelSidebar";
+import MobileMemberSidebar from "@/components/layout/MobileMemberSidebar";
 // import PremiumFloatingButton from "@/components/premium/PremiumFloatingButton";
 import CreateServerModal from "@/components/modals/CreateServerModal";
 import CreateChannelModal from "@/components/modals/CreateChannelModal";
@@ -72,6 +73,7 @@ export default function Home() {
   const [leaveModalError, setLeaveModalError] = useState<string | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileChannelsOpen, setMobileChannelsOpen] = useState(false);
+  const [mobileMembersOpen, setMobileMembersOpen] = useState(false);
   
   // Admin modals state
   const [showAdminDeleteMessage, setShowAdminDeleteMessage] = useState(false);
@@ -273,7 +275,9 @@ export default function Home() {
         selectedChannel={selectedChannel}
         onMenuToggle={() => setMobileMenuOpen(true)}
         onChannelsToggle={() => setMobileChannelsOpen(true)}
+        onMembersToggle={() => setMobileMembersOpen(true)}
         showChannelsButton={!!selectedServer}
+        showMembersButton={!!selectedServer}
       />
 
       {/* Desktop Sidebars */}
@@ -340,6 +344,31 @@ export default function Home() {
         onCreateChannel={() => setShowCreateChannel(true)}
         onClose={() => setMobileChannelsOpen(false)}
         isOpen={mobileChannelsOpen}
+      />
+
+      {/* Mobile Member Sidebar */}
+      <MobileMemberSidebar
+        selectedServer={selectedServer}
+        selectedChannel={selectedChannel}
+        members={members}
+        user={user}
+        currentUser={user}
+        typingUsers={typingUsers}
+        viewerId={viewerId}
+        isServerAdmin={isServerAdmin}
+        onInvite={() => setShowInviteModal(true)}
+        onKick={kickMember}
+        onBan={(userId) => {
+          const member = members.find(m => m.user_id === userId);
+          if (member) handleAdminBan(userId, member.username);
+        }}
+        onMute={(userId) => {
+          const member = members.find(m => m.user_id === userId);
+          if (member) handleAdminMute(userId, member.username);
+        }}
+        onOpenProfile={openUserProfile}
+        onClose={() => setMobileMembersOpen(false)}
+        isOpen={mobileMembersOpen}
       />
 
       <ChatCenter

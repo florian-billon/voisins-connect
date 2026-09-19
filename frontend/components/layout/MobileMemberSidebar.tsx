@@ -1,0 +1,188 @@
+"use client";
+import { useTranslation } from "@/lib/i18n";
+import { Server, Channel, ServerMember, User } from "@/lib/api-client";
+import { getAvatar } from "@/lib/avatar";
+import { getStatusColor } from "@/lib/presence";
+import SmartImg from "@/components/ui/SmartImg";
+
+type Props = {
+  selectedServer: Server | null;
+  selectedChannel: Channel | null;
+  members: ServerMember[];
+  user: User | null;
+  currentUser?: User | null;
+  typingUsers: Map<string, string>;
+  viewerId: string | undefined;
+  isServerAdmin: boolean;
+  onInvite: () => void;
+  onKick: (userId: string) => void;
+  onBan: (userId: string) => void;
+  onMute: (userId: string) => void;
+  onOpenProfile: (userId: string) => void;
+  onClose: () => void;
+  isOpen: boolean;
+};
+
+export default function MobileMemberSidebar({
+  selectedServer,
+  selectedChannel,
+  members,
+  user,
+  currentUser,
+  typingUsers,
+  viewerId,
+  isServerAdmin,
+  onInvite,
+  onKick,
+  onBan,
+  onMute,
+  onOpenProfile,
+  onClose,
+  isOpen,
+}: Props) {
+  const { t } = useTranslation();
+  const userForAvatar = currentUser || user;
+  const myRole = members.find((m) => m.user_id === user?.id)?.role;
+  const canKick = myRole === "Owner" || myRole === "Admin";
+
+  const TypingDots = () => (
+    <div className="flex gap-0.5 flex-shrink-0" title={t("chat.isTyping")}>
+      <span className="w-1 h-1 bg-[#5b8cff] rounded-full animate-bounce [animation-delay:0ms]" />
+      <span className="w-1 h-1 bg-[#5b8cff] rounded-full animate-bounce [animation-delay:150ms]" />
+      <span className="w-1 h-1 bg-[#5b8cff] rounded-full animate-bounce [animation-delay:300ms]" />
+    </div>
+  );
+
+  if (!isOpen || !selectedServer) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 md:hidden">
+      <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute right-0 top-0 bottom-0 w-80 bg-[rgba(30,50,70,0.98)] border-l border-[#5b8cff]/20 flex flex-col">
+        <div className="h-16 px-4 flex items-center justify-between border-b border-[#5b8cff]/20 bg-[rgba(0,0,0,0.3)]">
+          <h3 className="text-xs font-bold text-white/60 uppercase tracking-wider">
+            {t("members.title", { count: members.length })}
+          </h3>
+          <button type="button" onClick={onClose} className="p-2 text-white/60 hover:text-white transition-colors">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-4">
+          {members.length === 0 ? (
+            <p className="text-sm text-white/40 italic px-2">{t("members.noMembers")}</p>
+          ) : (
+            <>
+              {members.filter((m) => m.role === "Owner").length > 0 && (
+                <div className="mb-4">
+                  <p className="text-[10px] text-[#ff6b6b] font-bold mb-2 px-2 tracking-wider uppercase">{t("members.owner")}</p>
+                  {members.filter((m) => m.role === "Owner").map((member) => {
+                    const isTyping = selectedChannel?.id && typingUsers.has(member.user_id);
+                    return (
+                      <div
+                        key={member.user_id}
+                        onClick={() => {
+                          onOpenProfile(member.user_id);
+                          onClose();
+                        }}
+                        className="flex items-center gap-2 py-1.5 px-2 rounded hover:bg-white/5 cursor-pointer transition-colors"
+                      >
+                        <div className="relative">
+                          <SmartImg src={getAvatar(member.user_id, userForAvatar)} alt={t("members.owner")} className="w-8 h-8 rounded-full object-cover border border-[#ff6b6b]/50" />
+                          <span className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 border-2 border-[rgba(5,10,15,0.95)] rounded-full ${getStatusColor(member.status)}`} />
+                        </div>
+                        <span className="text-sm text-white/90 truncate flex-1">{member.username}</span>
+                        {isTyping && <TypingDots />}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {members.filter((m) => m.role !== "Owner").length > 0 && (
+                <div>
+                  <p className="text-[10px] text-white/50 font-bold mb-2 px-2 tracking-wider uppercase">{t("members.members")}</p>
+                  {members.filter((m) => m.role !== "Owner").map((member) => {
+                    const isMe = member.user_id === user?.id;
+                    const kickable = canKick && !isMe && !(myRole === "Admin" && member.role === "Admin");
+                    const isTyping = selectedChannel?.id && typingUsers.has(member.user_id);
+                    return (
+                      <div
+                        key={member.user_id}
+                        onClick={() => {
+                          onOpenProfile(member.user_id);
+                          onClose();
+                        }}
+                        className="group flex items-center gap-2 py-1.5 px-2 rounded hover:bg-white/5 transition-colors cursor-pointer"
+                      >
+                        <div className="relative flex-shrink-0">
+                          <SmartImg src={getAvatar(member.user_id, userForAvatar)} alt={t("members.members")} className="w-8 h-8 rounded-full object-cover border border-[#5b8cff]/30" />
+                          <span className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 border-2 border-[rgba(5,10,15,0.95)] rounded-full ${getStatusColor(member.status)}`} />
+                        </div>
+                        <span className="text-sm text-white/70 truncate flex-1">{member.username}</span>
+                        {isTyping && <TypingDots />}
+                        {kickable && (
+                          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all flex-shrink-0">
+                            <button
+                              type="button"
+                              onClick={(e) => { e.stopPropagation(); onMute(member.user_id); }}
+                              className="text-white/30 hover:text-[#ff9f5b] transition-colors"
+                              title={t("members.mute", { username: member.username })}
+                            >
+                              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
+                              </svg>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={(e) => { e.stopPropagation(); onKick(member.user_id); }}
+                              className="text-white/30 hover:text-[#ff6b6b] transition-colors"
+                              title={t("members.kick", { username: member.username })}
+                            >
+                              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7a4 4 0 11-8 0 4 4 0 018 0zM9 14a6 6 0 00-6 6v1h12v-1a6 6 0 00-6-6zM21 12h-6m3-3l3 3-3 3" />
+                              </svg>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={(e) => { e.stopPropagation(); onBan(member.user_id); }}
+                              className="text-white/30 hover:text-[#ff6b6b] transition-colors"
+                              title={t("members.ban", { username: member.username })}
+                            >
+                              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 5.636l-12.728 12.728M6.343 6.343l11.314 11.314" />
+                              </svg>
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </>
+          )}
+        </div>
+
+        <div className="p-4 border-t border-[#5b8cff]/20 bg-[rgba(0,0,0,0.3)]">
+          <button
+            type="button"
+            onClick={() => {
+              onInvite();
+              onClose();
+            }}
+            className="w-full bg-[#5b8cff] text-black hover:bg-[#5b8cff]/90 px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            {t("members.inviteTooltip")}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
