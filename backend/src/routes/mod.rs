@@ -23,8 +23,8 @@ pub fn create_router() -> Router<AppState> {
         .merge(invites::routes())
         .merge(friends::routes())
         .merge(dm::routes())
-        .merge(upload::routes())
         .merge(voice::routes())
         .merge(profile::routes())
-        .nest("/upload", s3::routes())
+        .merge(upload::routes())
+        .nest("/s3", s3::routes())
 }
