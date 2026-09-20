@@ -42,13 +42,4 @@ impl AttachmentRepository {
 
         Ok(attachment)
     }
-
-    pub async fn find_by_path(&self, file_path: &str) -> Result<Attachment> {
-        let attachment = sqlx::query_as::<_, Attachment>("SELECT * FROM attachments WHERE file_path = $1")
-            .bind(file_path)
-            .fetch_one(&self.pool)
-            .await?;
-
-        Ok(attachment)
-    }
 }
