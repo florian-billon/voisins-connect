@@ -54,24 +54,11 @@ export default function ChannelSidebar({
     <aside className={`hidden lg:flex ${reduced ? 'w-[213px]' : 'w-80'} bg-[rgba(30,50,70,0.95)] border-r border-[#5b8cff]/20 flex flex-col min-h-0 transition-all duration-300 flex-shrink-0`}>
       {selectedServer ? (
         <>
-          <div className="h-12 px-4 flex items-center justify-between border-b border-[#5b8cff]/30 shadow-lg bg-[rgba(26,42,58,0.3)]">
+          <div 
+            className="h-12 px-4 flex items-center justify-between border-b border-[#5b8cff]/30 shadow-lg bg-[rgba(26,42,58,0.3)] cursor-pointer"
+            onClick={onToggleSidebar}
+          >
             <div className="flex items-center gap-2 flex-1">
-              {onToggleSidebar && (
-                <button
-                  type="button"
-                  onClick={onToggleSidebar}
-                  className="p-1.5 text-white/40 hover:text-white transition-colors"
-                  title={reduced ? "Agrandir" : "Réduire"}
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    {reduced ? (
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                    ) : (
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12M8 12h12M8 17h12M4 7h.01M4 12h.01M4 17h.01" />
-                    )}
-                  </svg>
-                </button>
-              )}
               <h2 className="font-bold text-white truncate uppercase tracking-widest text-[11px]">{selectedServer.name}</h2>
             </div>
             <div className="flex items-center gap-1">

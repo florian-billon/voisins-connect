@@ -10,7 +10,6 @@ type Props = {
   onMembersToggle: () => void;
   showChannelsButton: boolean;
   showMembersButton: boolean;
-  sidebarReduced?: boolean;
 };
 
 export default function MobileHeader({
@@ -21,7 +20,6 @@ export default function MobileHeader({
   onMembersToggle,
   showChannelsButton,
   showMembersButton,
-  sidebarReduced = false,
 }: Props) {
   const { t } = useTranslation();
 

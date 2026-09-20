@@ -74,15 +74,16 @@ export default function Home() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileChannelsOpen, setMobileChannelsOpen] = useState(false);
   const [mobileMembersOpen, setMobileMembersOpen] = useState(false);
-  const [sidebarReduced, setSidebarReduced] = useState(false);
+  const [channelSidebarReduced, setChannelSidebarReduced] = useState(false);
+  const [memberSidebarReduced, setMemberSidebarReduced] = useState(false);
 
   // Intelligent sidebar toggle for desktop
   const handleToggleChannelSidebar = () => {
-    setSidebarReduced(!sidebarReduced);
+    setChannelSidebarReduced(!channelSidebarReduced);
   };
 
   const handleToggleMemberSidebar = () => {
-    setSidebarReduced(!sidebarReduced);
+    setMemberSidebarReduced(!memberSidebarReduced);
   };
 
   // Mobile sidebar toggles
@@ -301,7 +302,6 @@ export default function Home() {
         onMembersToggle={handleMobileMembersToggle}
         showChannelsButton={!!selectedServer}
         showMembersButton={!!selectedServer}
-        sidebarReduced={sidebarReduced}
       />
 
       {/* Desktop Sidebars */}
@@ -314,7 +314,6 @@ export default function Home() {
         onShowProfile={() => setShowProfile(true)}
         onNavigateDMs={() => router.push("/messages")}
         onOpenFriendDM={(username) => router.push(`/messages?username=${encodeURIComponent(username)}`)}
-        reduced={sidebarReduced}
       />
 
       <ChannelSidebar
@@ -339,7 +338,7 @@ export default function Home() {
         onDeleteServer={() => setShowDeleteConfirm(true)}
         onShowLeave={handleShowLeave}
         onToggleSidebar={handleToggleChannelSidebar}
-        reduced={sidebarReduced}
+        reduced={channelSidebarReduced}
       />
 
       {/* Mobile Navigation */}
@@ -454,7 +453,7 @@ export default function Home() {
           }}
           onOpenProfile={openUserProfile}
           onToggleSidebar={handleToggleMemberSidebar}
-          reduced={sidebarReduced}
+          reduced={memberSidebarReduced}
         />
       )}
 
