@@ -390,8 +390,8 @@ export default function Home() {
         user={user}
         viewerId={viewerId}
         isServerAdmin={isServerAdmin}
-        onCreateServer={onCreateServer}
-        onCreateChannel={onCreateChannel}
+        onCreateServer={() => setShowCreateServer(true)}
+        onCreateChannel={() => setShowCreateChannel(true)}
         onSendMessage={handleSendMessage}
         onMessageInputChange={handleInputChange}
         onMessageInputFocus={handleInputFocus}
