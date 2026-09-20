@@ -16,13 +16,14 @@ type Props = {
   onShowProfile: () => void;
   onNavigateDMs: () => void;
   onOpenFriendDM: (username: string) => void;
+  reduced?: boolean;
 };
 
-export default function ServerSidebar({ servers, selectedServer, friends, user, onSelectServer, onShowProfile, onNavigateDMs, onOpenFriendDM }: Props) {
+export default function ServerSidebar({ servers, selectedServer, friends, user, onSelectServer, onShowProfile, onNavigateDMs, onOpenFriendDM, reduced = false }: Props) {
   const { t } = useTranslation();
 
   return (
-    <aside className="hidden md:flex w-[72px] bg-[rgba(26,42,58,0.95)] border-r border-[#5b8cff]/20 flex-col items-center py-3 gap-2">
+    <aside className={`hidden md:flex ${reduced ? 'w-[48px]' : 'w-[72px]'} bg-[rgba(26,42,58,0.95)] border-r border-[#5b8cff]/20 flex-col items-center py-3 gap-2 transition-all duration-300`}>
       <button
         type="button"
         onClick={() => onSelectServer(null)}

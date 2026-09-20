@@ -74,7 +74,7 @@ export default function Home() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileChannelsOpen, setMobileChannelsOpen] = useState(false);
   const [mobileMembersOpen, setMobileMembersOpen] = useState(false);
-  const [hideAllSidebars, setHideAllSidebars] = useState(false);
+  const [sidebarReduced, setSidebarReduced] = useState(false);
   
   // Admin modals state
   const [showAdminDeleteMessage, setShowAdminDeleteMessage] = useState(false);
@@ -282,43 +282,41 @@ export default function Home() {
       />
 
       {/* Desktop Sidebars */}
-      {!hideAllSidebars && (
-        <>
-          <ServerSidebar
-            servers={servers}
-            selectedServer={selectedServer}
-            friends={friends}
-            user={user}
-            onSelectServer={selectServer}
-            onShowProfile={() => setShowProfile(true)}
-            onNavigateDMs={() => router.push("/messages")}
-            onOpenFriendDM={(username) => router.push(`/messages?username=${encodeURIComponent(username)}`)}
-          />
+      <ServerSidebar
+        servers={servers}
+        selectedServer={selectedServer}
+        friends={friends}
+        user={user}
+        onSelectServer={selectServer}
+        onShowProfile={() => setShowProfile(true)}
+        onNavigateDMs={() => router.push("/messages")}
+        onOpenFriendDM={(username) => router.push(`/messages?username=${encodeURIComponent(username)}`)}
+        reduced={sidebarReduced}
+      />
 
-          <ChannelSidebar
-            selectedServer={selectedServer}
-            channels={channels}
-            visibleChannels={visibleChannels}
-            selectedChannel={selectedChannel}
-            channelSearch={channelSearch}
-            channelsLoading={channelsLoading}
-            channelsError={channelsError}
-            canManageChannels={canManageChannels}
-            isServerOwner={isServerOwner}
-            transferCandidates={transferCandidates}
-            user={user}
-            onSelectChannel={selectChannel}
-            onChannelSearch={(serverId, value) => setChannelSearchState({ serverId, value })}
-            onCreateChannel={() => setShowCreateChannel(true)}
-            onCreateServer={() => setShowCreateServer(true)}
-            onDeleteChannel={handleDeleteChannel}
-            onEditChannel={(c) => { setChannelToRename(c); setShowRenameChannel(true); }}
-            onEditServer={() => setShowRenameServer(true)}
-            onDeleteServer={() => setShowDeleteConfirm(true)}
-            onShowLeave={handleShowLeave}
-          />
-        </>
-      )}
+      <ChannelSidebar
+        selectedServer={selectedServer}
+        channels={channels}
+        visibleChannels={visibleChannels}
+        selectedChannel={selectedChannel}
+        channelSearch={channelSearch}
+        channelsLoading={channelsLoading}
+        channelsError={channelsError}
+        canManageChannels={canManageChannels}
+        isServerOwner={isServerOwner}
+        transferCandidates={transferCandidates}
+        user={user}
+        onSelectChannel={selectChannel}
+        onChannelSearch={(serverId, value) => setChannelSearchState({ serverId, value })}
+        onCreateChannel={() => setShowCreateChannel(true)}
+        onCreateServer={() => setShowCreateServer(true)}
+        onDeleteChannel={handleDeleteChannel}
+        onEditChannel={(c) => { setChannelToRename(c); setShowRenameChannel(true); }}
+        onEditServer={() => setShowRenameServer(true)}
+        onDeleteServer={() => setShowDeleteConfirm(true)}
+        onShowLeave={handleShowLeave}
+        reduced={sidebarReduced}
+      />
 
       {/* Mobile Navigation */}
       <MobileNavigation
@@ -409,11 +407,11 @@ export default function Home() {
         }}
         onOpenUserProfile={openUserProfile}
         onToggleReaction={toggleReaction}
-        onToggleSidebars={() => setHideAllSidebars(!hideAllSidebars)}
-        hideAllSidebars={hideAllSidebars}
+        onToggleSidebars={() => setSidebarReduced(!sidebarReduced)}
+        sidebarReduced={sidebarReduced}
       />
 
-      {selectedServer && !hideAllSidebars && (
+      {selectedServer && (
         <MemberSidebar
           selectedServer={selectedServer}
           selectedChannel={selectedChannel}
@@ -433,6 +431,7 @@ export default function Home() {
             if (member) handleAdminMute(userId, member.username);
           }}
           onOpenProfile={openUserProfile}
+          reduced={sidebarReduced}
         />
       )}
 

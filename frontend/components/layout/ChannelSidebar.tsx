@@ -26,12 +26,14 @@ type Props = {
   onEditServer: () => void;
   onDeleteServer: () => void;
   onShowLeave: () => void;
+  reduced?: boolean;
 };
 
 export default function ChannelSidebar({
   selectedServer, channels, visibleChannels, selectedChannel, channelSearch,
   channelsLoading, channelsError, canManageChannels, isServerOwner, user, onSelectChannel,
   onChannelSearch, onCreateChannel, onCreateServer, onDeleteChannel, onEditChannel, onEditServer, onDeleteServer, onShowLeave,
+  reduced = false,
 }: Props) {
   const { t } = useTranslation();
   const { currentUserVoiceChannel, setCurrentUserVoiceChannel } = useVoice();
@@ -47,7 +49,7 @@ export default function ChannelSidebar({
   };
 
   return (
-    <aside className="hidden md:flex w-80 bg-[rgba(30,50,70,0.95)] border-r border-[#5b8cff]/20 flex flex-col min-h-0">
+    <aside className={`hidden md:flex ${reduced ? 'w-[160px]' : 'w-80'} bg-[rgba(30,50,70,0.95)] border-r border-[#5b8cff]/20 flex flex-col min-h-0 transition-all duration-300`}>
       {selectedServer ? (
         <>
           <div className="h-12 px-4 flex items-center justify-between border-b border-[#5b8cff]/30 shadow-lg bg-[rgba(26,42,58,0.3)]">

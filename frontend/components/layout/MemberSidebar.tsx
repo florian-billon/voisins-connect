@@ -19,11 +19,13 @@ type Props = {
   onBan: (userId: string) => void;
   onMute: (userId: string) => void;
   onOpenProfile: (userId: string) => void;
+  reduced?: boolean;
 };
 
 export default function MemberSidebar({
   selectedServer, selectedChannel, members, user, currentUser, typingUsers, viewerId, isServerAdmin,
   onInvite, onKick, onBan, onMute, onOpenProfile,
+  reduced = false,
 }: Props) {
   const { t } = useTranslation();
   const userForAvatar = currentUser || user;
@@ -39,7 +41,7 @@ export default function MemberSidebar({
   );
 
   return (
-    <aside className="hidden lg:flex w-60 bg-[rgba(30,50,70,0.95)] border-l border-[#5b8cff]/20 flex flex-col">
+    <aside className={`hidden lg:flex ${reduced ? 'w-[120px]' : 'w-60'} bg-[rgba(30,50,70,0.95)] border-l border-[#5b8cff]/20 flex flex-col transition-all duration-300`}>
       <div className="h-12 px-4 flex items-center justify-between border-b border-[#5b8cff]/20 bg-[rgba(0,0,0,0.3)]">
         <h3 className="text-xs font-bold text-white/60 uppercase tracking-wider">
           {t("members.title", { count: members.length })}
