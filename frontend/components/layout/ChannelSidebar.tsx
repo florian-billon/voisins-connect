@@ -26,6 +26,7 @@ type Props = {
   onEditServer: () => void;
   onDeleteServer: () => void;
   onShowLeave: () => void;
+  onToggleSidebar?: () => void;
   reduced?: boolean;
 };
 
@@ -33,6 +34,7 @@ export default function ChannelSidebar({
   selectedServer, channels, visibleChannels, selectedChannel, channelSearch,
   channelsLoading, channelsError, canManageChannels, isServerOwner, user, onSelectChannel,
   onChannelSearch, onCreateChannel, onCreateServer, onDeleteChannel, onEditChannel, onEditServer, onDeleteServer, onShowLeave,
+  onToggleSidebar,
   reduced = false,
 }: Props) {
   const { t } = useTranslation();
@@ -53,7 +55,25 @@ export default function ChannelSidebar({
       {selectedServer ? (
         <>
           <div className="h-12 px-4 flex items-center justify-between border-b border-[#5b8cff]/30 shadow-lg bg-[rgba(26,42,58,0.3)]">
-            <h2 className="font-bold text-white truncate flex-1 uppercase tracking-widest text-[11px]">{selectedServer.name}</h2>
+            <div className="flex items-center gap-2 flex-1">
+              {onToggleSidebar && (
+                <button
+                  type="button"
+                  onClick={onToggleSidebar}
+                  className="p-1.5 text-white/40 hover:text-white transition-colors"
+                  title={reduced ? "Agrandir" : "Réduire"}
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    {reduced ? (
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                    ) : (
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12M8 12h12M8 17h12M4 7h.01M4 12h.01M4 17h.01" />
+                    )}
+                  </svg>
+                </button>
+              )}
+              <h2 className="font-bold text-white truncate uppercase tracking-widest text-[11px]">{selectedServer.name}</h2>
+            </div>
             <div className="flex items-center gap-1">
               {isServerOwner ? (
                 <>

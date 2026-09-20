@@ -41,8 +41,6 @@ type Props = {
   onAdminDeleteMessage: (id: string) => void;
   onOpenUserProfile: (userId: string) => void;
   onToggleReaction: (messageId: string, emoji: string) => Promise<boolean>;
-  onToggleSidebars?: () => void;
-  sidebarReduced?: boolean;
 };
 
 export default function ChatCenter({
@@ -53,7 +51,6 @@ export default function ChatCenter({
   onMessageInputFocus, onMessageInputBlur, onToggleGifPicker, onSendGif,
   onStartEdit, onSaveEdit, onCancelEdit, onEditContentChange,
   onDeleteMessage, onAdminDeleteMessage, onOpenUserProfile, onToggleReaction,
-  onToggleSidebars, sidebarReduced,
 }: Props) {
   const { t, locale } = useTranslation();
   const [isUploading, setIsUploading] = useState(false);
@@ -300,24 +297,6 @@ export default function ChatCenter({
             </span>
           )}
         </div>
-        {onToggleSidebars && (
-          <button
-            type="button"
-            onClick={onToggleSidebars}
-            className="p-2 text-white/40 hover:text-white transition-colors"
-            title={sidebarReduced ? "Agrandir les sidebars" : "Réduire les sidebars"}
-          >
-            {sidebarReduced ? (
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            ) : (
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12M8 12h12M8 17h12M4 7h.01M4 12h.01M4 17h.01" />
-              </svg>
-            )}
-          </button>
-        )}
       </div>
 
       <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-2 md:p-4">

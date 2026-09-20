@@ -75,6 +75,28 @@ export default function Home() {
   const [mobileChannelsOpen, setMobileChannelsOpen] = useState(false);
   const [mobileMembersOpen, setMobileMembersOpen] = useState(false);
   const [sidebarReduced, setSidebarReduced] = useState(false);
+
+  // Intelligent sidebar toggle for desktop
+  const handleToggleChannelSidebar = () => {
+    setSidebarReduced(!sidebarReduced);
+  };
+
+  const handleToggleMemberSidebar = () => {
+    setSidebarReduced(!sidebarReduced);
+  };
+
+  // Mobile sidebar toggles
+  const handleMobileMenuToggle = () => {
+    setMobileMenuOpen(!mobileMenuOpen);
+  };
+
+  const handleMobileChannelsToggle = () => {
+    setMobileChannelsOpen(!mobileChannelsOpen);
+  };
+
+  const handleMobileMembersToggle = () => {
+    setMobileMembersOpen(!mobileMembersOpen);
+  };
   
   // Admin modals state
   const [showAdminDeleteMessage, setShowAdminDeleteMessage] = useState(false);
@@ -274,11 +296,12 @@ export default function Home() {
       <MobileHeader
         selectedServer={selectedServer}
         selectedChannel={selectedChannel}
-        onMenuToggle={() => setMobileMenuOpen(true)}
-        onChannelsToggle={() => setMobileChannelsOpen(true)}
-        onMembersToggle={() => setMobileMembersOpen(true)}
+        onMenuToggle={handleMobileMenuToggle}
+        onChannelsToggle={handleMobileChannelsToggle}
+        onMembersToggle={handleMobileMembersToggle}
         showChannelsButton={!!selectedServer}
         showMembersButton={!!selectedServer}
+        sidebarReduced={sidebarReduced}
       />
 
       {/* Desktop Sidebars */}
@@ -315,6 +338,7 @@ export default function Home() {
         onEditServer={() => setShowRenameServer(true)}
         onDeleteServer={() => setShowDeleteConfirm(true)}
         onShowLeave={handleShowLeave}
+        onToggleSidebar={handleToggleChannelSidebar}
         reduced={sidebarReduced}
       />
 
@@ -407,8 +431,6 @@ export default function Home() {
         }}
         onOpenUserProfile={openUserProfile}
         onToggleReaction={toggleReaction}
-        onToggleSidebars={() => setSidebarReduced(!sidebarReduced)}
-        sidebarReduced={sidebarReduced}
       />
 
       {selectedServer && (
@@ -431,6 +453,7 @@ export default function Home() {
             if (member) handleAdminMute(userId, member.username);
           }}
           onOpenProfile={openUserProfile}
+          onToggleSidebar={handleToggleMemberSidebar}
           reduced={sidebarReduced}
         />
       )}
