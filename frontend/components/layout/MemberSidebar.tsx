@@ -61,7 +61,33 @@ export default function MemberSidebar({
       <div className="flex-1 overflow-y-auto p-2">
         {members.length === 0 ? (
           <p className="text-sm text-white/40 italic px-2">{t("members.noMembers")}</p>
+        ) : reduced ? (
+          // Version réduite : liste compacte verticale des membres
+          <div className="space-y-1">
+            {members.map((member) => {
+              const isTyping = selectedChannel?.id && typingUsers.has(member.user_id);
+              return (
+                <button
+                  key={member.user_id}
+                  onClick={() => onOpenProfile(member.user_id)}
+                  className={`w-full flex items-center gap-2 px-2 py-1.5 rounded transition-colors ${
+                    member.role === "Owner"
+                      ? "text-[#ff6b6b]"
+                      : "text-white/70"
+                  }`}
+                >
+                  <div className="relative flex-shrink-0">
+                    <SmartImg src={getAvatar(member.user_id, userForAvatar)} alt={member.username} className="w-6 h-6 rounded-full object-cover border border-[#5b8cff]/30" />
+                    <span className={`absolute -bottom-0.5 -right-0.5 w-2 h-2 border-2 border-[rgba(5,10,15,0.95)] rounded-full ${getStatusColor(member.status)}`} />
+                  </div>
+                  <p className="text-xs font-medium truncate">{member.username}</p>
+                  {isTyping && <TypingDots />}
+                </button>
+              );
+            })}
+          </div>
         ) : (
+          // Version complète : avec sections et boutons d'action
           <>
             {members.filter((m) => m.role === "Owner").length > 0 && (
               <div className="mb-4">
