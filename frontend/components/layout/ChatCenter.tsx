@@ -41,6 +41,8 @@ type Props = {
   onAdminDeleteMessage: (id: string) => void;
   onOpenUserProfile: (userId: string) => void;
   onToggleReaction: (messageId: string, emoji: string) => Promise<boolean>;
+  onToggleSidebars?: () => void;
+  hideAllSidebars?: boolean;
 };
 
 export default function ChatCenter({
@@ -51,6 +53,7 @@ export default function ChatCenter({
   onMessageInputFocus, onMessageInputBlur, onToggleGifPicker, onSendGif,
   onStartEdit, onSaveEdit, onCancelEdit, onEditContentChange,
   onDeleteMessage, onAdminDeleteMessage, onOpenUserProfile, onToggleReaction,
+  onToggleSidebars, hideAllSidebars,
 }: Props) {
   const { t, locale } = useTranslation();
   const [isUploading, setIsUploading] = useState(false);
@@ -288,6 +291,35 @@ export default function ChatCenter({
 
   return (
     <div className="flex-1 flex flex-col bg-[rgba(26,42,58,0.98)]">
+      {/* Bouton pour cacher toutes les sidebars */}
+      <div className="px-2 md:px-4 py-2 border-b border-[#5b8cff]/20 bg-[rgba(0,0,0,0.2)] flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          {selectedChannel && (
+            <span className="text-sm text-white/60">
+              {selectedChannel.name}
+            </span>
+          )}
+        </div>
+        {onToggleSidebars && (
+          <button
+            type="button"
+            onClick={onToggleSidebars}
+            className="p-2 text-white/40 hover:text-white transition-colors"
+            title={hideAllSidebars ? "Afficher les sidebars" : "Cacher les sidebars"}
+          >
+            {hideAllSidebars ? (
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            ) : (
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 0A9 9 0 0112 21m0 0a9 9 0 0112-21m0 0a9 9 0 00-12 21m0 0a9 9 0 0112-21M12 3v6m0 0v6m0-6h6m-6 0h6" />
+              </svg>
+            )}
+          </button>
+        )}
+      </div>
+
       <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-2 md:p-4">
         {!selectedChannel ? renderEmpty() : renderMessages()}
       </div>
