@@ -49,7 +49,7 @@ export default function ChannelSidebar({
   };
 
   return (
-    <aside className={`hidden md:flex ${reduced ? 'w-[160px]' : 'w-80'} bg-[rgba(30,50,70,0.95)] border-r border-[#5b8cff]/20 flex flex-col min-h-0 transition-all duration-300`}>
+    <aside className={`hidden md:flex ${reduced ? 'w-[213px]' : 'w-80'} bg-[rgba(30,50,70,0.95)] border-r border-[#5b8cff]/20 flex flex-col min-h-0 transition-all duration-300 flex-shrink-0`}>
       {selectedServer ? (
         <>
           <div className="h-12 px-4 flex items-center justify-between border-b border-[#5b8cff]/30 shadow-lg bg-[rgba(26,42,58,0.3)]">
