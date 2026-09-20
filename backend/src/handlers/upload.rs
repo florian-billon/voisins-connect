@@ -64,10 +64,10 @@ pub async fn upload_file(
 
         tracing::info!("[UPLOAD] S3 upload completed, generating presigned URL");
 
-        // Générer une URL signée valide pendant 30 jours
+        // Générer une URL signée valide pendant 7 jours (maximum autorisé par AWS SDK)
         let presigned_url = match state
             .s3_service
-            .get_presigned_url(&s3_key, 2592000) // 30 jours
+            .get_presigned_url(&s3_key, 604800) // 7 jours
             .await
         {
             Ok(url) => {
@@ -142,10 +142,10 @@ pub async fn refresh_file_url(
         });
     }
 
-    // Générer une nouvelle URL signée valide pendant 30 jours
+    // Générer une nouvelle URL signée valide pendant 7 jours (maximum autorisé par AWS SDK)
     let presigned_url = state
         .s3_service
-        .get_presigned_url(&payload.file_path, 2592000) // 30 jours
+        .get_presigned_url(&payload.file_path, 604800) // 7 jours
         .await?;
 
     tracing::info!("[UPLOAD] URL refreshed successfully");

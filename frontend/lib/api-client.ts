@@ -564,6 +564,7 @@ export async function uploadFile(file: File): Promise<UploadResponse> {
   });
 }
 
+// Rafraîchir une URL signée pour un fichier (valide 7 jours par défaut)
 export async function refreshImageUrl(filePath: string): Promise<{ url: string }> {
   return fetchApi<{ url: string }>("/upload/refresh-url", {
     method: "POST",

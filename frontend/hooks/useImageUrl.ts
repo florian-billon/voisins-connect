@@ -3,7 +3,7 @@ import { refreshImageUrl } from '@/lib/api-client';
 
 /**
  * Hook pour gérer les URLs d'images avec rafraîchissement automatique
- * Les URLs signées expirent après 30 jours, ce hook les rafraîchit automatiquement
+ * Les URLs signées expirent après 7 jours, ce hook les rafraîchit automatiquement
  */
 export function useImageUrl(initialUrl: string | null, filePath: string | null) {
   const [url, setUrl] = useState<string | null>(initialUrl);
@@ -28,12 +28,12 @@ export function useImageUrl(initialUrl: string | null, filePath: string | null) 
     }
   };
 
-  // Rafraîchir automatiquement si l'URL est proche de l'expiration (par exemple, tous les 25 jours)
+  // Rafraîchir automatiquement si l'URL est proche de l'expiration (par exemple, tous les 5 jours)
   useEffect(() => {
     if (!filePath || !url) return;
 
-    // Calculer quand rafraîchir (25 jours après le chargement initial)
-    const refreshInterval = 25 * 24 * 60 * 60 * 1000; // 25 jours en millisecondes
+    // Calculer quand rafraîchir (5 jours après le chargement initial)
+    const refreshInterval = 5 * 24 * 60 * 60 * 1000; // 5 jours en millisecondes
 
     const timer = setTimeout(() => {
       refresh();
