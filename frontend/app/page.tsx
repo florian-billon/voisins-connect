@@ -6,7 +6,7 @@ import { useChat } from "@/components/providers/ChatProvider";
 import ProfileCard from "@/components/profile/ProfileCard";
 import PublicProfileCard from "@/components/profile/PublicProfileCard";
 import InviteModal from "@/components/modals/InviteModal";
-import { User } from "@/lib/api-client";
+import { User, Server } from "@/lib/api-client";
 import { useTranslation } from "@/lib/i18n";
 
 import ServerSidebar from "@/components/layout/ServerSidebar";
@@ -88,19 +88,55 @@ export default function Home() {
 
   // Mobile sidebar toggles
   const handleMobileMenuToggle = () => {
-    setMobileMenuOpen(!mobileMenuOpen);
+    if (mobileMenuOpen) {
+      setMobileMenuOpen(false);
+    } else {
+      setMobileMenuOpen(true);
+      setMobileChannelsOpen(false);
+      setMobileMembersOpen(false);
+    }
   };
 
   const handleMobileChannelsToggle = () => {
-    setMobileChannelsOpen(!mobileChannelsOpen);
+    if (mobileChannelsOpen) {
+      setMobileChannelsOpen(false);
+    } else {
+      setMobileChannelsOpen(true);
+      setMobileMenuOpen(false);
+      setMobileMembersOpen(false);
+    }
   };
 
   const handleMobileMembersToggle = () => {
-    setMobileMembersOpen(!mobileMembersOpen);
+    if (mobileMembersOpen) {
+      setMobileMembersOpen(false);
+    } else {
+      setMobileMembersOpen(true);
+      setMobileMenuOpen(false);
+      setMobileChannelsOpen(false);
+    }
   };
 
   const handleCloseAll = () => {
     setMobileMenuOpen(false);
+    setMobileChannelsOpen(false);
+    setMobileMembersOpen(false);
+  };
+
+  const handleSelectServer = (server: Server | null) => {
+    selectServer(server);
+    if (server) {
+      setMobileMenuOpen(false);
+      setMobileChannelsOpen(true);
+      setMobileMembersOpen(false);
+    } else {
+      setMobileChannelsOpen(false);
+      setMobileMembersOpen(false);
+    }
+  };
+
+  const handleDeselectServer = () => {
+    selectServer(null);
     setMobileChannelsOpen(false);
     setMobileMembersOpen(false);
   };
@@ -317,7 +353,7 @@ export default function Home() {
         selectedServer={selectedServer}
         friends={friends}
         user={user}
-        onSelectServer={selectServer}
+        onSelectServer={handleSelectServer}
         onShowProfile={() => setShowProfile(true)}
         onNavigateDMs={() => router.push("/messages")}
         onOpenFriendDM={(username) => router.push(`/messages?username=${encodeURIComponent(username)}`)}
@@ -354,7 +390,7 @@ export default function Home() {
         friends={friends}
         user={user}
         selectedServer={selectedServer}
-        onSelectServer={selectServer}
+        onSelectServer={handleSelectServer}
         onShowProfile={() => setShowProfile(true)}
         onNavigateDMs={() => router.push("/messages")}
         onOpenFriendDM={(username) => router.push(`/messages?username=${encodeURIComponent(username)}`)}
@@ -376,7 +412,7 @@ export default function Home() {
         onChannelSearch={(serverId, value) => setChannelSearchState({ serverId, value })}
         onCreateChannel={() => setShowCreateChannel(true)}
         onClose={() => setMobileChannelsOpen(false)}
-        isOpen={!!selectedServer}
+        isOpen={mobileChannelsOpen}
       />
 
       {/* Mobile Member Sidebar */}
