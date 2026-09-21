@@ -98,7 +98,13 @@ export default function Home() {
   const handleMobileMembersToggle = () => {
     setMobileMembersOpen(!mobileMembersOpen);
   };
-  
+
+  const handleCloseAll = () => {
+    setMobileMenuOpen(false);
+    setMobileChannelsOpen(false);
+    setMobileMembersOpen(false);
+  };
+
   // Admin modals state
   const [showAdminDeleteMessage, setShowAdminDeleteMessage] = useState(false);
   const [adminDeleteMessageId, setAdminDeleteMessageId] = useState<string | null>(null);
@@ -300,7 +306,8 @@ export default function Home() {
         onMenuToggle={handleMobileMenuToggle}
         onChannelsToggle={handleMobileChannelsToggle}
         onMembersToggle={handleMobileMembersToggle}
-        showChannelsButton={!!selectedServer}
+        onCloseAll={handleCloseAll}
+        showChannelsButton={false}
         showMembersButton={!!selectedServer}
       />
 
@@ -369,7 +376,7 @@ export default function Home() {
         onChannelSearch={(serverId, value) => setChannelSearchState({ serverId, value })}
         onCreateChannel={() => setShowCreateChannel(true)}
         onClose={() => setMobileChannelsOpen(false)}
-        isOpen={mobileChannelsOpen}
+        isOpen={!!selectedServer}
       />
 
       {/* Mobile Member Sidebar */}
@@ -430,6 +437,7 @@ export default function Home() {
         }}
         onOpenUserProfile={openUserProfile}
         onToggleReaction={toggleReaction}
+        mobileChannelSidebarOpen={!!selectedServer}
       />
 
       {selectedServer && (
