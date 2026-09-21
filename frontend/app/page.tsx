@@ -438,6 +438,7 @@ export default function Home() {
         onOpenUserProfile={openUserProfile}
         onToggleReaction={toggleReaction}
         mobileChannelSidebarOpen={!!selectedServer}
+        mobileMemberSidebarOpen={mobileMembersOpen}
       />
 
       {selectedServer && (

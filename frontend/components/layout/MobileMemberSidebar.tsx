@@ -58,7 +58,7 @@ export default function MobileMemberSidebar({
   return (
     <div className="fixed inset-0 z-50 md:hidden">
       <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={onClose} />
-      <div className="absolute right-0 top-0 bottom-0 w-80 bg-[rgba(30,50,70,0.98)] border-l border-[#5b8cff]/20 flex flex-col">
+      <div className="absolute right-0 top-0 bottom-0 w-72 bg-[rgba(30,50,70,0.98)] border-l border-[#5b8cff]/20 flex flex-col">
         <div className="h-16 px-4 flex items-center justify-between border-b border-[#5b8cff]/20 bg-[rgba(0,0,0,0.3)]">
           <h3 className="text-xs font-bold text-white/60 uppercase tracking-wider">
             {t("members.title", { count: members.length })}
