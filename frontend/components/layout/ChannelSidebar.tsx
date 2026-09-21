@@ -51,7 +51,7 @@ export default function ChannelSidebar({
   };
 
   return (
-    <aside className={`hidden lg:flex ${reduced ? 'w-[213px]' : 'w-80'} bg-[rgba(30,50,70,0.95)] border-r border-[#5b8cff]/20 flex flex-col min-h-0 transition-all duration-300 flex-shrink-0`}>
+    <aside className={`flex ${reduced ? 'w-[213px] md:w-[160px]' : 'w-80 md:w-56'} bg-[rgba(30,50,70,0.95)] border-r border-[#5b8cff]/20 flex flex-col min-h-0 transition-all duration-300 flex-shrink-0`}>
       {selectedServer ? (
         <>
           <div 

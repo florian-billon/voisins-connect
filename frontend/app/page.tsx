@@ -13,10 +13,10 @@ import ServerSidebar from "@/components/layout/ServerSidebar";
 import ChannelSidebar from "@/components/layout/ChannelSidebar";
 import ChatCenter from "@/components/layout/ChatCenter";
 import MemberSidebar from "@/components/layout/MemberSidebar";
-import MobileNavigation from "@/components/layout/MobileNavigation";
-import MobileHeader from "@/components/layout/MobileHeader";
-import MobileChannelSidebar from "@/components/layout/MobileChannelSidebar";
-import MobileMemberSidebar from "@/components/layout/MobileMemberSidebar";
+// import MobileNavigation from "@/components/layout/MobileNavigation";
+// import MobileHeader from "@/components/layout/MobileHeader";
+// import MobileChannelSidebar from "@/components/layout/MobileChannelSidebar";
+// import MobileMemberSidebar from "@/components/layout/MobileMemberSidebar";
 // import PremiumFloatingButton from "@/components/premium/PremiumFloatingButton";
 import CreateServerModal from "@/components/modals/CreateServerModal";
 import CreateChannelModal from "@/components/modals/CreateChannelModal";
@@ -71,9 +71,9 @@ export default function Home() {
   const [channelToRename, setChannelToRename] = useState<{ id: string; name: string } | null>(null);
   const [newOwnerIdForLeave, setNewOwnerIdForLeave] = useState("");
   const [leaveModalError, setLeaveModalError] = useState<string | null>(null);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [mobileChannelsOpen, setMobileChannelsOpen] = useState(false);
-  const [mobileMembersOpen, setMobileMembersOpen] = useState(false);
+  // const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  // const [mobileChannelsOpen, setMobileChannelsOpen] = useState(false);
+  // const [mobileMembersOpen, setMobileMembersOpen] = useState(false);
   const [channelSidebarReduced, setChannelSidebarReduced] = useState(false);
   const [memberSidebarReduced, setMemberSidebarReduced] = useState(false);
 
@@ -86,59 +86,8 @@ export default function Home() {
     setMemberSidebarReduced(!memberSidebarReduced);
   };
 
-  // Mobile sidebar toggles
-  const handleMobileMenuToggle = () => {
-    if (mobileMenuOpen) {
-      setMobileMenuOpen(false);
-    } else {
-      setMobileMenuOpen(true);
-      setMobileChannelsOpen(false);
-      setMobileMembersOpen(false);
-    }
-  };
-
-  const handleMobileChannelsToggle = () => {
-    if (mobileChannelsOpen) {
-      setMobileChannelsOpen(false);
-    } else {
-      setMobileChannelsOpen(true);
-      setMobileMenuOpen(false);
-      setMobileMembersOpen(false);
-    }
-  };
-
-  const handleMobileMembersToggle = () => {
-    if (mobileMembersOpen) {
-      setMobileMembersOpen(false);
-    } else {
-      setMobileMembersOpen(true);
-      setMobileMenuOpen(false);
-      setMobileChannelsOpen(false);
-    }
-  };
-
-  const handleCloseAll = () => {
-    setMobileMenuOpen(false);
-    setMobileChannelsOpen(false);
-    setMobileMembersOpen(false);
-  };
-
   const handleSelectServer = (server: Server | null) => {
     selectServer(server);
-    if (server) {
-      setMobileMenuOpen(false);
-      setMobileChannelsOpen(true);
-      setMobileMembersOpen(false);
-    } else {
-      setMobileChannelsOpen(false);
-      setMobileMembersOpen(false);
-    }
-  };
-
-  const handleDeselectServer = () => {
-    selectServer(null);
-    setMobileChannelsOpen(false);
-    setMobileMembersOpen(false);
   };
 
   // Admin modals state
@@ -335,19 +284,7 @@ export default function Home() {
 
   return (
     <main className="flex w-full min-h-screen">
-      {/* Mobile Header */}
-      <MobileHeader
-        selectedServer={selectedServer}
-        selectedChannel={selectedChannel}
-        onMenuToggle={handleMobileMenuToggle}
-        onChannelsToggle={handleMobileChannelsToggle}
-        onMembersToggle={handleMobileMembersToggle}
-        onCloseAll={handleCloseAll}
-        showChannelsButton={false}
-        showMembersButton={!!selectedServer}
-      />
-
-      {/* Desktop Sidebars */}
+      {/* Desktop Sidebars (now also used on mobile) */}
       <ServerSidebar
         servers={servers}
         selectedServer={selectedServer}
@@ -384,22 +321,22 @@ export default function Home() {
         reduced={channelSidebarReduced}
       />
 
-      {/* Mobile Navigation */}
-      <MobileNavigation
+      {/* Mobile Navigation - disabled */}
+      {/* <MobileNavigation
         servers={servers}
         friends={friends}
         user={user}
         selectedServer={selectedServer}
-        onSelectServer={handleSelectServer}
+        onSelectServer={selectServer}
         onShowProfile={() => setShowProfile(true)}
         onNavigateDMs={() => router.push("/messages")}
         onOpenFriendDM={(username) => router.push(`/messages?username=${encodeURIComponent(username)}`)}
         onClose={() => setMobileMenuOpen(false)}
         isOpen={mobileMenuOpen}
-      />
+      /> */}
 
-      {/* Mobile Channel Sidebar */}
-      <MobileChannelSidebar
+      {/* Mobile Channel Sidebar - disabled */}
+      {/* <MobileChannelSidebar
         selectedServer={selectedServer}
         channels={channels}
         visibleChannels={visibleChannels}
@@ -413,10 +350,10 @@ export default function Home() {
         onCreateChannel={() => setShowCreateChannel(true)}
         onClose={() => setMobileChannelsOpen(false)}
         isOpen={!!selectedServer}
-      />
+      /> */}
 
-      {/* Mobile Member Sidebar */}
-      <MobileMemberSidebar
+      {/* Mobile Member Sidebar - disabled */}
+      {/* <MobileMemberSidebar
         selectedServer={selectedServer}
         selectedChannel={selectedChannel}
         members={members}
@@ -438,7 +375,7 @@ export default function Home() {
         onOpenProfile={openUserProfile}
         onClose={() => setMobileMembersOpen(false)}
         isOpen={mobileMembersOpen}
-      />
+      /> */}
 
       <ChatCenter
         selectedServer={selectedServer}
@@ -473,8 +410,6 @@ export default function Home() {
         }}
         onOpenUserProfile={openUserProfile}
         onToggleReaction={toggleReaction}
-        mobileChannelSidebarOpen={!!selectedServer}
-        mobileMemberSidebarOpen={mobileMembersOpen}
       />
 
       {selectedServer && (
