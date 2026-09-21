@@ -412,7 +412,7 @@ export default function Home() {
         onChannelSearch={(serverId, value) => setChannelSearchState({ serverId, value })}
         onCreateChannel={() => setShowCreateChannel(true)}
         onClose={() => setMobileChannelsOpen(false)}
-        isOpen={mobileChannelsOpen}
+        isOpen={!!selectedServer}
       />
 
       {/* Mobile Member Sidebar */}
