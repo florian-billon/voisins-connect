@@ -43,7 +43,7 @@ export default function MemberSidebar({
   );
 
   return (
-    <aside className={`flex ${reduced ? 'w-[160px] md:w-[120px] sm:w-[60px]' : 'w-60 md:w-48 sm:w-24'} bg-[rgba(30,50,70,0.95)] border-l border-[#5b8cff]/20 flex flex-col transition-all duration-300 flex-shrink-0 h-full overflow-hidden`}>
+    <aside className={`flex ${reduced ? 'w-0 opacity-0 overflow-hidden border-0' : 'w-60 md:w-48 sm:w-24 opacity-100'} bg-[rgba(30,50,70,0.95)] border-l border-[#5b8cff]/20 flex flex-col transition-all duration-300 flex-shrink-0 h-full`}>
       <div 
         className="h-12 px-4 flex items-center justify-between border-b border-[#5b8cff]/20 bg-[rgba(0,0,0,0.3)] cursor-pointer"
         onClick={onToggleSidebar}

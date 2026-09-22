@@ -25,7 +25,7 @@ export default function ServerSidebar({ servers, selectedServer, friends, user, 
   const { t } = useTranslation();
 
   return (
-    <aside className={`flex ${reduced ? 'w-[48px] md:w-[36px] sm:w-[18px]' : 'w-[72px] md:w-[56px] sm:w-[28px]'} bg-[rgba(26,42,58,0.95)] border-r border-[#5b8cff]/20 flex-col items-center py-3 gap-2 transition-all duration-300 flex-shrink-0 h-full overflow-hidden`}>
+    <aside className={`flex ${reduced ? 'w-0 opacity-0 overflow-hidden border-0' : 'w-[72px] md:w-[56px] sm:w-[28px] opacity-100'} bg-[rgba(26,42,58,0.95)] border-r border-[#5b8cff]/20 flex-col items-center py-3 gap-2 transition-all duration-300 flex-shrink-0 h-full`}>
       <div 
         className="cursor-pointer"
         onClick={onToggleSidebar}
