@@ -288,7 +288,7 @@ export default function Home() {
   console.log("Home page rendering UI, servers:", servers.length, "selectedServer:", selectedServer?.name);
 
   return (
-    <main className="flex w-full min-h-screen">
+    <main className="flex w-full h-screen md:h-screen overflow-hidden">
       {/* Desktop Sidebars (now also used on mobile) */}
       <ServerSidebar
         servers={servers}

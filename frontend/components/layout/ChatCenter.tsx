@@ -287,7 +287,7 @@ export default function ChatCenter({
   };
 
   return (
-    <div className="flex-1 flex flex-col bg-[rgba(26,42,58,0.98)]">
+    <div className="flex-1 flex flex-col bg-[rgba(26,42,58,0.98)] min-h-0 overflow-hidden">
       {/* Bouton pour cacher toutes les sidebars */}
       <div className="px-2 md:px-4 py-2 border-b border-[#5b8cff]/20 bg-[rgba(0,0,0,0.2)] flex items-center justify-between">
         <div className="flex items-center gap-2">
