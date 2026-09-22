@@ -76,6 +76,7 @@ export default function Home() {
   // const [mobileMembersOpen, setMobileMembersOpen] = useState(false);
   const [channelSidebarReduced, setChannelSidebarReduced] = useState(false);
   const [memberSidebarReduced, setMemberSidebarReduced] = useState(false);
+  const [serverSidebarReduced, setServerSidebarReduced] = useState(false);
 
   // Intelligent sidebar toggle for desktop
   const handleToggleChannelSidebar = () => {
@@ -84,6 +85,10 @@ export default function Home() {
 
   const handleToggleMemberSidebar = () => {
     setMemberSidebarReduced(!memberSidebarReduced);
+  };
+
+  const handleToggleServerSidebar = () => {
+    setServerSidebarReduced(!serverSidebarReduced);
   };
 
   const handleSelectServer = (server: Server | null) => {
@@ -294,6 +299,8 @@ export default function Home() {
         onShowProfile={() => setShowProfile(true)}
         onNavigateDMs={() => router.push("/messages")}
         onOpenFriendDM={(username) => router.push(`/messages?username=${encodeURIComponent(username)}`)}
+        onToggleSidebar={handleToggleServerSidebar}
+        reduced={serverSidebarReduced}
       />
 
       <ChannelSidebar

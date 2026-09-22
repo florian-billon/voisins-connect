@@ -16,21 +16,31 @@ type Props = {
   onShowProfile: () => void;
   onNavigateDMs: () => void;
   onOpenFriendDM: (username: string) => void;
+  onToggleSidebar?: () => void;
+  reduced?: boolean;
 };
 
-export default function ServerSidebar({ servers, selectedServer, friends, user, onSelectServer, onShowProfile, onNavigateDMs, onOpenFriendDM }: Props) {
+export default function ServerSidebar({ servers, selectedServer, friends, user, onSelectServer, onShowProfile, onNavigateDMs, onOpenFriendDM, onToggleSidebar, reduced = false }: Props) {
   const { t } = useTranslation();
 
   return (
-    <aside className={`flex w-[72px] md:w-[56px] sm:w-[28px] bg-[rgba(26,42,58,0.95)] border-r border-[#5b8cff]/20 flex-col items-center py-3 gap-2 transition-all duration-300 flex-shrink-0`}>
-      <button
-        type="button"
-        onClick={() => onSelectServer(null)}
-        className="w-12 h-12 flex items-center justify-center mb-2 cursor-pointer group bg-transparent border-0 shadow-none p-0"
-        title={t("common.appName")}
+    <aside className={`flex ${reduced ? 'w-[48px] md:w-[36px] sm:w-[18px]' : 'w-[72px] md:w-[56px] sm:w-[28px]'} bg-[rgba(26,42,58,0.95)] border-r border-[#5b8cff]/20 flex-col items-center py-3 gap-2 transition-all duration-300 flex-shrink-0`}>
+      <div 
+        className="cursor-pointer"
+        onClick={onToggleSidebar}
       >
-        <Image src="/logo.png" alt={t("common.appName")} width={48} height={48} className="group-hover:scale-110 transition-transform" />
-      </button>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onSelectServer(null);
+          }}
+          className="w-12 h-12 flex items-center justify-center mb-2 cursor-pointer group bg-transparent border-0 shadow-none p-0"
+          title={t("common.appName")}
+        >
+          <Image src="/logo.png" alt={t("common.appName")} width={48} height={48} className="group-hover:scale-110 transition-transform" />
+        </button>
+      </div>
 
       <div className="w-8 h-[2px] bg-[#5b8cff]/20 rounded-full" />
 
