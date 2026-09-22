@@ -4,14 +4,6 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  // Fix chunk loading issues on mobile
-  webpack: (config) => {
-    config.optimization.splitChunks = {
-      chunks: 'all',
-      maxSize: 244000,
-    };
-    return config;
-  },
 };
 
 export default nextConfig;
