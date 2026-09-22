@@ -17,10 +17,11 @@ type Props = {
   onNavigateDMs: () => void;
   onOpenFriendDM: (username: string) => void;
   onToggleSidebar?: () => void;
+  onToggleChannelSidebar?: () => void;
   reduced?: boolean;
 };
 
-export default function ServerSidebar({ servers, selectedServer, friends, user, onSelectServer, onShowProfile, onNavigateDMs, onOpenFriendDM, onToggleSidebar, reduced = false }: Props) {
+export default function ServerSidebar({ servers, selectedServer, friends, user, onSelectServer, onShowProfile, onNavigateDMs, onOpenFriendDM, onToggleSidebar, onToggleChannelSidebar, reduced = false }: Props) {
   const { t } = useTranslation();
 
   return (
@@ -68,7 +69,13 @@ export default function ServerSidebar({ servers, selectedServer, friends, user, 
           <button
             key={server.id}
             type="button"
-            onClick={() => onSelectServer(server)}
+            onClick={() => {
+              if (selectedServer?.id === server.id && onToggleChannelSidebar) {
+                onToggleChannelSidebar();
+              } else {
+                onSelectServer(server);
+              }
+            }}
             className={`w-12 h-12 rounded-[24px] flex items-center justify-center text-lg font-bold transition-all duration-200 relative group ${
               selectedServer?.id === server.id
                 ? "bg-[#5b8cff] text-white rounded-xl shadow-[0_0_12px_rgba(91,140,255,0.4)]"

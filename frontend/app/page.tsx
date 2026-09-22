@@ -93,6 +93,10 @@ export default function Home() {
 
   const handleSelectServer = (server: Server | null) => {
     selectServer(server);
+    // Expand channel sidebar when selecting a new server
+    if (server) {
+      setChannelSidebarReduced(false);
+    }
   };
 
   // Admin modals state
@@ -300,6 +304,7 @@ export default function Home() {
         onNavigateDMs={() => router.push("/messages")}
         onOpenFriendDM={(username) => router.push(`/messages?username=${encodeURIComponent(username)}`)}
         onToggleSidebar={handleToggleServerSidebar}
+        onToggleChannelSidebar={handleToggleChannelSidebar}
         reduced={serverSidebarReduced}
       />
 
